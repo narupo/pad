@@ -35,7 +35,7 @@ void
 objdict_del(object_dict_t *self);
 
 /**
- * destruct object_dict_t with escape array of object_dict_item_t dynamic allocated
+ * destruct object_dict_t with Pad_Escape array of object_dict_item_t dynamic allocated
  *
  * @param[in] *self pointer to object_dict_t
  *

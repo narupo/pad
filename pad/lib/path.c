@@ -19,7 +19,7 @@ path_pop_back_of(char *path, int32_t ch) {
 }
 
 char *
-path_pop_tail_slash(char *path) {
+path_Pad_PopTailSlash(char *path) {
     if (!path) {
         return NULL;
     }

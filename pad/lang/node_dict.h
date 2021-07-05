@@ -42,7 +42,7 @@ void
 nodedict_del_without_nodes(node_dict_t *self);
 
 /**
- * destruct node_dict_t with escape array of node_dict_item_t dynamic allocated
+ * destruct node_dict_t with Pad_Escape array of node_dict_item_t dynamic allocated
  *
  * @param[in] *self pointer to node_dict_t
  *

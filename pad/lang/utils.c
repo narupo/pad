@@ -750,7 +750,7 @@ exec_func_suites(PadErrStack *err, object_t *func_obj) {
             .depth = 0,
             .func_obj = func_obj,
         });
-        if (ast_has_errors(func->ref_ast)) {
+        if (PadAst_HasErrs(func->ref_ast)) {
             PadErrStack_ExtendBackOther(err, func->ref_ast->error_stack);
             return NULL;
         }

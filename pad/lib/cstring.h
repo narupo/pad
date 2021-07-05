@@ -148,7 +148,7 @@ cstr_isdigit(const char *str);
  * @return 
  */
 void
-cstr_pop_last_newline(char *str);
+cstr_pop_lPadAst_Newline(char *str);
 
 /**
  * right strip zero of float value

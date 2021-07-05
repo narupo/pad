@@ -370,7 +370,7 @@ cstr_isdigit(const char *str) {
 }
 
 void
-cstr_pop_last_newline(char *str) {
+cstr_pop_lPadAst_Newline(char *str) {
     if (!str) {
         return;
     }

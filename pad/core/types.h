@@ -1,4 +1,4 @@
 #pragma once
 
-struct runcmd;
-typedef struct runcmd runcmd_t;
+struct PadRunCmd;
+typedef struct PadRunCmd PadRunCmd;

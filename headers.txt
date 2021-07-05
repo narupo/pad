@@ -4,10 +4,10 @@
 ./pad/core/config.h *
 ./pad/core/constant.h *
 ./pad/core/error_stack.h *
-./pad/core/types.h
-./pad/core/util.h
-./pad/lang/arguments.h
-./pad/lang/ast.h
+./pad/core/types.h *
+./pad/core/util.h *
+./pad/lang/arguments.h *
+./pad/lang/ast.h *
 ./pad/lang/builtin/function.h
 ./pad/lang/builtin/functions.h
 ./pad/lang/builtin/modules/alias.h

@@ -11,7 +11,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
@@ -19,7 +19,7 @@ builtin_opts_get(builtin_func_args_t *fargs) {
     assert(objname);
 
     if (objname->type != OBJ_TYPE_UNICODE) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
@@ -43,7 +43,7 @@ builtin_opts_has(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
@@ -51,7 +51,7 @@ builtin_opts_has(builtin_func_args_t *fargs) {
     assert(objname);
 
     if (objname->type != OBJ_TYPE_UNICODE) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
@@ -70,13 +70,13 @@ builtin_opts_args(builtin_func_args_t *fargs) {
     object_array_t *args = actual_args->objarr;
 
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.args. need one argument");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.args. need one argument");
         return NULL;
     }
 
     const object_t *arg = objarr_getc(args, 0);
     if (arg->type != OBJ_TYPE_INT) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid argument type. argument is not int");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "invalid argument type. argument is not int");
         return NULL;
     }
 
@@ -100,7 +100,7 @@ builtin_func_infos[] = {
 object_t *
 builtin_opts_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    ast_t *ast = ast_new(ref_config);
+    ast_t *ast = PadAst_New(ref_config);
     context_t *ctx = ctx_new(ref_gc);
     ast->ref_context = ctx;
 

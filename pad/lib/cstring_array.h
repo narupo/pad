@@ -35,7 +35,7 @@ cstrarr_del(cstring_array_t *self);
 
 /**
  * destruct array with move semantics
- * need freeargv for the return value
+ * need Pad_FreeArgv for the return value
  *
  * @param[in] *self
  *

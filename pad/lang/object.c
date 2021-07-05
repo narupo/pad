@@ -7,13 +7,13 @@ extern void
 tkr_del(tokenizer_t *self);
 
 extern void
-ast_del(ast_t *self);
+PadAst_Del(ast_t *self);
 
 extern ast_t *
-ast_deep_copy(const ast_t *other);
+PadAst_DeepCopy(const ast_t *other);
 
 extern ast_t *
-ast_shallow_copy(const ast_t *other);
+PadAst_ShallowCopy(const ast_t *other);
 
 extern void
 ctx_del(context_t *self);
@@ -98,7 +98,7 @@ obj_del(object_t *self) {
         self->module.program_source = NULL;
         tkr_del(self->module.tokenizer);
         self->module.tokenizer = NULL;
-        ast_del(self->module.ast);
+        PadAst_Del(self->module.ast);
         self->module.ast = NULL;
         ctx_del(self->module.context);
         self->module.context = NULL;
@@ -243,14 +243,14 @@ obj_deep_copy(const object_t *other) {
             }
         }
         self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
-        self->module.ast = ast_deep_copy(other->module.ast);
+        self->module.ast = PadAst_DeepCopy(other->module.ast);
         self->module.context = ctx_deep_copy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case OBJ_TYPE_DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
         self->def_struct.identifier = obj_deep_copy(other->def_struct.identifier); 
-        self->def_struct.ast = ast_deep_copy(other->def_struct.ast);
+        self->def_struct.ast = PadAst_DeepCopy(other->def_struct.ast);
         self->def_struct.context = ctx_deep_copy(other->def_struct.context);
         break;
     case OBJ_TYPE_OBJECT:
@@ -359,14 +359,14 @@ obj_shallow_copy(const object_t *other) {
             }
         }
         self->module.tokenizer = tkr_shallow_copy(other->module.tokenizer);
-        self->module.ast = ast_shallow_copy(other->module.ast);
+        self->module.ast = PadAst_ShallowCopy(other->module.ast);
         self->module.context = ctx_shallow_copy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case OBJ_TYPE_DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
         self->def_struct.identifier = obj_shallow_copy(other->def_struct.identifier); 
-        self->def_struct.ast = ast_shallow_copy(other->def_struct.ast);
+        self->def_struct.ast = PadAst_ShallowCopy(other->def_struct.ast);
         self->def_struct.context = ctx_shallow_copy(other->def_struct.context);
         break;
     case OBJ_TYPE_OBJECT:

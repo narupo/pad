@@ -14,7 +14,7 @@ extract_unicode_object(ast_t *ref_ast, object_array_t *ref_owners, const char *m
 again:
     switch (owner->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't call %s method", method_name);
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't call %s method", method_name);
         return NULL;
         break;
     case OBJ_TYPE_UNICODE: {
@@ -27,7 +27,7 @@ again:
     case OBJ_TYPE_IDENTIFIER: {
         owner = ctx_find_var_ref(ref_ast->ref_context, obj_getc_idn_name(owner));
         if (!owner) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "not found \"%s\" in %s method", owner->identifier, method_name);
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "not found \"%s\" in %s method", owner->identifier, method_name);
             return NULL;
         }
         goto again;
@@ -35,7 +35,7 @@ again:
     case OBJ_TYPE_CHAIN: {
         owner = refer_chain_obj_with_ref(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
         if (!owner) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
             return NULL;
         }
         goto again;
@@ -58,7 +58,7 @@ call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
         method_name
     );
     if (!owner) {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
         return NULL;
     }
 
@@ -76,7 +76,7 @@ call_basic_unicode_func(const char *method_name, builtin_func_args_t *fargs) {
     } else if (cstr_eq(method_name, "hacker")) {
         result = uni_hacker(owner->unicode);
     } else {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\" for call basic unicode method", method_name);
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\" for call basic unicode method", method_name);
         return NULL;
     }
 
@@ -123,7 +123,7 @@ builtin_unicode_split(builtin_func_args_t *fargs) {
     assert(args);
     const object_t *sep = objarr_getc(args, 0);
     if (sep->type != OBJ_TYPE_UNICODE) {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
         return NULL;
     }
     const unicode_type_t *unisep = uni_getc(sep->unicode);
@@ -134,13 +134,13 @@ builtin_unicode_split(builtin_func_args_t *fargs) {
         "split"
     );
     if (!owner) {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
         return NULL;
     }
 
     unicode_t ** arr = uni_split(owner->unicode, unisep);
     if (!arr) {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "failed to split");
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to split");
         return NULL;
     }
 
@@ -168,7 +168,7 @@ strip_work(const char *method_name, builtin_func_args_t *fargs) {
     if (objarr_len(args)) {
         const object_t *rems = objarr_getc(args, 0);
         if (rems->type != OBJ_TYPE_UNICODE) {
-            ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
+            PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
             return NULL;
         }
         unirems = uni_getc(rems->unicode);
@@ -182,7 +182,7 @@ strip_work(const char *method_name, builtin_func_args_t *fargs) {
         method_name
     );
     if (!owner) {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
         return NULL;
     }
 
@@ -194,12 +194,12 @@ strip_work(const char *method_name, builtin_func_args_t *fargs) {
     } else if (cstr_eq(method_name, "strip")) {
         result = uni_strip(owner->unicode, unirems);
     } else {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\"", method_name);
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\"", method_name);
         return NULL;
     }
 
     if (!result) {
-        ast_pushb_error(fargs->ref_ast, NULL, 0, NULL, 0, "failed to rstrip");
+        PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to rstrip");
         return NULL;
     }
 
@@ -235,7 +235,7 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
         method_name
     );
     if (!owner) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
         return NULL;
     }
 
@@ -247,7 +247,7 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
     } else if (cstr_eq(method_name, "isspace")) {
         boolean = uni_isspace(owner->unicode);
     } else {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);
     }
 
     return obj_new_bool(ref_ast->ref_gc, boolean);
@@ -289,7 +289,7 @@ builtin_func_infos[] = {
 object_t *
 builtin_unicode_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    ast_t *ast = ast_new(ref_config);
+    ast_t *ast = PadAst_New(ref_config);
     context_t *ctx = ctx_new(ref_gc);
     ast->ref_context = ctx;
 

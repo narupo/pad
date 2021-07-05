@@ -30,7 +30,7 @@ builtin_id(builtin_func_args_t *fargs) {
     assert(obj);
 
     obj = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-    if (ast_has_errors(ref_ast)) {
+    if (PadAst_HasErrs(ref_ast)) {
         return NULL;
     }
     if (!obj) {
@@ -191,7 +191,7 @@ builtin_puts(builtin_func_args_t *fargs) {
         object_t *obj = objarr_get(args, i);
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        if (ast_has_errors(ref_ast)) {
+        if (PadAst_HasErrs(ref_ast)) {
             push_error("failed to get argument");
             return NULL;
         }
@@ -207,7 +207,7 @@ builtin_puts(builtin_func_args_t *fargs) {
         object_t *obj = objarr_get(args, arrlen-1);
         assert(obj);
         object_t *ref = extract_ref_of_obj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        if (ast_has_errors(ref_ast)) {
+        if (PadAst_HasErrs(ref_ast)) {
             push_error("failed to get argument");
             return NULL;
         }
@@ -628,7 +628,7 @@ builtin_dance(builtin_func_args_t *fargs) {
 
     object_array_t *retarr = objarr_new();
     tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new(ref_ast->ref_config);
+    ast_t *ast = PadAst_New(ref_ast->ref_config);
     context_t *ctx = ctx_new(ref_ast->ref_gc);
     opts_t *opts = opts_new();
 
@@ -646,24 +646,24 @@ builtin_dance(builtin_func_args_t *fargs) {
         return_fail_es(es);
     }
 
-    ast_clear(ast);
-    ast_move_opts(ast, mem_move(opts));
+    PadAst_Clear(ast);
+    PadAst_MoveOpts(ast, mem_move(opts));
     opts = NULL;
 
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_errors(ast)) {
-        const PadErrStack *es = ast_getc_error_stack(ast);
+    if (PadAst_HasErrs(ast)) {
+        const PadErrStack *es = PadAst_GetcErrStack(ast);
         return_fail_es(es);
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_errors(ast)) {
-        const PadErrStack *es = ast_getc_error_stack(ast);
+    if (PadAst_HasErrs(ast)) {
+        const PadErrStack *es = PadAst_GetcErrStack(ast);
         return_fail_es(es);
     }
 
     tkr_del(tkr);
-    ast_del(ast);
+    PadAst_Del(ast);
 
     const char *out = ctx_getc_stdout_buf(ctx);
     const char *err = ctx_getc_stderr_buf(ctx);
@@ -781,7 +781,7 @@ builtin_func_infos[] = {
 object_t *
 builtin_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    ast_t *ast = ast_new(ref_config);
+    ast_t *ast = PadAst_New(ref_config);
     context_t *ctx = ctx_new(ref_gc);
     ast->ref_context = ctx;
 

@@ -270,16 +270,16 @@ ctx_clear_stderr_buf(context_t *self) {
 
 string_t *
 ctx_swap_stdout_buf(context_t *self, string_t *stdout_buf) {
-    string_t *escape = self->stdout_buf;
+    string_t *Pad_Escape = self->stdout_buf;
     self->stdout_buf = stdout_buf;
-    return escape;
+    return Pad_Escape;
 }
 
 string_t *
 ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf) {
-    string_t *escape = self->stderr_buf;
+    string_t *Pad_Escape = self->stderr_buf;
     self->stderr_buf = stderr_buf;
-    return escape;
+    return Pad_Escape;
 }
 
 void

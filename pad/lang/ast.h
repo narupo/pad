@@ -18,8 +18,8 @@
  * constant number of AST
  */
 enum {
-    AST_ERR_DETAIL_SIZE = 1024, // ast's error message size
-    AST_ERR_TOKENS_SIZE = 256,
+    PAD_AST__ERR_DETAIL_SIZE = 1024, // ast's error message size
+    PAD_AST__ERR_TOKENS_SIZE = 256,
 };
 
 /**
@@ -27,7 +27,7 @@ enum {
  * this structure using in compiler and traverser modules
  * and this structure has the error handling mechanizm by error_stack variable
  */
-struct ast {
+struct PadAst {
     // reference of config (do not delete)
     const PadConfig *ref_config;
 
@@ -53,7 +53,7 @@ struct ast {
     PadErrStack *error_stack;
 
     // error tokens for display error to developer
-    token_t *error_tokens[AST_ERR_TOKENS_SIZE];
+    token_t *error_tokens[PAD_AST__ERR_TOKENS_SIZE];
     int32_t error_tokens_pos;
 
     // number of import level
@@ -74,7 +74,7 @@ struct ast {
  * @param[in] *node start node
  */
 void
-ast_del_nodes(const ast_t *self, node_t *node);
+PadAst_DelNodes(const ast_t *self, node_t *node);
 
 /**
  * destruct object
@@ -82,23 +82,23 @@ ast_del_nodes(const ast_t *self, node_t *node);
  * @param[in] *self pointer to ast_t
  */
 void
-ast_del(ast_t *self);
+PadAst_Del(ast_t *self);
 
 /**
  * construct object
  *
  * @param[in] *ref_config pointer to read-only PadConfig
  *
- * @return pointer to ast_t dynamic allocate memory (do ast_del)
+ * @return pointer to ast_t dynamic allocate memory (do PadAst_Del)
  */
 ast_t *
-ast_new(const PadConfig *ref_config);
+PadAst_New(const PadConfig *ref_config);
 
 ast_t *
-ast_deep_copy(const ast_t *other);
+PadAst_DeepCopy(const ast_t *other);
 
 ast_t *
-ast_shallow_copy(const ast_t *other);
+PadAst_ShallowCopy(const ast_t *other);
 
 /**
  * move opts at ast
@@ -107,13 +107,13 @@ ast_shallow_copy(const ast_t *other);
  * @param[in] *move_opts pointer to opts_t with move semantics
  */
 void
-ast_move_opts(ast_t *self, opts_t *move_opts);
+PadAst_MoveOpts(ast_t *self, opts_t *move_opts);
 
 void
-ast_set_ref_context(ast_t *ast, context_t *ref_context);
+PadAst_SetRefCtx(ast_t *ast, context_t *ref_context);
 
 void
-ast_set_ref_gc(ast_t *ast, gc_t *ref_gc);
+PadAst_SetRefGc(ast_t *ast, gc_t *ref_gc);
 
 /**
  * get root node read-only
@@ -123,7 +123,7 @@ ast_set_ref_gc(ast_t *ast, gc_t *ref_gc);
  * @return pointer to node_t root
  */
 const node_t *
-ast_getc_root(const ast_t *self);
+PadAst_GetcRoot(const ast_t *self);
 
 /**
  * push back error at ast error stack
@@ -137,16 +137,16 @@ ast_getc_root(const ast_t *self);
  * @param[in] fmt    format string (const char *)
  * @param[in] ...   arguments of format
  */
-#define ast_pushb_error(ast, fname, lineno, src, pos, fmt, ...) \
+#define PadAst_PushBackErr(ast, fname, lineno, src, pos, fmt, ...) \
     PadErrStack_PushBack(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__)
 
 /**
- * clear ast state (will call ast_del_nodes)
+ * clear ast state (will call PadAst_DelNodes)
  *
  * @param[in] *self pointer to ast_t
  */
 void
-ast_clear(ast_t *self);
+PadAst_Clear(ast_t *self);
 
 /**
  * get first error message from error stack
@@ -157,7 +157,7 @@ ast_clear(ast_t *self);
  * @return if not has error stack then return NULL
  */
 const char *
-ast_getc_first_error_message(const ast_t *self);
+PadAst_GetcFirstErrMsg(const ast_t *self);
 
 /**
  * get last error message from error stack
@@ -168,7 +168,7 @@ ast_getc_first_error_message(const ast_t *self);
  * @return if not has error stack then return NULL
  */
 const char *
-ast_getc_last_error_message(const ast_t *self);
+PadAst_GetcLastErrMsg(const ast_t *self);
 
 /**
  * if ast has error stack then return true else return false
@@ -178,7 +178,7 @@ ast_getc_last_error_message(const ast_t *self);
  * @return if has error then true else false
  */
 bool
-ast_has_errors(const ast_t *self);
+PadAst_HasErrs(const ast_t *self);
 
 /**
  * clear error stack
@@ -186,7 +186,7 @@ ast_has_errors(const ast_t *self);
  * @param[in] *self
  */
 void
-ast_clear_errors(ast_t *self);
+PadAst_ClearErrs(ast_t *self);
 
 /**
  * set debug mode
@@ -196,7 +196,7 @@ ast_clear_errors(ast_t *self);
  * @param[in] debug debug mode
  */
 void
-ast_set_debug(ast_t *self, bool debug);
+PadAst_SetDebug(ast_t *self, bool debug);
 
 /**
  * trace error stack at stream
@@ -205,7 +205,7 @@ ast_set_debug(ast_t *self, bool debug);
  * @param[in] *fout stream
  */
 void
-ast_trace_error(const ast_t *self, FILE *fout);
+PadAst_TraceErr(const ast_t *self, FILE *fout);
 
 /**
  * get error stack read only
@@ -215,7 +215,7 @@ ast_trace_error(const ast_t *self, FILE *fout);
  * @return pointer to PadErrStack
  */
 const PadErrStack *
-ast_getc_error_stack(const ast_t *self);
+PadAst_GetcErrStack(const ast_t *self);
 
 /**
  * dump ast_t at stream
@@ -224,7 +224,7 @@ ast_getc_error_stack(const ast_t *self);
  * @param[in] *fout stream
  */
 void
-ast_dump(const ast_t *self, FILE *fout);
+PadAst_Dump(const ast_t *self, FILE *fout);
 
 /**
  * get ast reference of context
@@ -234,7 +234,7 @@ ast_dump(const ast_t *self, FILE *fout);
  * @return reference to ast_t (do not delete)
  */
 context_t *
-ast_get_ref_context(ast_t *self);
+PadAst_GetRefCtx(ast_t *self);
 
 /**
  * read token and increment pointer of tokens
@@ -244,7 +244,7 @@ ast_get_ref_context(ast_t *self);
  * @return
  */
 token_t *
-ast_read_token(ast_t *self);
+PadAst_ReadTok(ast_t *self);
 
 /**
  * step back pointer of tokens
@@ -252,7 +252,7 @@ ast_read_token(ast_t *self);
  * @param[in] *self
  */
 void
-ast_prev_ptr(ast_t *self);
+PadAst_PrevPtr(ast_t *self);
 
 /**
  * get reference of gc_t
@@ -262,7 +262,7 @@ ast_prev_ptr(ast_t *self);
  * @return reference to gc_t (do not delete)
  */
 gc_t *
-ast_get_ref_gc(ast_t *self);
+PadAst_GetRefGc(ast_t *self);
 
 ast_t *
-ast_pushb_error_token(ast_t *self, token_t *ref_token);
+PadAst_PushBackErrTok(ast_t *self, token_t *ref_token);

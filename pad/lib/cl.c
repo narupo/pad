@@ -275,7 +275,7 @@ ismetach(int32_t c) {
 }
 
 static void
-escapecpy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
+Pad_Escapecpy(cl_string_t *dst, const cl_string_t *src, int32_t opts) {
     const char *srcval = clstr_getc(src);
     int32_t m = 0;
     for (const char *p = srcval; *p; ++p) {
@@ -344,7 +344,7 @@ validatepush(cl_t *cl, cl_string_t *src, int32_t opts) {
     }
 
     if (opts & CL_ESCAPE) {
-        escapecpy(dst, src, opts);
+        Pad_Escapecpy(dst, src, opts);
     } else {
         clstr_app(dst, clstr_getc(src));
     }
@@ -359,7 +359,7 @@ validatepush(cl_t *cl, cl_string_t *src, int32_t opts) {
 }
 
 static int32_t
-conv_escape_char(int32_t ch) {
+conv_Pad_Escape_char(int32_t ch) {
     switch (ch) {
     case 'r': return '\r'; break;
     case 'n': return '\n'; break;
@@ -399,7 +399,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             } else if (c == '\\') {
                 ++p;
                 if (*p) {
-                    clstr_push(tmp, conv_escape_char(*p));
+                    clstr_push(tmp, conv_Pad_Escape_char(*p));
                 }
             } else if (c == '"') {
                 m = 10;
@@ -416,7 +416,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             if (c == '\\') {
                 ++p;
                 if (*p) {
-                    clstr_push(tmp, conv_escape_char(*p));
+                    clstr_push(tmp, conv_Pad_Escape_char(*p));
                 }
             } else if (c == '"') {
                 m = 0;
@@ -429,7 +429,7 @@ cl_parse_str_opts(cl_t *self, const char *drtsrc, int32_t opts) {
             if (c == '\\') {
                 ++p;
                 if (*p) {
-                    clstr_push(tmp, conv_escape_char(*p));
+                    clstr_push(tmp, conv_Pad_Escape_char(*p));
                 }
             } else if (c == '\'') {
                 m = 0;

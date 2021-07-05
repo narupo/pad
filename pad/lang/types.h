@@ -55,20 +55,17 @@ typedef struct context context_t;
 struct scope;
 typedef struct scope scope_t;
 
-struct ast;
-typedef struct ast ast_t;
+struct PadAst;
+typedef struct PadAst ast_t;
 
-struct cc_args;
-typedef struct cc_args cc_args_t;
+struct PadCcArgs;
+typedef struct PadCcArgs cc_args_t;
 
-struct trv_args;
-typedef struct trv_args trv_args_t;
+struct PadTrvArgs;
+typedef struct PadTrvArgs trv_args_t;
 
-struct  builtin_func_args;
-typedef struct  builtin_func_args builtin_func_args_t;
-
-struct builtin_func_args;
-typedef struct builtin_func_args builtin_func_args_t;
+struct PadBuiltFuncArgs;
+typedef struct PadBuiltFuncArgs builtin_func_args_t;
 
 typedef object_t *(*builtin_func_t)(builtin_func_args_t *args);
 

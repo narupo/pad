@@ -18,7 +18,7 @@ PadConfig_New(void) {
 }
 
 char *
-pop_tail_slash(char *path);
+Pad_PopTailSlash(char *path);
 
 PadConfig *
 PadConfig_Init(PadConfig *self) {

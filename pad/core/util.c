@@ -8,7 +8,7 @@
 #include <pad/core/util.h>
 
 void
-freeargv(int argc, char *argv[]) {
+Pad_FreeArgv(int argc, char *argv[]) {
     if (argv) {
         for (int i = 0; i < argc; ++i) {
             free(argv[i]);
@@ -18,26 +18,26 @@ freeargv(int argc, char *argv[]) {
 }
 
 void
-showargv(int argc, char *argv[]) {
+Pad_ShowArgv(int argc, char *argv[]) {
     for (int i = 0; i < argc; ++i) {
         printf("argv[%d] = [%s]\n", i, argv[i]);
     }
 }
 
 int
-randrange(int min, int max) {
+Pad_RandRange(int min, int max) {
     return min + (int)(rand() * (max - min + 1.0) / (1.0 + RAND_MAX));
 }
 
 int
-safesystem(const char *cmdline, int option) {
-    if (option & SAFESYSTEM_UNSAFE) {
+Pad_SafeSystem(const char *cmdline, int option) {
+    if (option & PAD_SAFESYSTEM_UNSAFE) {
         return system(cmdline);
     }
 
 #ifdef PAD_WINDOWS
     int flag = 0;
-    if (option & SAFESYSTEM_EDIT) {
+    if (option & PAD_SAFESYSTEM_EDIT) {
         // option for edit command
         flag = CREATE_NEW_CONSOLE;
     } else {
@@ -63,12 +63,12 @@ safesystem(const char *cmdline, int option) {
         return 1;
     }
 
-    if (option & SAFESYSTEM_EDIT) {
+    if (option & PAD_SAFESYSTEM_EDIT) {
         // case of edit command, to not wait exit of child process
         return 0;
     }
 
-    if (option & SAFESYSTEM_DETACH) {
+    if (option & PAD_SAFESYSTEM_DETACH) {
         // not wait child process
         return 0;
     }
@@ -118,7 +118,7 @@ safesystem(const char *cmdline, int option) {
     int argc = cl_len(cl);
     char **argv = cl_escdel(cl);
     if (!argv) {
-        err_error("failed to escape and delete of clk");
+        err_error("failed to Pad_Escape and delete of clk");
         return -1;
     }
 
@@ -126,13 +126,13 @@ safesystem(const char *cmdline, int option) {
 
     switch (fork()) {
     default: // parent
-        freeargv(argc, argv);
+        Pad_FreeArgv(argc, argv);
         wait(&status);
         break;
     case 0: // child
         if (execv(argv[0], argv) == -1) {
-            err_error("failed to safesystem");
-            freeargv(argc, argv);
+            err_error("failed to Pad_SafeSystem");
+            Pad_FreeArgv(argc, argv);
             _exit(1);
         }
         break;
@@ -147,7 +147,7 @@ safesystem(const char *cmdline, int option) {
 }
 
 cstring_array_t *
-argsbyoptind(int argc, char *argv[], int optind) {
+Pad_ArgsByOptind(int argc, char *argv[], int optind) {
     cstring_array_t *args = cstrarr_new();
 
     // DO NOT DELETE FOR DEBUG.
@@ -166,7 +166,7 @@ argsbyoptind(int argc, char *argv[], int optind) {
 }
 
 char *
-trim_first_line(char *dst, int32_t dstsz, const char *text) {
+Pad_TrimFirstLine(char *dst, int32_t dstsz, const char *text) {
     if (!dst || !dstsz || !text) {
         return NULL;
     }
@@ -191,9 +191,9 @@ trim_first_line(char *dst, int32_t dstsz, const char *text) {
 }
 
 char *
-compile_argv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
+Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new(config);
+    ast_t *ast = PadAst_New(config);
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
     opts_t *opts = opts_new();
@@ -214,30 +214,30 @@ compile_argv(const PadConfig *config, PadErrStack *errstack, int argc, char *arg
         return NULL;
     }
 
-    ast_clear(ast);
-    ast_move_opts(ast, opts);
+    PadAst_Clear(ast);
+    PadAst_MoveOpts(ast, opts);
     opts = NULL;
 
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_errors(ast)) {
+    if (PadAst_HasErrs(ast)) {
         if (errstack) {
-            const PadErrStack *es = ast_getc_error_stack(ast);
+            const PadErrStack *es = PadAst_GetcErrStack(ast);
             PadErrStack_ExtendBackOther(errstack, es);
         }
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_errors(ast)) {
+    if (PadAst_HasErrs(ast)) {
         if (errstack) {
-            const PadErrStack *es = ast_getc_error_stack(ast);
+            const PadErrStack *es = PadAst_GetcErrStack(ast);
             PadErrStack_ExtendBackOther(errstack, es);
         }
         return NULL;
     }
 
     tkr_del(tkr);
-    ast_del(ast);
+    PadAst_Del(ast);
 
     string_t *buf = str_new();
     str_app(buf, ctx_getc_stdout_buf(ctx));
@@ -250,7 +250,7 @@ compile_argv(const PadConfig *config, PadErrStack *errstack, int argc, char *arg
 }
 
 void
-clear_screen(void) {
+Pad_ClearScreen(void) {
 #ifdef PAD_WINDOWS
     system("cls");
 #else
@@ -263,7 +263,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     char *src = file_readcp_from_path(rcpath);
 
     tokenizer_t *tkr = tkr_new(tkropt_new());
-    ast_t *ast = ast_new(config);
+    ast_t *ast = PadAst_New(config);
     gc_t *gc = gc_new();
     context_t *ctx = ctx_new(gc);
     opts_t *opts = opts_new();
@@ -276,24 +276,24 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
         return NULL;
     }
 
-    ast_clear(ast);
-    ast_move_opts(ast, opts);
+    PadAst_Clear(ast);
+    PadAst_MoveOpts(ast, opts);
     opts = NULL;
 
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_errors(ast)) {
-        err_error("%s", ast_getc_first_error_message(ast));
+    if (PadAst_HasErrs(ast)) {
+        err_error("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_errors(ast)) {
-        err_error("%s", ast_getc_first_error_message(ast));
+    if (PadAst_HasErrs(ast)) {
+        err_error("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;
     }
 
     tkr_del(tkr);
-    ast_del(ast);
+    PadAst_Del(ast);
 
     object_dict_t *varmap = ctx_get_varmap_at_global(ctx);
     const object_dict_item_t *item = objdict_getc(varmap, "PATH");
@@ -322,7 +322,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
 }
 
 cstring_array_t *
-split_to_array(const char *str, int ch) {
+Pad_SplitToArray(const char *str, int ch) {
     if (!str) {
         return NULL;
     }
@@ -351,11 +351,11 @@ split_to_array(const char *str, int ch) {
 
 static cstring_array_t *
 split_path_var(const char *path) {
-    return split_to_array(path, ':');
+    return Pad_SplitToArray(path, ':');
 }
 
 cstring_array_t *
-pushf_argv(int argc, char *argv[], const char *front) {
+Pad_PushFrontArgv(int argc, char *argv[], const char *front) {
     cstring_array_t *arr = cstrarr_new();
 
     cstrarr_pushb(arr, front);
@@ -368,7 +368,7 @@ pushf_argv(int argc, char *argv[], const char *front) {
 }
 
 char *
-escape(char *dst, int32_t dstsz, const char *src, const char *target) {
+Pad_Escape(char *dst, int32_t dstsz, const char *src, const char *target) {
     if (!dst || !dstsz || !src || !target) {
         return NULL;
     }
@@ -393,24 +393,24 @@ escape(char *dst, int32_t dstsz, const char *src, const char *target) {
 }
 
 bool
-is_dot_file(const char *path) {
+Pad_IsDotFile(const char *path) {
     return strcmp(path, "..") == 0 || strcmp(path, ".") == 0;
 }
 
 char *
-pop_tail_slash(char *path) {
+Pad_PopTailSlash(char *path) {
     int32_t pathlen = strlen(path);
 #ifdef PAD_WINDOWS
     if (pathlen == 3 && path[2] == '\\') {
         return path;
     } else {
-        return path_pop_tail_slash(path);
+        return path_Pad_PopTailSlash(path);
     }
 #else
     if (pathlen == 1 && path[0] == '/') {
         return path;
     } else {
-        return path_pop_tail_slash(path);
+        return path_Pad_PopTailSlash(path);
     }
 #endif
 }

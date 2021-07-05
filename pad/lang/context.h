@@ -25,7 +25,7 @@ void
 ctx_del(context_t *self);
 
 /**
- * destruct object and escape global variable map from context
+ * destruct object and Pad_Escape global variable map from context
  *
  * @param[in] *self
  *

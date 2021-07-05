@@ -4,7 +4,7 @@ static object_t *
 builtin_dict_get(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
     assert(ref_ast);
-    gc_t * ref_gc = ast_get_ref_gc(ref_ast);
+    gc_t * ref_gc = PadAst_GetRefGc(ref_ast);
     assert(ref_gc);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -13,25 +13,25 @@ builtin_dict_get(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke dict.get. need one argument");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke dict.get. need one argument");
         return NULL;
     }
 
     if (!ref_owners) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owners is null. can't get");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners is null. can't get");
         return NULL;
     }
 
     object_t *ref_owner = objarr_get_last(ref_owners);
     if (!ref_owner) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owner is null. can't get");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't get");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't get", ref_owner->type);
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't get", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
@@ -41,7 +41,7 @@ again:
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_ref(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
             return NULL;
         }
         goto again;
@@ -56,14 +56,14 @@ again:
 again2:
     switch (arg->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "invalid index type (%d) of dict", arg->type);
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "invalid index type (%d) of dict", arg->type);
         return NULL;
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(arg);
         arg = pull_ref(arg);
         if (!arg) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
         }
         goto again2;
@@ -92,7 +92,7 @@ builtin_func_infos[] = {
 object_t *
 builtin_dict_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    ast_t *ast = ast_new(ref_config);
+    ast_t *ast = PadAst_New(ref_config);
     context_t *ctx = ctx_new(ref_gc);
     ast->ref_context = ctx;  // set reference
 

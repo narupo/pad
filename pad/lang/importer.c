@@ -87,7 +87,7 @@ create_modobj(
 
     // compile source
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    ast_t *ast = ast_new(self->ref_config);
+    ast_t *ast = PadAst_New(self->ref_config);
     context_t *ctx = ctx_new(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
     ctx_set_ref_prev(ctx, ref_ast->ref_context);
 
@@ -102,17 +102,17 @@ create_modobj(
         return NULL;
     }
 
-    ast_clear(ast);
+    PadAst_Clear(ast);
     cc_compile(ast, tkr_get_tokens(tkr));
-    if (ast_has_errors(ast)) {
-        importer_set_error(self, ast_getc_first_error_message(ast));
+    if (PadAst_HasErrs(ast)) {
+        importer_set_error(self, PadAst_GetcFirstErrMsg(ast));
         free(src);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
-    if (ast_has_errors(ast)) {
-        importer_set_error(self, ast_getc_first_error_message(ast));
+    if (PadAst_HasErrs(ast)) {
+        importer_set_error(self, PadAst_GetcFirstErrMsg(ast));
         free(src);
         return NULL;
     }

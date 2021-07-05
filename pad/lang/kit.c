@@ -28,7 +28,7 @@ kit_del(kit_t *self) {
 
     free(self->program_source);
     tkr_del(self->tkr);
-    ast_del(self->ast);
+    PadAst_Del(self->ast);
     ctx_del(self->ctx);
     if (!self->gc_is_reference) {
         gc_del(self->gc);
@@ -50,7 +50,7 @@ kit_new(const PadConfig *config) {
         return NULL;
     }
 
-    self->ast = ast_new(config);
+    self->ast = PadAst_New(config);
     if (!self->ast) {
         kit_del(self);
         return NULL;
@@ -92,7 +92,7 @@ kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc) {
         return NULL;
     }
 
-    self->ast = ast_new(config);
+    self->ast = PadAst_New(config);
     if (!self->ast) {
         kit_del(self);
         return NULL;
@@ -124,7 +124,7 @@ kit_compile_from_path(kit_t *self, const char *path) {
 kit_t *
 kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]) {
     if (self->program_source) {
-        safe_free(self->program_source);
+        Pad_SafeFree(self->program_source);
     }
 
     self->program_source = file_readcp_from_path(path);
@@ -182,22 +182,22 @@ kit_compile_from_string_args(
         return NULL;
     }
 
-    ast_clear(self->ast);
+    PadAst_Clear(self->ast);
     if (opts) {
-        ast_move_opts(self->ast, mem_move(opts));
+        PadAst_MoveOpts(self->ast, mem_move(opts));
         opts = NULL;
     }
 
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
-    if (ast_has_errors(self->ast)) {
-        const PadErrStack *err = ast_getc_error_stack(self->ast);
+    if (PadAst_HasErrs(self->ast)) {
+        const PadErrStack *err = PadAst_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
-    if (ast_has_errors(self->ast)) {
-        const PadErrStack *err = ast_getc_error_stack(self->ast);
+    if (PadAst_HasErrs(self->ast)) {
+        const PadErrStack *err = PadAst_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }

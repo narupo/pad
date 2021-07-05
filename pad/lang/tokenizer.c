@@ -385,9 +385,9 @@ tkr_read_identifier(tokenizer_t *self) {
 }
 
 static string_t *
-tkr_read_escape(tokenizer_t *self) {
+tkr_read_Pad_Escape(tokenizer_t *self) {
     if (*self->ptr != '\\') {
-        pushb_error("not found \\ in read escape");
+        pushb_error("not found \\ in read Pad_Escape");
         return NULL;
     }
 
@@ -436,7 +436,7 @@ tkr_read_dq_string(tokenizer_t *self) {
         case 10:
             if (c == '\\') {
                 tkr_prev(self);
-                string_t *esc = tkr_read_escape(self);
+                string_t *esc = tkr_read_Pad_Escape(self);
                 if (!esc) {
                     goto fail;
                 }

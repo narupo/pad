@@ -11,26 +11,26 @@ builtin_array_push(builtin_func_args_t *fargs) {
 
     object_array_t *args = actual_args->objarr;
     if (objarr_len(args) != 1) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "can't invoke array.push. need one argument");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke array.push. need one argument");
         return NULL;
     }
 
     if (!ref_owners) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owners is null. can't push");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners is null. can't push");
         return NULL;
     }
 
     int32_t nowns = objarr_len(ref_owners);
     object_t *ref_owner = objarr_get(ref_owners, nowns-1);
     if (!ref_owner) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owner is null. can't push");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't push");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't push", ref_owner->type);
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't push", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
@@ -40,7 +40,7 @@ again:
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_ref(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "object is not found. can't push");
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't push");
             return NULL;
         }
         goto again;
@@ -63,7 +63,7 @@ again2:
         const char *idn = obj_getc_idn_name(arg);
         arg = pull_ref(arg);
         if (!arg) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
         }
         push_arg = arg;
@@ -86,21 +86,21 @@ builtin_array_pop(builtin_func_args_t *fargs) {
     object_array_t *ref_owners = fargs->ref_owners;
 
     if (!ref_owners) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owners inull. can't pop");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners inull. can't pop");
         return NULL;
     }
 
     int32_t nowns = objarr_len(ref_owners);
     object_t *ref_owner = objarr_get(ref_owners, nowns-1);
     if (!ref_owner) {
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "owner is null. can't pop");
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't pop");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't pop", ref_owner->type);
+        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't pop", ref_owner->type);
         return NULL;
         break;
     case OBJ_TYPE_OWNERS_METHOD:
@@ -110,7 +110,7 @@ again:
     case OBJ_TYPE_IDENTIFIER:
         ref_owner = pull_ref(ref_owner);
         if (!ref_owner) {
-            ast_pushb_error(ref_ast, NULL, 0, NULL, 0, "object is not found. can't pop");
+            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't pop");
             return NULL;
         }
         goto again;
@@ -136,7 +136,7 @@ builtin_func_infos[] = {
 object_t *
 builtin_array_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    ast_t *ast = ast_new(ref_config);
+    ast_t *ast = PadAst_New(ref_config);
     context_t *ctx = ctx_new(ref_gc);
     ast->ref_context = ctx;  // set reference
 

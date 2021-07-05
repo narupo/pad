@@ -12,12 +12,12 @@ typedef struct {
     char type;  // 's' ... string, 'i' ... integer
     const char *skey;  // index value of string
     long ikey;  // index value of int
-} index_value_t;
+} PadIndexValue;
 
 /**
  * The abstract arguments of compiler functions
  */
-struct cc_args {
+struct PadCcArgs {
     // number of depth of recursion
     depth_t depth;
 
@@ -38,7 +38,7 @@ struct cc_args {
 /**
  * The abstract arguments of traverser functions
  */
-struct trv_args {
+struct PadTrvArgs {
     // references of objects of owners
     // traverser refer this owners on context
     // references. do not delete objects in array
@@ -85,10 +85,10 @@ struct trv_args {
     const char *identifier;
 
     // a index value object
-    index_value_t index_value;
+    PadIndexValue index_value;
 
     // a callback function
-    object_t * (*callback)(ast_t *ast, struct trv_args *targs);
+    object_t * (*callback)(ast_t *ast, struct PadTrvArgs *targs);
 
     // if do not refer chain object on context then store true else store false
     // this flag refer in trv_chain function
@@ -102,7 +102,7 @@ struct trv_args {
 /**
  * The abstract arguments for builtin functions
  */
-struct builtin_func_args {
+struct PadBuiltFuncArgs {
     ast_t *ref_ast;  // the ast of current context
     const node_t *ref_node;  // reference of node for errors
     object_t *ref_args;  // the arguments object of builtin functions
