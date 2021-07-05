@@ -60,8 +60,8 @@ dict_deep_copy(const dict_t *other) {
     for (self->len = 0; self->len < other->len; ++self->len) {
         dict_item_t *src = &other->map[self->len];
         dict_item_t *dst = &self->map[self->len];
-        cstr_copy(dst->key, DICT_ITEM_KEY_SIZE, src->key);
-        cstr_copy(dst->value, DICT_ITEM_KEY_SIZE, src->value);
+        PadCStr_Copy(dst->key, DICT_ITEM_KEY_SIZE, src->key);
+        PadCStr_Copy(dst->value, DICT_ITEM_KEY_SIZE, src->value);
     }
 
     return self;
@@ -97,7 +97,7 @@ dict_set(dict_t *self, const char *key, const char *value) {
 
     for (int i = 0; i < self->len; ++i) {
         if (!strcmp(self->map[i].key, key)) {
-            cstr_copy(self->map[i].value, DICT_ITEM_VALUE_SIZE, value);
+            PadCStr_Copy(self->map[i].value, DICT_ITEM_VALUE_SIZE, value);
             return self;
         }
     }
@@ -109,8 +109,8 @@ dict_set(dict_t *self, const char *key, const char *value) {
     }
 
     dict_item_t *el = &self->map[self->len++]; 
-    cstr_copy(el->key, DICT_ITEM_KEY_SIZE, key);
-    cstr_copy(el->value, DICT_ITEM_VALUE_SIZE, value);
+    PadCStr_Copy(el->key, DICT_ITEM_KEY_SIZE, key);
+    PadCStr_Copy(el->value, DICT_ITEM_VALUE_SIZE, value);
     return self;
 }
 

@@ -39,7 +39,7 @@
 ./pad/lang/utils.h *
 ./pad/lib/cl.h *
 ./pad/lib/cmdline.h *
-./pad/lib/cstring.h
+./pad/lib/cstring.h *
 ./pad/lib/cstring_array.h
 ./pad/lib/dict.h
 ./pad/lib/error.h

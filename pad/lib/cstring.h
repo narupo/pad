@@ -19,7 +19,7 @@
  * @return failed to pointer to NULL
  */
 char *
-cstr_copy(char *dst, uint32_t dstsz, const char *src);
+PadCStr_Copy(char *dst, uint32_t dstsz, const char *src);
 
 /**
  * Pop newline from back of string
@@ -30,7 +30,7 @@ cstr_copy(char *dst, uint32_t dstsz, const char *src);
  * @return failed to pointer to NULL
  */
 char *
-cstr_pop_newline(char *p);
+PadCStr_PopNewline(char *p);
 
 /**
  * Concatenate source strings to destination
@@ -43,7 +43,7 @@ cstr_pop_newline(char *p);
  * @return failed to pointer to NULL
  */
 char *
-cstr_app(char *dst, int32_t dstsz, const char *src);
+PadCStr_App(char *dst, int32_t dstsz, const char *src);
 
 /**
  * Concatenate source format to destination
@@ -57,7 +57,7 @@ cstr_app(char *dst, int32_t dstsz, const char *src);
  * @return failed to pointer to NULL
  */
 char *
-cstr_app_fmt(char *dst, int32_t dstsz, const char *fmt, ...);
+PadCStr_AppFmt(char *dst, int32_t dstsz, const char *fmt, ...);
 
 /**
  * Copy string without specified string
@@ -71,7 +71,7 @@ cstr_app_fmt(char *dst, int32_t dstsz, const char *fmt, ...);
  * @return failed to NULL
  */
 char *
-cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
+PadCStr_CopyWithout(char *dst, int32_t dstsz, const char *src, const char *without);
 
 /**
  * Duplicate string
@@ -82,7 +82,7 @@ cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without);
  * @return success to pointer to string of dynamic allocate memory
  */
 char *
-cstr_edup(const char *src);
+PadCStr_EDup(const char *src);
 
 /**
  * Duplicate string
@@ -93,7 +93,7 @@ cstr_edup(const char *src);
  * @return failed to pointer to NULL
  */
 char *
-cstr_dup(const char *src);
+PadCStr_Dup(const char *src);
 
 /**
  * Split path by separator character
@@ -104,7 +104,7 @@ cstr_dup(const char *src);
  * @return success to tokens of dynamic allocate memory, failed to NULL
  */
 char **
-cstr_split(const char *str, char sep);
+PadCStr_Split(const char *str, char sep);
 
 /**
  * Split path by separator character ignore empty string
@@ -115,7 +115,7 @@ cstr_split(const char *str, char sep);
  * @return success to tokens of dynamic allocate memory, failed to NULL
  */
 char **
-cstr_split_ignore_empty(const char *str, char sep);
+PadCStr_SplitIgnoreEmpty(const char *str, char sep);
 
 /**
  * Compare strings. If equal to true else other
@@ -126,7 +126,7 @@ cstr_split_ignore_empty(const char *str, char sep);
  * @return equal to true, else false
  */
 bool
-cstr_eq(const char *lhs, const char *rhs);
+PadCStr_Eq(const char *lhs, const char *rhs);
 
 /**
  * TODO: test
@@ -138,7 +138,7 @@ cstr_eq(const char *lhs, const char *rhs);
  * @return string is digit to true, else false
  */
 bool
-cstr_isdigit(const char *str);
+PadCStr_IsDigit(const char *str);
 
 /**
  * pop last newline
@@ -148,7 +148,7 @@ cstr_isdigit(const char *str);
  * @return 
  */
 void
-cstr_pop_lPadAst_Newline(char *str);
+PadCStr_PopLastNewline(char *str);
 
 /**
  * right strip zero of float value
@@ -160,4 +160,4 @@ cstr_pop_lPadAst_Newline(char *str);
  * @return pointer to n
  */
 char *
-cstr_rstrip_float_zero(char *n);
+PadCStr_RStripFloatZero(char *n);

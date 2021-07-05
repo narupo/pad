@@ -222,21 +222,21 @@ PadObj_DeepCopy(const PadObj *other) {
         break;
     case PAD_OBJ_TYPE__MODULE:
         if (other->module.name) {
-            self->module.name = cstr_dup(other->module.name);
+            self->module.name = PadCStr_Dup(other->module.name);
             if (!self->module.name) {
                 PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_filename) {
-            self->module.program_filename = cstr_dup(other->module.program_filename);
+            self->module.program_filename = PadCStr_Dup(other->module.program_filename);
             if (!self->module.program_filename) {
                 PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_source) {
-            self->module.program_source = cstr_dup(other->module.program_source);
+            self->module.program_source = PadCStr_Dup(other->module.program_source);
             if (!self->module.program_source) {
                 PadObj_Del(self);
                 return NULL;
@@ -338,21 +338,21 @@ PadObj_ShallowCopy(const PadObj *other) {
         break;
     case PAD_OBJ_TYPE__MODULE:
         if (other->module.name) {
-            self->module.name = cstr_dup(other->module.name);
+            self->module.name = PadCStr_Dup(other->module.name);
             if (!self->module.name) {
                 PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_filename) {
-            self->module.program_filename = cstr_dup(other->module.program_filename);
+            self->module.program_filename = PadCStr_Dup(other->module.program_filename);
             if (!self->module.program_filename) {
                 PadObj_Del(self);
                 return NULL;
             }
         }
         if (other->module.program_source) {
-            self->module.program_source = cstr_dup(other->module.program_source);
+            self->module.program_source = PadCStr_Dup(other->module.program_source);
             if (!self->module.program_source) {
                 PadObj_Del(self);
                 return NULL;
@@ -767,14 +767,14 @@ PadObj_NewModBy(
     }
 
     if (name) {
-        self->module.name = cstr_dup(name);
+        self->module.name = PadCStr_Dup(name);
         if (!self->module.name) {
             PadObj_Del(self);
             return NULL;
         }
     }
     if (program_filename) {
-        self->module.program_filename = cstr_dup(program_filename);
+        self->module.program_filename = PadCStr_Dup(program_filename);
         if (!self->module.program_filename) {
             PadObj_Del(self);
             return NULL;
@@ -856,7 +856,7 @@ PadObj_ToStr(const PadObj *self) {
         }
         char buf[1024];
         snprintf(buf, sizeof buf, "%lf", self->float_value);
-        cstr_rstrip_float_zero(buf);
+        PadCStr_RStripFloatZero(buf);
         str_set(str, buf);
         return str;
     } break;

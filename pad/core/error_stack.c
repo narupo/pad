@@ -316,7 +316,7 @@ PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *_other) {
 #define copy(dst, src) \
     dst->lineno = src->lineno; \
     if (src->program_filename) { \
-        dst->program_filename = cstr_dup(src->program_filename); \
+        dst->program_filename = PadCStr_Dup(src->program_filename); \
         if (!dst->program_filename) { \
             PadErrStack_Del(other); \
             return NULL; \
@@ -324,7 +324,7 @@ PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *_other) {
     } \
     dst->program_lineno = src->program_lineno; \
     if (src->program_source) { \
-        dst->program_source = cstr_dup(src->program_source); \
+        dst->program_source = PadCStr_Dup(src->program_source); \
         if (!dst->program_source) { \
             PadErrStack_Del(other); \
             return NULL; \

@@ -63,17 +63,17 @@ call_basic_unicode_func(const char *method_name, PadBltFuncArgs *fargs) {
     }
 
     unicode_t *result = NULL;
-    if (cstr_eq(method_name, "lower")) {
+    if (PadCStr_Eq(method_name, "lower")) {
         result = uni_lower(owner->unicode);
-    } else if (cstr_eq(method_name, "upper")) {
+    } else if (PadCStr_Eq(method_name, "upper")) {
         result = uni_upper(owner->unicode);
-    } else if (cstr_eq(method_name, "capitalize")) {
+    } else if (PadCStr_Eq(method_name, "capitalize")) {
         result = uni_capitalize(owner->unicode);
-    } else if (cstr_eq(method_name, "snake")) {
+    } else if (PadCStr_Eq(method_name, "snake")) {
         result = uni_snake(owner->unicode);
-    } else if (cstr_eq(method_name, "camel")) {
+    } else if (PadCStr_Eq(method_name, "camel")) {
         result = uni_camel(owner->unicode);
-    } else if (cstr_eq(method_name, "hacker")) {
+    } else if (PadCStr_Eq(method_name, "hacker")) {
         result = uni_hacker(owner->unicode);
     } else {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\" for call basic unicode method", method_name);
@@ -187,11 +187,11 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
     }
 
     unicode_t *result = NULL;
-    if (cstr_eq(method_name, "rstrip")) {
+    if (PadCStr_Eq(method_name, "rstrip")) {
         result = uni_rstrip(owner->unicode, unirems);
-    } else if (cstr_eq(method_name, "lstrip")) {
+    } else if (PadCStr_Eq(method_name, "lstrip")) {
         result = uni_lstrip(owner->unicode, unirems);
-    } else if (cstr_eq(method_name, "strip")) {
+    } else if (PadCStr_Eq(method_name, "strip")) {
         result = uni_strip(owner->unicode, unirems);
     } else {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\"", method_name);
@@ -240,11 +240,11 @@ builtin_unicode_is(const char *method_name, PadBltFuncArgs *fargs) {
     }
 
     bool boolean = false;
-    if (cstr_eq(method_name, "isdigit")) {
+    if (PadCStr_Eq(method_name, "isdigit")) {
         boolean = uni_isdigit(owner->unicode);
-    } else if (cstr_eq(method_name, "isalpha")) {
+    } else if (PadCStr_Eq(method_name, "isalpha")) {
         boolean = uni_isalpha(owner->unicode);
-    } else if (cstr_eq(method_name, "isspace")) {
+    } else if (PadCStr_Eq(method_name, "isspace")) {
         boolean = uni_isspace(owner->unicode);
     } else {
         PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);

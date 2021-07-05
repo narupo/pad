@@ -1045,7 +1045,7 @@ cc_identifier(PadAST *ast, PadCcArgs *cargs) {
     check("read identifier");
 
     // copy text
-    cur->identifier = cstr_dup(t->text);
+    cur->identifier = PadCStr_Dup(t->text);
     if (!cur->identifier) {
         return_cleanup("failed to duplicate");
     }
@@ -1077,7 +1077,7 @@ cc_string(PadAST *ast, PadCcArgs *cargs) {
     check("read string");
 
     // copy text
-    cur->string = cstr_dup(t->text);
+    cur->string = PadCStr_Dup(t->text);
     if (!cur->string) {
         return_cleanup("failed to duplicate")
     }
@@ -3732,7 +3732,7 @@ cc_text_block(PadAST *ast, PadCcArgs *cargs) {
     check("read text block");
 
     // copy text
-    cur->text = cstr_dup(t->text);
+    cur->text = PadCStr_Dup(t->text);
     if (!cur->text) {
         pushb_error(ast, t, "failed to duplicate");
         return_parse(NULL);

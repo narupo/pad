@@ -64,7 +64,7 @@ cstrarr_deep_copy(const cstring_array_t *other) {
 	}
 
 	for (self->len = 0; self->len < other->len; ++self->len) {
-		self->arr[self->len] = cstr_dup(other->arr[self->len]);
+		self->arr[self->len] = PadCStr_Dup(other->arr[self->len]);
 		if (!self->arr[self->len]) {
 			cstrarr_del(self);
 			return NULL;
@@ -122,7 +122,7 @@ cstrarr_pushb(cstring_array_t *self, const char *str) {
 		}
 	}
 
-	char *elem = cstr_dup(str);
+	char *elem = PadCStr_Dup(str);
 	if (!elem) {
 		return NULL;
 	}

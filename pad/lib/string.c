@@ -337,7 +337,7 @@ str_app_other(string_t *self, const string_t *_other) {
     string_t *ret = NULL;
 
     if (self == other) {
-        string_type_t *buf = cstr_dup(self->buffer);
+        string_type_t *buf = PadCStr_Dup(self->buffer);
         if (!buf) {
             str_del(other);
             return ret;

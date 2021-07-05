@@ -301,7 +301,7 @@ PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
     for (int32_t i = 0; i < PadObjDict_Len(varmap); ++i) {
         const PadObjDictItem *item = PadObjDict_GetcIndex(varmap, i);
         assert(item);
-        if (cstr_eq(item->key, idn)) {
+        if (PadCStr_Eq(item->key, idn)) {
             return true;
         }
     }

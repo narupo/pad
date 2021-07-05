@@ -154,7 +154,7 @@ PadTkr_DeepCopy(const PadTkr *other) {
     }
 
     if (other->program_filename) {
-        self->program_filename = cstr_dup(other->program_filename);
+        self->program_filename = PadCStr_Dup(other->program_filename);
         if (!self->program_filename) {
             PadTkr_Del(self);
             return NULL;
@@ -474,51 +474,51 @@ PadTkr_Parse_identifier(PadTkr *self) {
         return NULL;
     }
 
-    if (cstr_eq(token->text, "end")) {
+    if (PadCStr_Eq(token->text, "end")) {
         token->type = PAD_TOK_TYPE__STMT_END;
-    } else if (cstr_eq(token->text, "import")) {
+    } else if (PadCStr_Eq(token->text, "import")) {
         token->type = PAD_TOK_TYPE__STMT_IMPORT;
-    } else if (cstr_eq(token->text, "as")) {
+    } else if (PadCStr_Eq(token->text, "as")) {
         token->type = PAD_TOK_TYPE__AS;
-    } else if (cstr_eq(token->text, "from")) {
+    } else if (PadCStr_Eq(token->text, "from")) {
         token->type = PAD_TOK_TYPE__FROM;
-    } else if (cstr_eq(token->text, "if")) {
+    } else if (PadCStr_Eq(token->text, "if")) {
         token->type = PAD_TOK_TYPE__STMT_IF;
-    } else if (cstr_eq(token->text, "elif")) {
+    } else if (PadCStr_Eq(token->text, "elif")) {
         token->type = PAD_TOK_TYPE__STMT_ELIF;
-    } else if (cstr_eq(token->text, "else")) {
+    } else if (PadCStr_Eq(token->text, "else")) {
         token->type = PAD_TOK_TYPE__STMT_ELSE;
-    } else if (cstr_eq(token->text, "for")) {
+    } else if (PadCStr_Eq(token->text, "for")) {
         token->type = PAD_TOK_TYPE__STMT_FOR;
-    } else if (cstr_eq(token->text, "or")) {
+    } else if (PadCStr_Eq(token->text, "or")) {
         token->type = PAD_TOK_TYPE__PAD_OP__OR;
-    } else if (cstr_eq(token->text, "and")) {
+    } else if (PadCStr_Eq(token->text, "and")) {
         token->type = PAD_TOK_TYPE__PAD_OP__AND;
-    } else if (cstr_eq(token->text, "not")) {
+    } else if (PadCStr_Eq(token->text, "not")) {
         token->type = PAD_TOK_TYPE__PAD_OP__NOT;
-    } else if (cstr_eq(token->text, "nil")) {
+    } else if (PadCStr_Eq(token->text, "nil")) {
         token->type = PAD_TOK_TYPE__NIL;
-    } else if (cstr_eq(token->text, "break")) {
+    } else if (PadCStr_Eq(token->text, "break")) {
         token->type = PAD_TOK_TYPE__STMT_BREAK;
-    } else if (cstr_eq(token->text, "continue")) {
+    } else if (PadCStr_Eq(token->text, "continue")) {
         token->type = PAD_TOK_TYPE__STMT_CONTINUE;
-    } else if (cstr_eq(token->text, "return")) {
+    } else if (PadCStr_Eq(token->text, "return")) {
         token->type = PAD_TOK_TYPE__STMT_RETURN;
-    } else if (cstr_eq(token->text, "def")) {
+    } else if (PadCStr_Eq(token->text, "def")) {
         token->type = PAD_TOK_TYPE__DEF;
-    } else if (cstr_eq(token->text, "met")) {
+    } else if (PadCStr_Eq(token->text, "met")) {
         token->type = PAD_TOK_TYPE__MET;
-    } else if (cstr_eq(token->text, "true")) {
+    } else if (PadCStr_Eq(token->text, "true")) {
         token->type = PAD_TOK_TYPE__TRUE;
-    } else if (cstr_eq(token->text, "false")) {
+    } else if (PadCStr_Eq(token->text, "false")) {
         token->type = PAD_TOK_TYPE__FALSE;
-    } else if (cstr_eq(token->text, "block")) {
+    } else if (PadCStr_Eq(token->text, "block")) {
         token->type = PAD_TOK_TYPE__STMT_BLOCK;
-    } else if (cstr_eq(token->text, "inject")) {
+    } else if (PadCStr_Eq(token->text, "inject")) {
         token->type = PAD_TOK_TYPE__STMT_INJECT;
-    } else if (cstr_eq(token->text, "extends")) {
+    } else if (PadCStr_Eq(token->text, "extends")) {
         token->type = PAD_TOK_TYPE__EXTENDS;
-    } else if (cstr_eq(token->text, "struct")) {
+    } else if (PadCStr_Eq(token->text, "struct")) {
         token->type = PAD_TOK_TYPE__STRUCT;
     }
 
@@ -999,7 +999,7 @@ PadTkr_TraceErr(const PadTkr *self, FILE *fout) {
 
 const char *
 PadTkr_SetProgFname(PadTkr *self, const char *program_filename) {
-    self->program_filename = cstr_dup(program_filename);
+    self->program_filename = PadCStr_Dup(program_filename);
     if (!self->program_filename) {
         return NULL;
     }

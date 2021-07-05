@@ -383,7 +383,7 @@ test_cstrarr_move(void) {
     assert(cstrarr_move(arr, NULL) != NULL);
     assert(cstrarr_getc(arr, 0) == NULL);
 
-    char *ptr = cstr_edup("string");
+    char *ptr = PadCStr_EDup("string");
     assert(ptr != NULL);
 
     assert(cstrarr_move(arr, ptr) != NULL);
@@ -868,141 +868,141 @@ PadCmdlineests[] = {
 **********/
 
 static void
-test_cstring_cstr_copy(void) {
+test_cstring_PadCStr_Copy(void) {
     const char *s = "test";
     char dst[5];
 
-    assert(cstr_copy(NULL, 0, NULL) == NULL);
-    assert(cstr_copy(dst, 0, NULL) == NULL);
+    assert(PadCStr_Copy(NULL, 0, NULL) == NULL);
+    assert(PadCStr_Copy(dst, 0, NULL) == NULL);
 
-    assert(cstr_copy(dst, 0, s));
+    assert(PadCStr_Copy(dst, 0, s));
     assert(!strcmp(dst, ""));
 
-    assert(cstr_copy(dst, sizeof dst, s));
+    assert(PadCStr_Copy(dst, sizeof dst, s));
     assert(!strcmp(dst, "test"));
 }
 
 static void
-test_cstring_cstr_pop_newline(void) {
+test_cstring_PadCStr_PopNewline(void) {
     char a[] = "test\n";
 
-    assert(cstr_pop_newline(NULL) == NULL);
+    assert(PadCStr_PopNewline(NULL) == NULL);
 
-    assert(cstr_pop_newline(a));
+    assert(PadCStr_PopNewline(a));
     assert(!strcmp(a, "test"));
 
     char b[] = "b\r\n";
-    assert(cstr_pop_newline(b));
+    assert(PadCStr_PopNewline(b));
     assert(!strcmp(b, "b"));
 
     char c[] = "c\r\n\n";
-    assert(cstr_pop_newline(c));
+    assert(PadCStr_PopNewline(c));
     assert(!strcmp(c, "c"));
 }
 
 static void
-test_cstring_cstr_cpywithout(void) {
+test_cstring_PadCStr_CopyWithout(void) {
     char dst[100];
 
-    assert(cstr_cpywithout(NULL, 0, NULL, NULL) == NULL);
-    assert(cstr_cpywithout(dst, 0, NULL, NULL) == NULL);
-    assert(cstr_cpywithout(dst, sizeof dst, NULL, NULL) == NULL);
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", NULL) == NULL);
+    assert(PadCStr_CopyWithout(NULL, 0, NULL, NULL) == NULL);
+    assert(PadCStr_CopyWithout(dst, 0, NULL, NULL) == NULL);
+    assert(PadCStr_CopyWithout(dst, sizeof dst, NULL, NULL) == NULL);
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", NULL) == NULL);
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "bc"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "bc"));
     assert(!strcmp(dst, "ad"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "cd"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "cd"));
     assert(!strcmp(dst, "ab"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "bcd"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "bcd"));
     assert(!strcmp(dst, "a"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "abcd"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "abcd"));
     assert(!strcmp(dst, ""));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "a"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "a"));
     assert(!strcmp(dst, "bcd"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "ab"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "ab"));
     assert(!strcmp(dst, "cd"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "abc"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "abc"));
     assert(!strcmp(dst, "d"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "ad"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "ad"));
     assert(!strcmp(dst, "bc"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "xyz"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "xyz"));
     assert(!strcmp(dst, "abcd"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abcd", "axyz"));
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abcd", "axyz"));
     assert(!strcmp(dst, "bcd"));
 
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "") != NULL);
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abc123def456", "") != NULL);
     assert(strcmp(dst, "abc123def456") == 0);
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abc123def456", "123456") != NULL);
     assert(strcmp(dst, "abcdef") == 0);
-    assert(cstr_cpywithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
+    assert(PadCStr_CopyWithout(dst, sizeof dst, "abc123def456", "abcdef") != NULL);
     assert(strcmp(dst, "123456") == 0);
 }
 
 static void
-test_cstring_cstr_app(void) {
+test_cstring_PadCStr_App(void) {
     char dst[100] = {0};
 
-    assert(cstr_app(dst, sizeof dst, NULL) == NULL);
-    assert(cstr_app(NULL, sizeof dst, "source") == NULL);
-    assert(cstr_app(dst, 0, "source") == NULL);
+    assert(PadCStr_App(dst, sizeof dst, NULL) == NULL);
+    assert(PadCStr_App(NULL, sizeof dst, "source") == NULL);
+    assert(PadCStr_App(dst, 0, "source") == NULL);
 
-    assert(cstr_app(dst, 3, "source") != NULL);
+    assert(PadCStr_App(dst, 3, "source") != NULL);
     assert(strcmp(dst, "so") == 0);
 
     *dst = '\0';
-    assert(cstr_app(dst, sizeof dst, "source") != NULL);
+    assert(PadCStr_App(dst, sizeof dst, "source") != NULL);
     assert(strcmp(dst, "source") == 0);
-    assert(cstr_app(dst, sizeof dst, " is available.") != NULL);
+    assert(PadCStr_App(dst, sizeof dst, " is available.") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
-    assert(cstr_app(dst, sizeof dst, "") != NULL);
+    assert(PadCStr_App(dst, sizeof dst, "") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
 }
 
 static void
-test_cstring_cstr_app_fmt(void) {
+test_cstring_PadCStr_AppFmt(void) {
     char dst[100] = {0};
 
-    assert(cstr_app_fmt(dst, sizeof dst, NULL) == NULL);
-    assert(cstr_app_fmt(NULL, sizeof dst, "source") == NULL);
-    assert(cstr_app_fmt(dst, 0, "source") == NULL);
+    assert(PadCStr_AppFmt(dst, sizeof dst, NULL) == NULL);
+    assert(PadCStr_AppFmt(NULL, sizeof dst, "source") == NULL);
+    assert(PadCStr_AppFmt(dst, 0, "source") == NULL);
 
-    assert(cstr_app_fmt(dst, 3, "source") != NULL);
+    assert(PadCStr_AppFmt(dst, 3, "source") != NULL);
     assert(strcmp(dst, "so") == 0);
 
     *dst = '\0';
-    assert(cstr_app_fmt(dst, sizeof dst, "source") != NULL);
+    assert(PadCStr_AppFmt(dst, sizeof dst, "source") != NULL);
     assert(strcmp(dst, "source") == 0);
-    assert(cstr_app_fmt(dst, sizeof dst, " is available.") != NULL);
+    assert(PadCStr_AppFmt(dst, sizeof dst, " is available.") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
-    assert(cstr_app_fmt(dst, sizeof dst, "") != NULL);
+    assert(PadCStr_AppFmt(dst, sizeof dst, "") != NULL);
     assert(strcmp(dst, "source is available.") == 0);
 
     *dst = '\0';
-    assert(cstr_app_fmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
+    assert(PadCStr_AppFmt(dst, sizeof dst, "n %d is %c", 10, 'i') != NULL);
     assert(strcmp(dst, "n 10 is i") == 0);
 }
 
 static void
-test_cstring_cstr_edup(void) {
-    char *p = cstr_edup("string");
+test_cstring_PadCStr_EDup(void) {
+    char *p = PadCStr_EDup("string");
     assert(strcmp(p, "string") == 0);
     free(p);
 }
 
 static void
-test_cstring_cstr_split(void) {
-    assert(cstr_split(NULL, '\0') == NULL);
+test_cstring_PadCStr_Split(void) {
+    assert(PadCStr_Split(NULL, '\0') == NULL);
 
-    char **arr = cstr_split("abc\ndef", '\n');
+    char **arr = PadCStr_Split("abc\ndef", '\n');
 
     assert(!strcmp(arr[0], "abc"));
     assert(!strcmp(arr[1], "def"));
@@ -1012,7 +1012,7 @@ test_cstring_cstr_split(void) {
     free(arr[1]);
     free(arr);
 
-    arr = cstr_split("abc\ndef\n", '\n');
+    arr = PadCStr_Split("abc\ndef\n", '\n');
 
     assert(!strcmp(arr[0], "abc"));
     assert(!strcmp(arr[1], "def"));
@@ -1024,7 +1024,7 @@ test_cstring_cstr_split(void) {
     free(arr[2]);
     free(arr);
 
-    arr = cstr_split_ignore_empty("abc\ndef\n", '\n');
+    arr = PadCStr_SplitIgnoreEmpty("abc\ndef\n", '\n');
 
     assert(!strcmp(arr[0], "abc"));
     assert(!strcmp(arr[1], "def"));
@@ -1036,34 +1036,34 @@ test_cstring_cstr_split(void) {
 }
 
 static void
-test_cstring_cstr_eq(void) {
-    assert(!cstr_eq(NULL, NULL));
-    assert(!cstr_eq("abc", NULL));
+test_cstring_PadCStr_Eq(void) {
+    assert(!PadCStr_Eq(NULL, NULL));
+    assert(!PadCStr_Eq("abc", NULL));
 
-    assert(cstr_eq("abc", "abc"));
-    assert(!cstr_eq("abc", "def"));
+    assert(PadCStr_Eq("abc", "abc"));
+    assert(!PadCStr_Eq("abc", "def"));
 }
 
 static void
-test_cstring_cstr_isdigit(void) {
-    assert(!cstr_isdigit(NULL));
+test_cstring_PadCStr_IsDigit(void) {
+    assert(!PadCStr_IsDigit(NULL));
 
-    assert(cstr_isdigit("123"));
-    assert(!cstr_isdigit("abc"));
-    assert(!cstr_isdigit("12ab"));
+    assert(PadCStr_IsDigit("123"));
+    assert(!PadCStr_IsDigit("abc"));
+    assert(!PadCStr_IsDigit("12ab"));
 }
 
 static const struct testcase
 cstring_tests[] = {
-    {"cstr_copy", test_cstring_cstr_copy},
-    {"cstr_pop_newline", test_cstring_cstr_pop_newline},
-    {"cstr_cpywithout", test_cstring_cstr_cpywithout},
-    {"cstr_app", test_cstring_cstr_app},
-    {"cstr_app_fmt", test_cstring_cstr_app_fmt},
-    {"cstr_edup", test_cstring_cstr_edup},
-    {"cstr_split", test_cstring_cstr_split},
-    {"cstr_eq", test_cstring_cstr_eq},
-    {"cstr_isdigit", test_cstring_cstr_isdigit},
+    {"PadCStr_Copy", test_cstring_PadCStr_Copy},
+    {"PadCStr_PopNewline", test_cstring_PadCStr_PopNewline},
+    {"PadCStr_CopyWithout", test_cstring_PadCStr_CopyWithout},
+    {"PadCStr_App", test_cstring_PadCStr_App},
+    {"PadCStr_AppFmt", test_cstring_PadCStr_AppFmt},
+    {"PadCStr_EDup", test_cstring_PadCStr_EDup},
+    {"PadCStr_Split", test_cstring_PadCStr_Split},
+    {"PadCStr_Eq", test_cstring_PadCStr_Eq},
+    {"PadCStr_IsDigit", test_cstring_PadCStr_IsDigit},
     {0},
 };
 
@@ -3485,7 +3485,7 @@ __create_testargv(int argc) {
     assert(argv != NULL);
 
     for (int i = 0; i < argc; ++i) {
-        argv[i] = cstr_edup("abc");
+        argv[i] = PadCStr_EDup("abc");
     }
 
     return argv;

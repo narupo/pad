@@ -165,7 +165,7 @@ PadObjDict_Move(PadObjDict *self, const char *key, struct PadObj *move_value) {
 
     // over write by key ?
     for (int i = 0; i < self->len; ++i) {
-        if (cstr_eq(self->map[i].key, key)) {
+        if (PadCStr_Eq(self->map[i].key, key)) {
             // over write
             if (self->map[i].value != move_value) {
                 PadObj_DecRef(self->map[i].value);
@@ -185,7 +185,7 @@ PadObjDict_Move(PadObjDict *self, const char *key, struct PadObj *move_value) {
     }
 
     PadObjDictItem *el = &self->map[self->len++];
-    cstr_copy(el->key, PAD_OBJ_DICT__ITEM_KEY_SIZE, key);
+    PadCStr_Copy(el->key, PAD_OBJ_DICT__ITEM_KEY_SIZE, key);
     PadObj_IncRef(move_value);
     el->value = move_value;
 
@@ -204,7 +204,7 @@ PadObjDict_Get(PadObjDict *self, const char *key) {
     }
 
     for (int i = 0; i < self->len; ++i) {
-        if (cstr_eq(self->map[i].key, key)) {
+        if (PadCStr_Eq(self->map[i].key, key)) {
             // printf("PadObjDict_Get (%p) key (%s) val (%p)\n", self, key, self->map[i].value);
             return &self->map[i];
         }
@@ -275,7 +275,7 @@ PadObjDict_Pop(PadObjDict *self, const char *key) {
     int32_t found_index = -1;
 
     for (int32_t i = 0; i < self->len; ++i) {
-        if (cstr_eq(self->map[i].key, key)) {
+        if (PadCStr_Eq(self->map[i].key, key)) {
             found_index = i;
             break;
         }
@@ -293,7 +293,7 @@ PadObjDict_Pop(PadObjDict *self, const char *key) {
     for (int32_t i = found_index; i < self->len - 1; ++i) {
         PadObjDictItem *cur = &self->map[i];
         PadObjDictItem *next = &self->map[i + 1];
-        cstr_copy(cur->key, PAD_OBJ_DICT__ITEM_KEY_SIZE, next->key);
+        PadCStr_Copy(cur->key, PAD_OBJ_DICT__ITEM_KEY_SIZE, next->key);
         cur->value = next->value;
         next->value = NULL;
     }

@@ -308,7 +308,7 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__FLOAT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%lf", result->float_value);
-        cstr_rstrip_float_zero(n);
+        PadCStr_RStripFloatZero(n);
         PadCtx_PushBackStdoutBuf(context, n);
     } break;
     case PAD_OBJ_TYPE__BOOL: {

@@ -510,7 +510,7 @@ uni_deep_copy(const unicode_t *other) {
 
     // not need copy mb. this is temporary buffer
     //
-    // self->mb = cstr_edup(other->mb);
+    // self->mb = PadCStr_EDup(other->mb);
 
     return self;
 }

@@ -161,10 +161,10 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src) {
             if (tok->type == 't') {
                 if (!look_fname_ext(p)) {
                     string_t *copied = str_capitalize(tok->token);
-                    cstr_app(dst, dstsz, str_getc(copied));
+                    PadCStr_App(dst, dstsz, str_getc(copied));
                     str_del(copied);
                 } else {
-                    cstr_app(dst, dstsz, str_getc(tok->token));
+                    PadCStr_App(dst, dstsz, str_getc(tok->token));
                 }
                 m = 10;
             } else if (tok->type == 's') {
@@ -175,22 +175,22 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src) {
             break;
         case 10:  // found token
             if (tok->type == 't') {
-                cstr_app(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, str_getc(tok->token));
             } else if (tok->type == 's') {
-                cstr_app(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, str_getc(tok->token));
             } else if (tok->type == 'd') {
-                cstr_app(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, str_getc(tok->token));
                 m = 20;
             }
             break;
         case 20:  // found token -> dot
             if (tok->type == 't') {
-                cstr_app(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, str_getc(tok->token));
             } else if (tok->type == 's') {
-                cstr_app(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, str_getc(tok->token));
                 m = 0;
             } else if (tok->type == 'd') {
-                cstr_app(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, str_getc(tok->token));
             }
             break;
         }
@@ -202,7 +202,7 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src) {
         dstlen--;
     }
     if (dst[dstlen - 1] != '.') {
-        cstr_app(dst, dstsz, ".");
+        PadCStr_App(dst, dstsz, ".");
     }
 
     for (err_PadTok **tok = tokens; *tok; ++tok) {

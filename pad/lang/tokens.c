@@ -39,7 +39,7 @@ PadTok_DeepCopy(const PadTok *other) {
 
     self->type = other->type;
     if (other->text) {
-        self->text = cstr_dup(other->text);
+        self->text = PadCStr_Dup(other->text);
         if (!self->text) {
             PadTok_Del(self);
             return NULL;
@@ -73,7 +73,7 @@ PadTok_GetcTxt(const PadTok *self) {
 
 char *
 PadTok_CopyTxt(const PadTok *self) {
-    return cstr_dup(self->text);
+    return PadCStr_Dup(self->text);
 }
 
 /**

@@ -12,7 +12,7 @@ enum {
 };
 
 char *
-cstr_copy(char *dst, uint32_t dstsz, const char *src) {
+PadCStr_Copy(char *dst, uint32_t dstsz, const char *src) {
     if (dst == NULL || src == NULL) {
         return NULL;
     }
@@ -32,7 +32,7 @@ cstr_copy(char *dst, uint32_t dstsz, const char *src) {
 }
 
 char *
-cstr_pop_newline(char *s) {
+PadCStr_PopNewline(char *s) {
     if (!s) {
         return NULL;
     }
@@ -45,7 +45,7 @@ cstr_pop_newline(char *s) {
 }
 
 char *
-cstr_app(char *dst, int32_t dstsz, const char *src) {
+PadCStr_App(char *dst, int32_t dstsz, const char *src) {
     if (!dst || dstsz <= 0 || !src) {
         return NULL;
     }
@@ -61,7 +61,7 @@ cstr_app(char *dst, int32_t dstsz, const char *src) {
 }
 
 char *
-cstr_app_fmt(char *dst, int32_t dstsz, const char *fmt, ...) {
+PadCStr_AppFmt(char *dst, int32_t dstsz, const char *fmt, ...) {
     if (!dst || dstsz <= 0 || !fmt) {
         return NULL;
     }
@@ -72,11 +72,11 @@ cstr_app_fmt(char *dst, int32_t dstsz, const char *fmt, ...) {
     vsnprintf(tmp, sizeof tmp, fmt, ap);
     va_end(ap);
 
-    return cstr_app(dst, dstsz, tmp);
+    return PadCStr_App(dst, dstsz, tmp);
 }
 
 char *
-cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without) {
+PadCStr_CopyWithout(char *dst, int32_t dstsz, const char *src, const char *without) {
     if (!dst || dstsz <= 0 || !src || !without) {
         return NULL;
     }
@@ -97,7 +97,7 @@ cstr_cpywithout(char *dst, int32_t dstsz, const char *src, const char *without) 
 }
 
 char *
-cstr_dup(const char *src) {
+PadCStr_Dup(const char *src) {
     if (!src) {
         return NULL;
     }
@@ -115,9 +115,9 @@ cstr_dup(const char *src) {
 }
 
 char *
-cstr_edup(const char *src) {
+PadCStr_EDup(const char *src) {
     if (!src) {
-        fprintf(stderr, "invalid source string in cstr_edup\n");
+        fprintf(stderr, "invalid source string in PadCStr_EDup\n");
         fflush(stderr);
         exit(1);
     }
@@ -125,7 +125,7 @@ cstr_edup(const char *src) {
     uint32_t nelems = strlen(src)+1;
     char *dst = malloc(sizeof(src[0]) * nelems);
     if (!dst) {
-        fprintf(stderr, "failed to allocate memory in cstr_edup\n");
+        fprintf(stderr, "failed to allocate memory in PadCStr_EDup\n");
         fflush(stderr);
         exit(1);
     }
@@ -275,7 +275,7 @@ typedef struct {
 } split_PadOpts;
 
 static char **
-__cstr_split(const char *str, char sep, split_PadOpts *opts) {
+__PadCStr_Split(const char *str, char sep, split_PadOpts *opts) {
     if (!str) {
         return NULL;
     }
@@ -332,21 +332,21 @@ fail:
 }
 
 char **
-cstr_split(const char *str, char sep) {
-    return __cstr_split(str, sep, &(split_PadOpts) {
+PadCStr_Split(const char *str, char sep) {
+    return __PadCStr_Split(str, sep, &(split_PadOpts) {
         .ignore_empty_token=false,
     });
 }
 
 char **
-cstr_split_ignore_empty(const char *str, char sep) {
-    return __cstr_split(str, sep, &(split_PadOpts) {
+PadCStr_SplitIgnoreEmpty(const char *str, char sep) {
+    return __PadCStr_Split(str, sep, &(split_PadOpts) {
         .ignore_empty_token=true,
     });
 }
 
 bool
-cstr_eq(const char *lhs, const char *rhs) {
+PadCStr_Eq(const char *lhs, const char *rhs) {
     if (!lhs || !rhs) {
         return false;
     }
@@ -355,7 +355,7 @@ cstr_eq(const char *lhs, const char *rhs) {
 }
 
 bool
-cstr_isdigit(const char *str) {
+PadCStr_IsDigit(const char *str) {
     if (!str) {
         return false;
     }
@@ -370,7 +370,7 @@ cstr_isdigit(const char *str) {
 }
 
 void
-cstr_pop_lPadAst_Newline(char *str) {
+PadCStr_PopLastNewline(char *str) {
     if (!str) {
         return;
     }
@@ -396,7 +396,7 @@ cstr_pop_lPadAst_Newline(char *str) {
 }
 
 char *
-cstr_rstrip_float_zero(char *n) {
+PadCStr_RStripFloatZero(char *n) {
     for (char *p = n + strlen(n) - 1; p >= n; ) {
         if (*p - '0' == 0 && *(p - 1) == '.') {
             break;

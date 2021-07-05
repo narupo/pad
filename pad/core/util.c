@@ -308,7 +308,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     fflush(stdout);
 
     const char *s = uni_getc_mb(item->value->unicode);
-    char *path = cstr_dup(s);
+    char *path = PadCStr_Dup(s);
     if (!path) {
         PadCtx_Del(ctx);
         PadGC_Del(gc);

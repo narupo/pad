@@ -78,7 +78,7 @@ PadCL_PushBack(PadCL *self, const char *str) {
         }
     }
 
-    char *elem = cstr_dup(str);
+    char *elem = PadCStr_Dup(str);
     if (!elem) {
         return NULL;
     }

@@ -119,7 +119,7 @@ PadNode_DeepCopy(const PadNode *other) {
     case PAD_NODE_TYPE__TEXT_BLOCK: {
         declare(PadTextBlockNode, dst);
         PadTextBlockNode *src = other->real;
-        dst->text = cstr_dup(src->text);
+        dst->text = PadCStr_Dup(src->text);
         if (!dst->text) {
             PadNode_Del(self);
             return NULL;
@@ -439,7 +439,7 @@ PadNode_DeepCopy(const PadNode *other) {
     case PAD_NODE_TYPE__STRING: {
         declare(PadStrNode, dst);
         PadStrNode *src = other->real;
-        dst->string = cstr_dup(src->string);
+        dst->string = PadCStr_Dup(src->string);
         if (!dst->string) {
             free(dst);
             PadNode_Del(self);
@@ -450,7 +450,7 @@ PadNode_DeepCopy(const PadNode *other) {
     case PAD_NODE_TYPE__IDENTIFIER: {
         declare(PadIdentNode, dst);
         PadIdentNode *src = other->real;
-        dst->identifier = cstr_dup(src->identifier);
+        dst->identifier = PadCStr_Dup(src->identifier);
         if (!dst->identifier) {
             free(dst);
             PadNode_Del(self);

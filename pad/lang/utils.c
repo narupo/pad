@@ -261,9 +261,9 @@ again1:
     case PAD_OBJ_TYPE__MODULE: {
         ref_context = own->module.context;
         const char *modname = PadObj_GetcModName(own);
-        if (!(cstr_eq(modname, "__builtin__") ||
-              cstr_eq(modname, "alias") ||
-              cstr_eq(modname, "opts"))) {
+        if (!(PadCStr_Eq(modname, "__builtin__") ||
+              PadCStr_Eq(modname, "alias") ||
+              PadCStr_Eq(modname, "opts"))) {
             break;
         }
     } // fallthrough
@@ -532,7 +532,7 @@ invoke_builtin_module_func(
     };
     
     for (PadBltFuncInfo *info = infos; info->name; ++info) {
-        if (cstr_eq(info->name, funcname)) {
+        if (PadCStr_Eq(info->name, funcname)) {
             return info->func(&fargs);
         }
     }
