@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 struct PadObj_dict;
-typedef struct PadObj_dict object_dict_t;
+typedef struct PadObj_dict PadObjDict;
 
 struct PadObjAry;
 typedef struct PadObjAry PadObjAry;

@@ -167,15 +167,15 @@ move_obj_at_cur_varmap(
         return false;
     }
 
-    object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-    PadObj *popped = objdict_pop(varmap, identifier);
+    PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+    PadObj *popped = PadObjDict_Pop(varmap, identifier);
     if (popped == move_obj) {
-        objdict_move(varmap, identifier, mem_move(move_obj));        
+        PadObjDict_Move(varmap, identifier, mem_move(move_obj));        
     } else {
         PadObj_IncRef(move_obj);
         PadObj_DecRef(popped);
         PadObj_Del(popped);
-        objdict_move(varmap, identifier, mem_move(move_obj));        
+        PadObjDict_Move(varmap, identifier, mem_move(move_obj));        
     }
 
     return true;
@@ -202,24 +202,24 @@ set_ref_at_cur_varmap(
         return false;
     }
 
-    object_dict_t *varmap = PadCtx_GetVarmap(ctx);
+    PadObjDict *varmap = PadCtx_GetVarmap(ctx);
     return set_ref(varmap, identifier, ref_obj);
 }
 
 bool
-set_ref(object_dict_t *varmap, const char *identifier, PadObj *ref_obj) {
+set_ref(PadObjDict *varmap, const char *identifier, PadObj *ref_obj) {
     if (!varmap || !identifier || !ref_obj) {
         return false;
     }
 
-    PadObj *popped = objdict_pop(varmap, identifier);
+    PadObj *popped = PadObjDict_Pop(varmap, identifier);
     if (popped == ref_obj) {
-        objdict_set(varmap, identifier, ref_obj);
+        PadObjDict_Set(varmap, identifier, ref_obj);
     } else {
         PadObj_IncRef(ref_obj);
         PadObj_DecRef(popped);
         PadObj_Del(popped);
-        objdict_set(varmap, identifier, ref_obj);
+        PadObjDict_Set(varmap, identifier, ref_obj);
     }
 
     return true;
@@ -387,7 +387,7 @@ again:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs);
-        object_dict_t *varmap = PadCtx_GetVarmap(own->module.context);
+        PadObjDict *varmap = PadCtx_GetVarmap(own->module.context);
         set_ref(varmap, idn, ref);
         return ref;
     }
@@ -404,7 +404,7 @@ again:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs);
-        object_dict_t *varmap = PadCtx_GetVarmap(own->def_struct.context);
+        PadObjDict *varmap = PadCtx_GetVarmap(own->def_struct.context);
         set_ref(varmap, idn, ref);
         return ref;
     } break;
@@ -415,7 +415,7 @@ again:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs);
-        object_dict_t *varmap = PadCtx_GetVarmap(own->object.struct_context);
+        PadObjDict *varmap = PadCtx_GetVarmap(own->object.struct_context);
         set_ref(varmap, idn, ref);
         return ref;
     } break;
@@ -1077,16 +1077,16 @@ invoke_type_obj(
         return PadObj_NewAry(ref_gc, mem_move(dstargs));
     } break;
     case PAD_OBJ_TYPE__DICT: {
-        object_dict_t *dict;
+        PadObjDict *dict;
         if (PadObjAry_Len(args)) {
             PadObj *obj = PadObjAry_Get(args, 0);
             if (obj->type != PAD_OBJ_TYPE__DICT) {
                 pushb_error("invalid type of argument");
                 return NULL;
             }
-            dict = objdict_shallow_copy(obj->objdict);
+            dict = PadObjDict_ShallowCopy(obj->objdict);
         } else {
-            dict = objdict_new(ref_gc);
+            dict = PadObjDict_New(ref_gc);
         }
         PadObj *ret = PadObj_NewDict(ref_gc, mem_move(dict));
         return ret;
@@ -1406,12 +1406,12 @@ again:
     } break;
     }
 
-    object_dict_t *objdict = PadObj_GetDict(owner);
+    PadObjDict *objdict = PadObj_GetDict(owner);
     assert(objdict);
     unicode_t *key = PadObj_GetUnicode(indexobj);
     const char *ckey = uni_getc_mb(key);
 
-    object_dict_item_t *item = objdict_get(objdict, ckey);
+    PadObjDictItem *item = PadObjDict_Get(objdict, ckey);
     if (!item) {
         pushb_error("not found key \"%s\"", ckey);
         return NULL;
@@ -1449,12 +1449,12 @@ again:
     } break;
     }
 
-    object_dict_t *objdict = PadObj_GetDict(owner);
+    PadObjDict *objdict = PadObj_GetDict(owner);
     assert(objdict);
     unicode_t *key = PadObj_GetUnicode(indexobj);
     const char *ckey = uni_getc_mb(key);
 
-    if (!objdict_move(objdict, ckey, ref)) {
+    if (!PadObjDict_Move(objdict, ckey, ref)) {
         pushb_error("failed to move element at dict");
         return NULL;
     }
@@ -1752,7 +1752,7 @@ fail:
 }
 
 // const char *idn = str_getc(lastown->identifier.name);
-// object_dict_t *varmap = PadCtx_GetVarmap(lastown->identifier.ref_context);
+// PadObjDict *varmap = PadCtx_GetVarmap(lastown->identifier.ref_context);
 // set_ref(varmap, idn, ref);
 
 PadObj *
@@ -1788,14 +1788,14 @@ extract_copy_of_obj(
     } break;
     case PAD_OBJ_TYPE__DICT: {
         // copy dict elements recursive
-        object_dict_t *objdict = objdict_new(ref_gc);
+        PadObjDict *objdict = PadObjDict_New(ref_gc);
 
-        for (int32_t i = 0; i < objdict_len(obj->objdict); ++i) {
-            const object_dict_item_t *item = objdict_getc_index(obj->objdict, i);
+        for (int32_t i = 0; i < PadObjDict_Len(obj->objdict); ++i) {
+            const PadObjDictItem *item = PadObjDict_GetcIndex(obj->objdict, i);
             assert(item);
             PadObj *el = item->value;
             PadObj *newel = extract_copy_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el);
-            objdict_move(objdict, item->key, mem_move(newel));
+            PadObjDict_Move(objdict, item->key, mem_move(newel));
         }
 
         return PadObj_NewDict(ref_gc, objdict);
@@ -1856,14 +1856,14 @@ _extract_ref_of_obj(
         return ref;
     } break;
     case PAD_OBJ_TYPE__DICT: {
-        object_dict_t *d = obj->objdict;
+        PadObjDict *d = obj->objdict;
 
-        for (int32_t i = 0; i < objdict_len(d); ++i) {
-            const object_dict_item_t *item = objdict_getc_index(d, i);
+        for (int32_t i = 0; i < PadObjDict_Len(d); ++i) {
+            const PadObjDictItem *item = PadObjDict_GetcIndex(d, i);
             assert(item);
             PadObj *el = item->value;
             PadObj *ref = _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, el, all);
-            objdict_set(d, item->key, ref);
+            PadObjDict_Set(d, item->key, ref);
         }
 
         return obj;
@@ -1959,7 +1959,7 @@ parse_bool(
     } break;
     case PAD_OBJ_TYPE__UNICODE: return uni_len(obj->unicode); break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
-    case PAD_OBJ_TYPE__DICT: return objdict_len(obj->objdict); break;
+    case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
     case PAD_OBJ_TYPE__CHAIN: {
         PadObj *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (PadErrStack_Len(err)) {
@@ -2017,7 +2017,7 @@ parse_int(
         return atoll(s);
     } break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
-    case PAD_OBJ_TYPE__DICT: return objdict_len(obj->objdict); break;
+    case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
     case PAD_OBJ_TYPE__CHAIN: {
         PadObj *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (PadErrStack_Len(err)) {
@@ -2075,7 +2075,7 @@ parse_float(
         return atof(s);
     } break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
-    case PAD_OBJ_TYPE__DICT: return objdict_len(obj->objdict); break;
+    case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
     case PAD_OBJ_TYPE__CHAIN: {
         PadObj *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (PadErrStack_Len(err)) {

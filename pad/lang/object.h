@@ -181,7 +181,7 @@ struct PadObj {
     object_identifier_t identifier;  // value of identifier (type == PAD_OBJ_TYPE__IDENT)
     unicode_t *unicode;  // value of unicode (type == PAD_OBJ_TYPE__UNICODE)
     PadObjAry *objarr;  // value of array (type == PAD_OBJ_TYPE__ARRAY)
-    object_dict_t *objdict;  // value of dict (type == PAD_OBJ_TYPE__DICT)
+    PadObjDict *objdict;  // value of dict (type == PAD_OBJ_TYPE__DICT)
     objint_t lvalue;  // value of integer (type == PAD_OBJ_TYPE__INT)
     objfloat_t float_value;  // value of float (type == PAD_OBJ_TYPE__FLOAT)
     bool boolean;  // value of boolean (type == PAD_OBJ_TYPE__BOOL)
@@ -388,17 +388,17 @@ PadObj *
 PadObj_NewAry(PadGc *ref_gc, PadObjAry *move_objarr);
 
 /**
- * construct dictionary object by object_dict_t
+ * construct dictionary object by PadObjDict
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc       reference to PadGc (do not delete)
- * @param[in] *move_objdict pointer to object_dict_t (with move semantics)
+ * @param[in] *move_objdict pointer to PadObjDict (with move semantics)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewDict(PadGc *ref_gc, object_dict_t *move_objdict);
+PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict);
 
 /**
  * construct function object by parameters
@@ -698,7 +698,7 @@ PadObj_GetcAry(const PadObj *self);
  *
  * @return pointer to dict
  */
-object_dict_t *
+PadObjDict *
 PadObj_GetDict(PadObj *self);
 
 /**
@@ -708,7 +708,7 @@ PadObj_GetDict(PadObj *self);
  *
  * @return pointer to dict
  */
-const object_dict_t *
+const PadObjDict *
 PadObj_GetcDict(const PadObj *self);
 
 /**

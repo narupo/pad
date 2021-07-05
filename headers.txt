@@ -29,7 +29,7 @@
 ./pad/lang/node_dict.h *
 ./pad/lang/object.h *
 ./pad/lang/object_array.h *
-./pad/lang/object_dict.h
+./pad/lang/object_dict.h *
 ./pad/lang/opts.h
 ./pad/lang/scope.h
 ./pad/lang/tokenizer.h

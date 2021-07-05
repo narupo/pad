@@ -29,9 +29,9 @@ PadCtx_Del(PadCtx *self);
  *
  * @param[in] *self
  *
- * @return pointer to object_dict_t
+ * @return pointer to PadObjDict
  */
-object_dict_t *
+PadObjDict *
 PadCtx_EscDelGlobalVarmap(PadCtx *self);
 
 /**
@@ -147,23 +147,23 @@ const PadAliasInfo *
 PadCtx_GetcAliasInfo(const PadCtx *self);
 
 /**
- * get variables map as object_dict_t from current scope
+ * get variables map as PadObjDict from current scope
  *
  * @param[in] *self pointer to PadCtx
  *
- * @return pointer to object_dict_t
+ * @return pointer to PadObjDict
  */
-object_dict_t *
+PadObjDict *
 PadCtx_GetVarmap(PadCtx *self);
 
 /**
- * get variables map as object_dict_t from global scope
+ * get variables map as PadObjDict from global scope
  *
  * @param[in] *self pointer to PadCtx
  *
- * @return pointer to object_dict_t
+ * @return pointer to PadObjDict
  */
-object_dict_t *
+PadObjDict *
 PadCtx_GetVarmapAtGlobal(PadCtx *self);
 
 /**
@@ -346,7 +346,7 @@ PadCtx_VarInCurScope(const PadCtx *self, const char *idn);
  *
  * @return reference to varmap
  */
-object_dict_t *
+PadObjDict *
 PadCtx_GetRefVarmapCurScope(const PadCtx *self);
 
 /**

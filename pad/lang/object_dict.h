@@ -15,46 +15,46 @@
  * constant numbers
  */
 enum {
-    OBJ_DICT_ITEM_KEY_SIZE = 256,
+    PAD_OBJ_DICT__ITEM_KEY_SIZE = 256,
 };
 
 /**
- * item of array of object_dict_t
+ * item of array of PadObjDict
  */
-typedef struct PadObj_dict_item {
-    char key[OBJ_DICT_ITEM_KEY_SIZE];  // key of item
+typedef struct PadObjDictItem {
+    char key[PAD_OBJ_DICT__ITEM_KEY_SIZE];  // key of item
     PadObj *value;  // value of item
-} object_dict_item_t;
+} PadObjDictItem;
 
 /**
  * destruct PadObj_dict_t
  *
- * @param[in] *self pointer to object_dict_t
+ * @param[in] *self pointer to PadObjDict
  */
 void
-objdict_del(object_dict_t *self);
+PadObjDict_Del(PadObjDict *self);
 
 /**
- * destruct PadObj_dict_t with Pad_Escape array of object_dict_item_t dynamic allocated
+ * destruct PadObj_dict_t with Pad_Escape array of PadObjDictItem dynamic allocated
  *
- * @param[in] *self pointer to object_dict_t
+ * @param[in] *self pointer to PadObjDict
  *
- * @return success to pointer to array of object_dict_item_t
+ * @return success to pointer to array of PadObjDictItem
  * @return failed to NULL
  */
-object_dict_item_t *
-objdict_escdel(object_dict_t *self);
+PadObjDictItem *
+PadObjDict_EscDel(PadObjDict *self);
 
 /**
  * construct PadObj_dict_t
  *
  * @param[in] *ref_gc reference to PadGc (do not delete)
  *
- * @return success to pointer to object_dict_t (dynamic allocate memory)
+ * @return success to pointer to PadObjDict (dynamic allocate memory)
  * @return failed to NULL
  */
-object_dict_t *
-objdict_new(PadGc *ref_gc);
+PadObjDict *
+PadObjDict_New(PadGc *ref_gc);
 
 /**
  * deep copy
@@ -63,18 +63,18 @@ objdict_new(PadGc *ref_gc);
  *
  * @return
  */
-object_dict_t*
-objdict_deep_copy(const object_dict_t *other);
+PadObjDict*
+PadObjDict_DeepCopy(const PadObjDict *other);
 
 /**
  * shallow copy
  *
  * @param[in] *other
  *
- * @return pointer to object_dict_t (shallow copied)
+ * @return pointer to PadObjDict (shallow copied)
  */
-object_dict_t *
-objdict_shallow_copy(const object_dict_t *other);
+PadObjDict *
+PadObjDict_ShallowCopy(const PadObjDict *other);
 
 /**
  * resize map
@@ -84,8 +84,8 @@ objdict_shallow_copy(const object_dict_t *other);
  *
  * @return
  */
-object_dict_t *
-objdict_resize(object_dict_t *self, int32_t newcapa);
+PadObjDict *
+PadObjDict_Resize(PadObjDict *self, int32_t newcapa);
 
 /**
  * move object at key
@@ -97,8 +97,8 @@ objdict_resize(object_dict_t *self, int32_t newcapa);
  * @return success to pointer to self
  * @return failed to NULL
  */
-object_dict_t *
-objdict_move(object_dict_t *self, const char *key, PadObj *move_value);
+PadObjDict *
+PadObjDict_Move(PadObjDict *self, const char *key, PadObj *move_value);
 
 /**
  * set reference of object at key
@@ -110,8 +110,8 @@ objdict_move(object_dict_t *self, const char *key, PadObj *move_value);
  * @return success to pointer to self
  * @return failed to NULL
  */
-object_dict_t *
-objdict_set(object_dict_t *self, const char *key, PadObj *ref_value);
+PadObjDict *
+PadObjDict_Set(PadObjDict *self, const char *key, PadObj *ref_value);
 
 /**
  * get dict item
@@ -121,8 +121,8 @@ objdict_set(object_dict_t *self, const char *key, PadObj *ref_value);
  *
  * @return
  */
-object_dict_item_t *
-objdict_get(object_dict_t *self, const char *key);
+PadObjDictItem *
+PadObjDict_Get(PadObjDict *self, const char *key);
 
 /**
  * get dict item read-only
@@ -132,8 +132,8 @@ objdict_get(object_dict_t *self, const char *key);
  *
  * @return
  */
-const object_dict_item_t *
-objdict_getc(const object_dict_t *self, const char *key);
+const PadObjDictItem *
+PadObjDict_Getc(const PadObjDict *self, const char *key);
 
 /**
  * clear state
@@ -141,7 +141,7 @@ objdict_getc(const object_dict_t *self, const char *key);
  * @param[in] *self 
  */
 void
-objdict_clear(object_dict_t *self);
+PadObjDict_Clear(PadObjDict *self);
 
 /**
  * get length
@@ -151,7 +151,7 @@ objdict_clear(object_dict_t *self);
  * @return 
  */
 int32_t
-objdict_len(const object_dict_t *self);
+PadObjDict_Len(const PadObjDict *self);
 
 /**
  * get dict item by number of index
@@ -161,8 +161,8 @@ objdict_len(const object_dict_t *self);
  * 
  * @return if index is exists then return pointer to item else return NULL
  */
-const object_dict_item_t *
-objdict_getc_index(const object_dict_t *self, int32_t index);
+const PadObjDictItem *
+PadObjDict_GetcIndex(const PadObjDict *self, int32_t index);
 
 /**
  * get dict item by number of index
@@ -172,8 +172,8 @@ objdict_getc_index(const object_dict_t *self, int32_t index);
  * 
  * @return if index is exists then return pointer to item else return NULL
  */
-object_dict_item_t *
-objdict_get_index(object_dict_t *self, int32_t index);
+PadObjDictItem *
+PadObjDict_GetIndex(PadObjDict *self, int32_t index);
 
 /**
  * pop object from object dict
@@ -185,13 +185,13 @@ objdict_get_index(object_dict_t *self, int32_t index);
  * @return not found to return NULL
  */
 PadObj *
-objdict_pop(object_dict_t *self, const char *key);
+PadObjDict_Pop(PadObjDict *self, const char *key);
 
 /**
- * dump object_dict_t at stream
+ * dump PadObjDict at stream
  *
  * @param[in] *self
  * @param[in] *fout stream
  */
 void
-objdict_dump(const object_dict_t *self, FILE *fout);
+PadObjDict_Dump(const PadObjDict *self, FILE *fout);

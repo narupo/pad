@@ -47,7 +47,7 @@ PadCtx_Del(PadCtx *self) {
     free(self);
 }
 
-object_dict_t *
+PadObjDict *
 PadCtx_EscDelGlobalVarmap(PadCtx *self) {
     if (!self) {
         return NULL;
@@ -56,7 +56,7 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self) {
     PadAliasInfo_Del(self->alinfo);
     str_del(self->stdout_buf);
     str_del(self->stderr_buf);
-    object_dict_t *varmap = scope_escdel_head_varmap(self->scope);
+    PadObjDict *varmap = scope_escdel_head_varmap(self->scope);
     free(self);
 
     return varmap;
@@ -168,13 +168,13 @@ PadCtx_GetcAliasInfo(const PadCtx *self) {
     return self->alinfo;
 }
 
-object_dict_t *
+PadObjDict *
 PadCtx_GetVarmap(PadCtx *self) {
     scope_t *current_scope = scope_get_last(self->scope);
     return scope_get_varmap(current_scope);
 }
 
-object_dict_t *
+PadObjDict *
 PadCtx_GetVarmapAtGlobal(PadCtx *self) {
     return scope_get_varmap(self->scope);
 }
@@ -296,10 +296,10 @@ PadCtx_Dump(const PadCtx *self, FILE *fout) {
 bool
 PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
     scope_t *current_scope = scope_get_last(self->scope);
-    object_dict_t *varmap = scope_get_varmap(current_scope);
+    PadObjDict *varmap = scope_get_varmap(current_scope);
 
-    for (int32_t i = 0; i < objdict_len(varmap); ++i) {
-        const object_dict_item_t *item = objdict_getc_index(varmap, i);
+    for (int32_t i = 0; i < PadObjDict_Len(varmap); ++i) {
+        const PadObjDictItem *item = PadObjDict_GetcIndex(varmap, i);
         assert(item);
         if (cstr_eq(item->key, idn)) {
             return true;
@@ -309,7 +309,7 @@ PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
     return false;
 }
 
-object_dict_t *
+PadObjDict *
 PadCtx_GetRefVarmapCurScope(const PadCtx *self) {
     scope_t *current_scope = scope_get_last(self->scope);
     return scope_get_varmap(current_scope);
@@ -426,10 +426,10 @@ PadCtx_UnpackObjAryToCurScope(PadCtx *self, PadObjAry *arr) {
     }
 
     scope_t *scope = self->scope;
-    object_dict_t *varmap = scope_get_varmap(scope);
+    PadObjDict *varmap = scope_get_varmap(scope);
 
-    for (int32_t i = 0; i < objdict_len(varmap) && i < PadObjAry_Len(arr); ++i) {
-        object_dict_item_t *item = objdict_get_index(varmap, i);
+    for (int32_t i = 0; i < PadObjDict_Len(varmap) && i < PadObjAry_Len(arr); ++i) {
+        PadObjDictItem *item = PadObjDict_GetIndex(varmap, i);
         PadObj *obj = PadObjAry_Get(arr, i);
         if (item->value == obj) {
             continue;

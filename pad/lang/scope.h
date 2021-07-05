@@ -10,7 +10,7 @@
 void
 scope_del(scope_t *self);
 
-object_dict_t *
+PadObjDict *
 scope_escdel_head_varmap(scope_t *self);
 
 scope_t *
@@ -40,10 +40,10 @@ scope_getc_last(const scope_t *self);
 scope_t *
 scope_get_last(scope_t *self);
 
-object_dict_t *
+PadObjDict *
 scope_get_varmap(scope_t *self);
 
-const object_dict_t *
+const PadObjDict *
 scope_getc_varmap(const scope_t *self);
 
 scope_t *

@@ -19035,8 +19035,8 @@ test_trv_traverse(void) {
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!PadAst_HasErrs(ast));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -19050,8 +19050,8 @@ test_trv_traverse(void) {
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!PadAst_HasErrs(ast));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
     }
 
     tkr_parse(tkr, "{@\n"
@@ -19064,8 +19064,8 @@ test_trv_traverse(void) {
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
         assert(PadAst_HasErrs(ast));
         assert(!strcmp(PadAst_GetcFirstErrMsg(ast), "\"a\" is not defined in ref block"));
     }
@@ -19081,8 +19081,8 @@ test_trv_traverse(void) {
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
         assert(PadAst_HasErrs(ast));
         assert(!strcmp(PadAst_GetcFirstErrMsg(ast), "\"a\" is not defined in ref block"));
     }
@@ -19098,8 +19098,8 @@ test_trv_traverse(void) {
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
         assert(PadAst_HasErrs(ast));
         assert(!strcmp(PadAst_GetcFirstErrMsg(ast), "\"a\" is not defined in ref block"));
     }
@@ -19115,8 +19115,8 @@ test_trv_traverse(void) {
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
         assert(PadAst_HasErrs(ast));
         assert(!strcmp(PadAst_GetcFirstErrMsg(ast), "\"c\" is not defined in ref block"));
     }
@@ -19133,8 +19133,8 @@ test_trv_traverse(void) {
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
     }
 
@@ -19152,8 +19152,8 @@ test_trv_traverse(void) {
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         PadCtx_Clear(ctx);
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1\n3\n1"));
     }
 
@@ -25096,8 +25096,8 @@ test_trv_func_def_2(void) {
         PadAst_Clear(ast);
         (PadCc_Compile(ast, tkr_get_tokens(tkr)));
         (trv_traverse(ast, ctx));
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        assert(objdict_get(varmap, "func"));
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        assert(PadObjDict_Get(varmap, "func"));
     }
 
     PadCtx_Del(ctx);
@@ -31256,74 +31256,74 @@ lang_PadGcests[] = {
 *******************/
 
 static void
-test_lang_objdict_move(void) {
+test_lang_PadObjDict_Move(void) {
     PadGc *gc = PadGc_New();
-    object_dict_t *d = objdict_new(gc);
+    PadObjDict *d = PadObjDict_New(gc);
 
     PadObj *obj1 = PadObj_NewInt(gc, 1);
     PadObj_IncRef(obj1);
-    objdict_move(d, "abc", obj1);
-    assert(objdict_len(d) == 1);
+    PadObjDict_Move(d, "abc", obj1);
+    assert(PadObjDict_Len(d) == 1);
 
     PadObj *obj2 = PadObj_NewInt(gc, 1);
     PadObj_IncRef(obj2);
-    objdict_move(d, "def", obj2);
-    assert(objdict_len(d) == 2);
+    PadObjDict_Move(d, "def", obj2);
+    assert(PadObjDict_Len(d) == 2);
 
-    object_dict_item_t *item1 = objdict_get(d, "abc");
+    PadObjDictItem *item1 = PadObjDict_Get(d, "abc");
     assert(obj1 == item1->value);
 
-    object_dict_item_t *item2 = objdict_get(d, "def");
+    PadObjDictItem *item2 = PadObjDict_Get(d, "def");
     assert(obj2 == item2->value);
 
-    objdict_del(d);
+    PadObjDict_Del(d);
     PadGc_Del(gc);
 }
 
 static void
-test_lang_objdict_set(void) {
+test_lang_PadObjDict_Set(void) {
     PadGc *gc = PadGc_New();
-    object_dict_t *d = objdict_new(gc);
+    PadObjDict *d = PadObjDict_New(gc);
 
     PadObj *obj1 = PadObj_NewInt(gc, 1);
     PadObj_IncRef(obj1);
-    objdict_move(d, "abc", obj1);
-    assert(objdict_len(d) == 1);
+    PadObjDict_Move(d, "abc", obj1);
+    assert(PadObjDict_Len(d) == 1);
 
     PadObj *obj2 = PadObj_NewInt(gc, 1);
     PadObj_IncRef(obj2);
-    objdict_move(d, "def", obj2);
-    assert(objdict_len(d) == 2);
+    PadObjDict_Move(d, "def", obj2);
+    assert(PadObjDict_Len(d) == 2);
 
-    object_dict_item_t *item1 = objdict_get(d, "abc");
+    PadObjDictItem *item1 = PadObjDict_Get(d, "abc");
     assert(obj1 == item1->value);
 
-    object_dict_item_t *item2 = objdict_get(d, "def");
+    PadObjDictItem *item2 = PadObjDict_Get(d, "def");
     assert(obj2 == item2->value);
 
-    objdict_del(d);
+    PadObjDict_Del(d);
     PadGc_Del(gc);
 }
 
 static void
-test_lang_objdict_pop(void) {
+test_lang_PadObjDict_Pop(void) {
     /**********
     * pop one *
     **********/
 
     PadGc *gc = PadGc_New();
-    object_dict_t *d = objdict_new(gc);
+    PadObjDict *d = PadObjDict_New(gc);
     PadObj *obj = PadObj_NewInt(gc, 0);
 
     PadObj_IncRef(obj);
-    objdict_move(d, "abc", obj);
-    assert(objdict_len(d) == 1);
-    PadObj *popped = objdict_pop(d, "abc");
+    PadObjDict_Move(d, "abc", obj);
+    assert(PadObjDict_Len(d) == 1);
+    PadObj *popped = PadObjDict_Pop(d, "abc");
     assert(popped);
-    assert(objdict_len(d) == 0);
+    assert(PadObjDict_Len(d) == 0);
     assert(obj == popped);
 
-    objdict_del(d);
+    PadObjDict_Del(d);
     PadGc_Del(gc);
 
     /***********
@@ -31331,34 +31331,34 @@ test_lang_objdict_pop(void) {
     ***********/
 
     gc = PadGc_New();
-    d = objdict_new(gc);
+    d = PadObjDict_New(gc);
 
     for (int32_t i = 0; i < 10; ++i) {
         PadObj *obj = PadObj_NewInt(gc, i);
         char key[10];
         snprintf(key, sizeof key, "obj%d", i);
         PadObj_IncRef(obj);
-        objdict_move(d, key, obj);
+        PadObjDict_Move(d, key, obj);
     }
-    assert(objdict_len(d) == 10);
+    assert(PadObjDict_Len(d) == 10);
 
     for (int32_t i = 0; i < 10; ++i) {
         char key[10];
         snprintf(key, sizeof key, "obj%d", i);
-        PadObj *popped = objdict_pop(d, key);
+        PadObj *popped = PadObjDict_Pop(d, key);
         assert(popped);
     }
-    assert(objdict_len(d) == 0);
+    assert(PadObjDict_Len(d) == 0);
 
-    objdict_del(d);
+    PadObjDict_Del(d);
     PadGc_Del(gc);
 }
 
 static const struct testcase
-lang_object_dict_tests[] = {
-    {"move", test_lang_objdict_move},
-    {"set", test_lang_objdict_set},
-    {"pop", test_lang_objdict_pop},
+lang_PadObjDictests[] = {
+    {"move", test_lang_PadObjDict_Move},
+    {"set", test_lang_PadObjDict_Set},
+    {"pop", test_lang_PadObjDict_Pop},
     {0},
 };
 
@@ -31536,7 +31536,7 @@ testmodules[] = {
     {"stdlib.stream", stdlib_stream_tests},
     {"error_stack", PadErrStackests},
     {"gc", lang_PadGcests},
-    {"objdict", lang_object_dict_tests},
+    {"objdict", lang_PadObjDictests},
     {0},
 };
 

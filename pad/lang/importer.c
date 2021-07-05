@@ -152,9 +152,9 @@ PadImporter_ImportAs(
         return NULL;
     }
 
-    object_dict_t *dst_varmap = PadCtx_GetVarmap(dstctx);
+    PadObjDict *dst_varmap = PadCtx_GetVarmap(dstctx);
     PadObj_IncRef(modobj);
-    objdict_move(dst_varmap, alias, mem_move(modobj));
+    PadObjDict_Move(dst_varmap, alias, mem_move(modobj));
 
     return self;
 }
@@ -190,7 +190,7 @@ PadImporter_FromImport(
     PadObjAry *v = varobj->objarr; \
     assert(PadObjAry_Len(v) == 1 || PadObjAry_Len(v) == 2); \
 
-    object_dict_t *dst_varmap = PadCtx_GetVarmap(dstctx);
+    PadObjDict *dst_varmap = PadCtx_GetVarmap(dstctx);
 
     // assign objects at global varmap of current context from module context
     // increment a reference count of objects
@@ -225,15 +225,15 @@ PadImporter_FromImport(
         PadObj_IncRef(objinmod); // increment reference-count!
 
         if (alias) {
-            objdict_set(dst_varmap, alias, objinmod);
+            PadObjDict_Set(dst_varmap, alias, objinmod);
         } else {
-            objdict_set(dst_varmap, objname, objinmod);
+            PadObjDict_Set(dst_varmap, objname, objinmod);
         }
     }
 
     // assign imported module at global varmap of current context
     PadObj_IncRef(modobj);
-    objdict_move(dst_varmap, modobj->module.name, mem_move(modobj));
+    PadObjDict_Move(dst_varmap, modobj->module.name, mem_move(modobj));
 
     return self;
 }

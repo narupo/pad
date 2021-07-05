@@ -70,7 +70,7 @@ PadObj_Del(PadObj *self) {
         self->objarr = NULL;
         break;
     case PAD_OBJ_TYPE__DICT:
-        objdict_del(self->objdict);
+        PadObjDict_Del(self->objdict);
         self->objdict = NULL;
         break;
     case PAD_OBJ_TYPE__FUNC:
@@ -155,8 +155,8 @@ PadObj_SetGc(PadObj *self, PadGc *ref_gc) {
 extern PadObjAry*
 PadObjAry_DeepCopy(const PadObjAry *other);
 
-extern object_dict_t*
-objdict_deep_copy(const object_dict_t *other);
+extern PadObjDict*
+PadObjDict_DeepCopy(const PadObjDict *other);
 
 PadObj *
 PadObj_DeepCopy(const PadObj *other) {
@@ -206,7 +206,7 @@ PadObj_DeepCopy(const PadObj *other) {
         self->objarr = PadObjAry_DeepCopy(other->objarr);
         break;
     case PAD_OBJ_TYPE__DICT:
-        self->objdict = objdict_deep_copy(other->objdict);
+        self->objdict = PadObjDict_DeepCopy(other->objdict);
         break;
     case PAD_OBJ_TYPE__FUNC:
         self->func.ref_ast = other->func.ref_ast;
@@ -322,7 +322,7 @@ PadObj_ShallowCopy(const PadObj *other) {
         self->objarr = PadObjAry_ShallowCopy(other->objarr);
         break;
     case PAD_OBJ_TYPE__DICT:
-        self->objdict = objdict_shallow_copy(other->objdict);
+        self->objdict = PadObjDict_ShallowCopy(other->objdict);
         break;
     case PAD_OBJ_TYPE__FUNC:
         self->func.ref_ast = other->func.ref_ast;
@@ -596,7 +596,7 @@ PadObj_NewAry(PadGc *ref_gc, PadObjAry *move_objarr) {
 }
 
 PadObj *
-PadObj_NewDict(PadGc *ref_gc, object_dict_t *move_objdict) {
+PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict) {
     if (!ref_gc || !move_objdict) {
         return NULL;
     }
@@ -1208,12 +1208,12 @@ PadObj_GetcAry(const PadObj *self) {
     return self->objarr;
 }
 
-object_dict_t *
+PadObjDict *
 PadObj_GetDict(PadObj *self) {
     return self->objdict;
 }
 
-const object_dict_t *
+const PadObjDict *
 PadObj_GetcDict(const PadObj *self) {
     return self->objdict;
 }

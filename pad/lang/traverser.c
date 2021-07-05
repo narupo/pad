@@ -1076,11 +1076,11 @@ again:
 }
 
 static void
-shallow_assign_varmap(object_dict_t *dst, object_dict_t *src) {
-    for (int32_t i = 0; i < objdict_len(src); ++i) {
-        const object_dict_item_t *item = objdict_getc_index(src, i);
+shallow_assign_varmap(PadObjDict *dst, PadObjDict *src) {
+    for (int32_t i = 0; i < PadObjDict_Len(src); ++i) {
+        const PadObjDictItem *item = PadObjDict_GetcIndex(src, i);
         assert(item);
-        objdict_set(dst, item->key, item->value);
+        PadObjDict_Set(dst, item->key, item->value);
     }
 }
 
@@ -1118,10 +1118,10 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     PadCtx_PushBackScope(ref_context);
 
     // extract variables from injector's varmap to current scope
-    object_dict_t *src_varmap = block_stmt->inject_varmap;
+    PadObjDict *src_varmap = block_stmt->inject_varmap;
     if (src_varmap) {
         assert(src_varmap);
-        object_dict_t *dst_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
+        PadObjDict *dst_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
         assert(dst_varmap);
         shallow_assign_varmap(dst_varmap, src_varmap);
     }
@@ -1202,8 +1202,8 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     // inject varmap at block
     ast_t *ref_ast = ast;
     PadCtx *ref_context = PadAst_GetRefCtx(ref_ast);
-    object_dict_t *ref_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
-    object_dict_t *varmap = objdict_shallow_copy(ref_varmap);
+    PadObjDict *ref_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
+    PadObjDict *varmap = PadObjDict_ShallowCopy(ref_varmap);
     block_stmt->inject_varmap = varmap;
 
     // inject contents at block
@@ -1587,9 +1587,9 @@ marley:
 
     unicode_t *keyuni = PadObj_GetUnicode(idxobj);
     const char *key = uni_getc_mb(keyuni);
-    object_dict_t *objdict = PadObj_GetDict(owner);
+    PadObjDict *objdict = PadObj_GetDict(owner);
 
-    objdict_set(objdict, key, rhs);
+    PadObjDict_Set(objdict, key, rhs);
 
     return rhs;
 }
@@ -2300,11 +2300,11 @@ trv_compare_or_int(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs->lvalue && objdict_len(rhs->objdict)) {
+        if (lhs->lvalue && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs->lvalue && !objdict_len(rhs->objdict)) {
+        } else if (lhs->lvalue && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs->lvalue && objdict_len(rhs->objdict)) {
+        } else if (!lhs->lvalue && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2434,11 +2434,11 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs->boolean && objdict_len(rhs->objdict)) {
+        if (lhs->boolean && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs->boolean && !objdict_len(rhs->objdict)) {
+        } else if (lhs->boolean && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs->boolean && objdict_len(rhs->objdict)) {
+        } else if (!lhs->boolean && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2569,11 +2569,11 @@ trv_compare_or_string(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (slen && objdict_len(rhs->objdict)) {
+        if (slen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (slen && !objdict_len(rhs->objdict)) {
+        } else if (slen && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!slen && objdict_len(rhs->objdict)) {
+        } else if (!slen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2700,11 +2700,11 @@ trv_compare_or_array(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (arrlen && objdict_len(rhs->objdict)) {
+        if (arrlen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (arrlen && !objdict_len(rhs->objdict)) {
+        } else if (arrlen && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!arrlen && objdict_len(rhs->objdict)) {
+        } else if (!arrlen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2747,7 +2747,7 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__DICT);
 
     depth_t depth = targs->depth;
-    int32_t dictlen = objdict_len(lhs->objdict);
+    int32_t dictlen = PadObjDict_Len(lhs->objdict);
 
     switch (rhs->type) {
     default: {
@@ -2831,11 +2831,11 @@ trv_compare_or_dict(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (dictlen && objdict_len(rhs->objdict)) {
+        if (dictlen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (dictlen && !objdict_len(rhs->objdict)) {
+        } else if (dictlen && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!dictlen && objdict_len(rhs->objdict)) {
+        } else if (!dictlen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -3005,11 +3005,11 @@ trv_compare_or_func(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs && objdict_len(rhs->objdict)) {
+        if (lhs && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs && !objdict_len(rhs->objdict)) {
+        } else if (lhs && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs && objdict_len(rhs->objdict)) {
+        } else if (!lhs && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -3133,11 +3133,11 @@ trv_compare_or_module(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs && objdict_len(rhs->objdict)) {
+        if (lhs && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs && !objdict_len(rhs->objdict)) {
+        } else if (lhs && !PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs && objdict_len(rhs->objdict)) {
+        } else if (!lhs && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -3398,9 +3398,9 @@ trv_compare_and_int(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs->lvalue && objdict_len(rhs->objdict)) {
+        if (lhs->lvalue && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
             obj = PadObj_DeepCopy(lhs);
@@ -3527,9 +3527,9 @@ trv_compare_and_bool(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs->boolean && objdict_len(rhs->objdict)) {
+        if (lhs->boolean && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
             obj = PadObj_DeepCopy(lhs);
@@ -3657,9 +3657,9 @@ trv_compare_and_string(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (slen && objdict_len(rhs->objdict)) {
+        if (slen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
             obj = PadObj_DeepCopy(lhs);
@@ -3778,9 +3778,9 @@ trv_compare_and_array(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (arrlen && objdict_len(rhs->objdict)) {
+        if (arrlen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
             obj = PadObj_DeepCopy(lhs);
@@ -3825,7 +3825,7 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__DICT);
 
     depth_t depth = targs->depth;
-    int32_t dictlen = objdict_len(lhs->objdict);
+    int32_t dictlen = PadObjDict_Len(lhs->objdict);
 
     switch (rhs->type) {
     default: {
@@ -3899,9 +3899,9 @@ trv_compare_and_dict(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (dictlen && objdict_len(rhs->objdict)) {
+        if (dictlen && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
             obj = PadObj_DeepCopy(lhs);
@@ -4061,9 +4061,9 @@ trv_compare_and_func(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs && objdict_len(rhs->objdict)) {
+        if (lhs && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
             obj = PadObj_DeepCopy(lhs);
@@ -4181,9 +4181,9 @@ trv_compare_and_module(ast_t *ast, trv_args_t *targs) {
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *obj = NULL;
-        if (lhs && objdict_len(rhs->objdict)) {
+        if (lhs && PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!objdict_len(rhs->objdict)) {
+        } else if (!PadObjDict_Len(rhs->objdict)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
             obj = PadObj_DeepCopy(lhs);
@@ -4390,7 +4390,7 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__DICT: {
-        PadObj *obj = PadObj_NewBool(ast->ref_gc, !objdict_len(operand->objdict));
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !PadObjDict_Len(operand->objdict));
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
@@ -8208,7 +8208,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObj *intobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
@@ -8265,7 +8265,7 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObj *floatobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
@@ -8320,7 +8320,7 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     PadObj *boolobj = pull_ref_all(idnobj);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
@@ -8378,7 +8378,7 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *unicodeobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
@@ -9108,7 +9108,7 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *intobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9155,7 +9155,7 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *floatobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9201,7 +9201,7 @@ trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *boolobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9318,7 +9318,7 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *intobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9365,7 +9365,7 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *floatobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9411,7 +9411,7 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *boolobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9460,7 +9460,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *unicodeobj = pull_ref_all(idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -10319,7 +10319,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
     assert(dict_elems);
 
     depth_t depth = targs->depth;
-    object_dict_t *objdict = objdict_new(ast->ref_gc);
+    PadObjDict *objdict = PadObjDict_New(ast->ref_gc);
 
     for (int32_t i = 0; i < PadNodeAry_Len(dict_elems->nodearr); ++i) {
         PadNode *dict_elem = PadNodeAry_Get(dict_elems->nodearr, i);
@@ -10329,7 +10329,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         PadObj *arrobj = _trv_traverse(ast, targs);
         if (PadAst_HasErrs(ast)) {
             PadObj_Del(arrobj);
-            objdict_del(objdict);
+            PadObjDict_Del(objdict);
             return_trav(NULL);
         }
         assert(arrobj);
@@ -10353,7 +10353,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         default:
             pushb_error("invalid key type");
             PadObj_Del(arrobj);
-            objdict_del(objdict);
+            PadObjDict_Del(objdict);
             return_trav(NULL);
             break;
         case PAD_OBJ_TYPE__UNICODE:
@@ -10364,7 +10364,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
             if (ref->type != PAD_OBJ_TYPE__UNICODE) {
                 pushb_error("invalid key type in variable of dict");
                 PadObj_Del(arrobj);
-                objdict_del(objdict);
+                PadObjDict_Del(objdict);
                 return_trav(NULL);
                 break;
             }
@@ -10373,7 +10373,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
         }
 
         PadObj_IncRef(val);
-        objdict_set(objdict, skey, val);
+        PadObjDict_Set(objdict, skey, val);
         PadObj_Del(arrobj);
     }
 
@@ -10907,117 +10907,117 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
 
 ast_t *
 trv_import_builtin_modules(ast_t *ast) {
-    object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
     PadObj *mod = NULL;
 
     // builtin functions
     mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, mod->module.name, mem_move(mod));
+    PadObjDict_Move(varmap, mod->module.name, mem_move(mod));
 
     // builtin unicode
     mod = Pad_NewBltUnicodeMod(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, mod->module.name, mem_move(mod));
+    PadObjDict_Move(varmap, mod->module.name, mem_move(mod));
 
     // builtin array
     mod = Pad_NewBltAryMod(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, mod->module.name, mem_move(mod));
+    PadObjDict_Move(varmap, mod->module.name, mem_move(mod));
 
     // builtin dict
     mod = Pad_NewBltDictMod(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, mod->module.name, mem_move(mod));
+    PadObjDict_Move(varmap, mod->module.name, mem_move(mod));
 
     // builtin alias
     mod = Pad_NewBltAliasMod(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, mod->module.name, mem_move(mod));
+    PadObjDict_Move(varmap, mod->module.name, mem_move(mod));
 
     // builtin opts
     mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
-    objdict_move(varmap, mod->module.name, mem_move(mod));
+    PadObjDict_Move(varmap, mod->module.name, mem_move(mod));
 
     return ast;
 }
 
 ast_t *
 trv_define_builtin_types(ast_t *ast) {
-    object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
     PadObj *obj = NULL;
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__ARRAY);
-    objdict_move(varmap, "Array", mem_move(obj));
+    PadObjDict_Move(varmap, "Array", mem_move(obj));
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__DICT);
-    objdict_move(varmap, "Dict", mem_move(obj));
+    PadObjDict_Move(varmap, "Dict", mem_move(obj));
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__UNICODE);
-    objdict_move(varmap, "String", mem_move(obj));
+    PadObjDict_Move(varmap, "String", mem_move(obj));
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__BOOL);
-    objdict_move(varmap, "Bool", mem_move(obj));
+    PadObjDict_Move(varmap, "Bool", mem_move(obj));
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__INT);
-    objdict_move(varmap, "Int", mem_move(obj));
+    PadObjDict_Move(varmap, "Int", mem_move(obj));
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__FLOAT);
-    objdict_move(varmap, "Float", mem_move(obj));
+    PadObjDict_Move(varmap, "Float", mem_move(obj));
 
     return ast;
 }
 
 ast_t *
 trv_define_builtin_funcs(ast_t *ast) {
-    object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
     PadObj *obj = NULL;
 
     obj = PadObj_NewBltFunc(ast->ref_gc, "dance");
-    objdict_move(varmap, "dance", mem_move(obj));
+    PadObjDict_Move(varmap, "dance", mem_move(obj));
 
     obj = PadObj_NewBltFunc(ast->ref_gc, "id");
-    objdict_move(varmap, "id", mem_move(obj));
+    PadObjDict_Move(varmap, "id", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "type");
-    objdict_move(varmap, "type", mem_move(obj));
+    PadObjDict_Move(varmap, "type", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "puts");
-    objdict_move(varmap, "puts", mem_move(obj));
+    PadObjDict_Move(varmap, "puts", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "eputs");
-    objdict_move(varmap, "eputs", mem_move(obj));
+    PadObjDict_Move(varmap, "eputs", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "len");
-    objdict_move(varmap, "len", mem_move(obj));
+    PadObjDict_Move(varmap, "len", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "die");
-    objdict_move(varmap, "die", mem_move(obj));
+    PadObjDict_Move(varmap, "die", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "exit");
-    objdict_move(varmap, "exit", mem_move(obj));
+    PadObjDict_Move(varmap, "exit", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "copy");
-    objdict_move(varmap, "copy", mem_move(obj));
+    PadObjDict_Move(varmap, "copy", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "deepcopy");
-    objdict_move(varmap, "deepcopy", mem_move(obj));
+    PadObjDict_Move(varmap, "deepcopy", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "assert");
-    objdict_move(varmap, "assert", mem_move(obj));
+    PadObjDict_Move(varmap, "assert", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "extract");
-    objdict_move(varmap, "extract", mem_move(obj));
+    PadObjDict_Move(varmap, "extract", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "setattr");
-    objdict_move(varmap, "setattr", mem_move(obj));
+    PadObjDict_Move(varmap, "setattr", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "getattr");
-    objdict_move(varmap, "getattr", mem_move(obj));
+    PadObjDict_Move(varmap, "getattr", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "dance");
-    objdict_move(varmap, "dance", mem_move(obj));
+    PadObjDict_Move(varmap, "dance", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "ord");
-    objdict_move(varmap, "ord", mem_move(obj));
+    PadObjDict_Move(varmap, "ord", mem_move(obj));
     
     obj = PadObj_NewBltFunc(ast->ref_gc, "chr");
-    objdict_move(varmap, "chr", mem_move(obj));
+    PadObjDict_Move(varmap, "chr", mem_move(obj));
     
     return ast;
 }

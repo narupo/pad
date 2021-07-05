@@ -295,8 +295,8 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     tkr_del(tkr);
     PadAst_Del(ast);
 
-    object_dict_t *varmap = PadCtx_GetVarmapAtGlobal(ctx);
-    const object_dict_item_t *item = objdict_getc(varmap, "PATH");
+    PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(ctx);
+    const PadObjDictItem *item = PadObjDict_Getc(varmap, "PATH");
     if (!item) {
         PadCtx_Del(ctx);
         PadGc_Del(gc);

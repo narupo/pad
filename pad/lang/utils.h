@@ -113,7 +113,7 @@ set_ref_at_cur_varmap(
 );
 
 bool
-set_ref(object_dict_t *varmap, const char *identifier, PadObj *ref_obj);
+set_ref(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
 
 /**
  * extract identifier object and index object and etc to reference

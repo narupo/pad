@@ -239,7 +239,7 @@ typedef struct {
 typedef struct {
     PadNode *identifier;
     PadNodeAry *contents;
-    object_dict_t *inject_varmap;
+    PadObjDict *inject_varmap;
 } PadBlockStmtNode;
 
 typedef struct {

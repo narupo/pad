@@ -74,8 +74,8 @@ again2:
     } break;
     }
 
-    const object_dict_t *objdict = PadObj_GetcDict(ref_owner);
-    const object_dict_item_t *item = objdict_getc(objdict, key);
+    const PadObjDict *objdict = PadObj_GetcDict(ref_owner);
+    const PadObjDictItem *item = PadObjDict_Getc(objdict, key);
     if (!item) {
         return PadObj_NewNil(ref_gc);
     }

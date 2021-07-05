@@ -264,7 +264,7 @@ again:
         len = PadObjAry_Len(arg->objarr);
         break;
     case PAD_OBJ_TYPE__DICT:
-        len = objdict_len(arg->objdict);
+        len = PadObjDict_Len(arg->objdict);
         break;
     }
 
@@ -383,16 +383,16 @@ builtin_assert(builtin_func_args_t *fargs) {
 }
 
 static bool
-extract_varmap(object_dict_t *dst, object_dict_t *src) {
+extract_varmap(PadObjDict *dst, PadObjDict *src) {
     if (!dst || !src) {
         return false;
     }
 
-    for (int32_t i = 0; i < objdict_len(src); i++) {
-        const object_dict_item_t *src_item = objdict_getc_index(src, i);
+    for (int32_t i = 0; i < PadObjDict_Len(src); i++) {
+        const PadObjDictItem *src_item = PadObjDict_GetcIndex(src, i);
         assert(src_item);
         PadObj_IncRef(src_item->value);
-        objdict_set(dst, src_item->key, src_item->value);
+        PadObjDict_Set(dst, src_item->key, src_item->value);
     }
 
     return true;
@@ -633,10 +633,10 @@ builtin_dance(builtin_func_args_t *fargs) {
     opts_t *opts = opts_new();
 
     if (codectx) {
-        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
-        for (int32_t i = 0; i < objdict_len(codectx->objdict); ++i) {
-            const object_dict_item_t *item = objdict_getc_index(codectx->objdict, i);
-            objdict_set(varmap, item->key, item->value);
+        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        for (int32_t i = 0; i < PadObjDict_Len(codectx->objdict); ++i) {
+            const PadObjDictItem *item = PadObjDict_GetcIndex(codectx->objdict, i);
+            PadObjDict_Set(varmap, item->key, item->value);
         }
     }
 

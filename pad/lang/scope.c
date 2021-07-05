@@ -2,7 +2,7 @@
 
 struct scope {
     PadGc *ref_gc; // do not delete (this is reference)
-    object_dict_t *varmap;
+    PadObjDict *varmap;
     scope_t *prev;
     scope_t *next;
 };
@@ -16,18 +16,18 @@ scope_del(scope_t *self) {
     for (scope_t *cur = self; cur; ) {
         scope_t *del = cur;
         cur = cur->next;
-        objdict_del(del->varmap);
+        PadObjDict_Del(del->varmap);
         free(del);
     }
 }
 
-object_dict_t *
+PadObjDict *
 scope_escdel_head_varmap(scope_t *self) {
     if (!self) {
         return NULL;
     }
 
-    object_dict_t *varmap = mem_move(self->varmap);
+    PadObjDict *varmap = mem_move(self->varmap);
     self->varmap = NULL;
     scope_del(self);
 
@@ -46,7 +46,7 @@ scope_new(PadGc *ref_gc) {
     }
 
     self->ref_gc = ref_gc;
-    self->varmap = objdict_new(ref_gc);
+    self->varmap = PadObjDict_New(ref_gc);
     if (!self->varmap) {
         scope_del(self);
         return NULL;
@@ -67,7 +67,7 @@ scope_deep_copy_once(const scope_t *other) {
     }
 
     self->ref_gc = other->ref_gc;
-    self->varmap = objdict_deep_copy(other->varmap);
+    self->varmap = PadObjDict_DeepCopy(other->varmap);
     if (!self->varmap) {
         scope_del(self);
         return NULL;
@@ -88,7 +88,7 @@ scope_deep_copy(const scope_t *other) {
     }
 
     self->ref_gc = other->ref_gc;
-    self->varmap = objdict_deep_copy(other->varmap);
+    self->varmap = PadObjDict_DeepCopy(other->varmap);
     if (!self->varmap) {
         scope_del(self);
         return NULL;
@@ -132,7 +132,7 @@ scope_shallow_copy_once(const scope_t *other) {
     }
 
     self->ref_gc = other->ref_gc;
-    self->varmap = objdict_shallow_copy(other->varmap);
+    self->varmap = PadObjDict_ShallowCopy(other->varmap);
     if (!self->varmap) {
         scope_del(self);
         return NULL;
@@ -153,7 +153,7 @@ scope_shallow_copy(const scope_t *other) {
     }
 
     self->ref_gc = other->ref_gc;
-    self->varmap = objdict_shallow_copy(other->varmap);
+    self->varmap = PadObjDict_ShallowCopy(other->varmap);
     if (!self->varmap) {
         scope_del(self);
         return NULL;
@@ -261,21 +261,21 @@ scope_clear(scope_t *self) {
     for (scope_t *cur = self->next; cur; ) {
         scope_t *del = cur;
         cur = cur->next;
-        objdict_del(del->varmap);
+        PadObjDict_Del(del->varmap);
         free(del);
     }
 
     self->next = NULL;
-    objdict_clear(self->varmap);  // clear global variables
+    PadObjDict_Clear(self->varmap);  // clear global variables
     return self;
 }
 
-object_dict_t *
+PadObjDict *
 scope_get_varmap(scope_t *self) {
     return self->varmap;
 }
 
-const object_dict_t *
+const PadObjDict *
 scope_getc_varmap(const scope_t *self) {
     return scope_get_varmap((scope_t *) self);
 }
@@ -300,7 +300,7 @@ scope_find_var_ref(scope_t *self, const char *key) {
     }
 
     scope_t *tail = find_tail(self);
-    object_dict_item_t *item = objdict_get(tail->varmap, key);
+    PadObjDictItem *item = PadObjDict_Get(tail->varmap, key);
     if (item) {
         return item->value;
     }
@@ -317,7 +317,7 @@ scope_find_var_ref_all(scope_t *self, const char *key) {
     scope_t *tail = find_tail(self);
 
     for (scope_t *cur = tail; cur; cur = cur->prev) {
-        object_dict_item_t *item = objdict_get(cur->varmap, key);
+        PadObjDictItem *item = PadObjDict_Get(cur->varmap, key);
         if (item) {
             return item->value;
         }
@@ -334,6 +334,6 @@ scope_dump(const scope_t *self, FILE *fout) {
 
     for (const scope_t *cur = self; cur; cur = cur->next) {
         fprintf(fout, "scope[%p]\n", cur);
-        objdict_dump(cur->varmap, fout);
+        PadObjDict_Dump(cur->varmap, fout);
     }
 }
