@@ -13,7 +13,7 @@ struct context {
     context_t *ref_prev;  // reference to previous context
 
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
-    alinfo_t *alinfo;  // alias info for builtin alias module
+    PadAliasInfo *alinfo;  // alias info for builtin alias module
 
     // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
     // その他ref_blockやtext_blockなどの出力もルートのcontextに保存されるようになっている
@@ -40,7 +40,7 @@ ctx_del(context_t *self) {
     }
 
     // do not delete ref_gc (this is reference)
-    alinfo_del(self->alinfo);
+    PadAliasInfo_Del(self->alinfo);
     str_del(self->stdout_buf);
     str_del(self->stderr_buf);
     scope_del(self->scope);
@@ -53,7 +53,7 @@ ctx_escdel_global_varmap(context_t *self) {
         return NULL;
     }
 
-    alinfo_del(self->alinfo);
+    PadAliasInfo_Del(self->alinfo);
     str_del(self->stdout_buf);
     str_del(self->stderr_buf);
     object_dict_t *varmap = scope_escdel_head_varmap(self->scope);
@@ -70,7 +70,7 @@ ctx_new(gc_t *ref_gc) {
     }
 
     self->ref_gc = ref_gc;
-    self->alinfo = alinfo_new();
+    self->alinfo = PadAliasInfo_New();
     if (!self->alinfo) {
         ctx_del(self);
         return NULL;
@@ -101,7 +101,7 @@ ctx_new(gc_t *ref_gc) {
 
 void
 ctx_clear(context_t *self) {
-    alinfo_clear(self->alinfo);
+    PadAliasInfo_Clear(self->alinfo);
     str_clear(self->stdout_buf);
     str_clear(self->stderr_buf);
     scope_clear(self->scope);
@@ -114,10 +114,10 @@ ctx_set_alias(context_t *self, const char *key, const char *value, const char *d
         return NULL;
     }
 
-    alinfo_set_value(self->alinfo, key, value);
+    PadAliasInfo_SetValue(self->alinfo, key, value);
 
     if (desc) {
-        alinfo_set_desc(self->alinfo, key, desc);
+        PadAliasInfo_SetDesc(self->alinfo, key, desc);
     }
 
     return self;
@@ -125,12 +125,12 @@ ctx_set_alias(context_t *self, const char *key, const char *value, const char *d
 
 const char *
 ctx_get_alias_value(context_t *self, const char *key) {
-    return alinfo_getc_value(self->alinfo, key);
+    return PadAliasInfo_GetcValue(self->alinfo, key);
 }
 
 const char *
 ctx_get_alias_desc(context_t *self, const char *key) {
-    return alinfo_getc_desc(self->alinfo, key);
+    return PadAliasInfo_GetcDesc(self->alinfo, key);
 }
 
 context_t *
@@ -163,7 +163,7 @@ ctx_getc_stderr_buf(const context_t *self) {
     return str_getc(self->stderr_buf);
 }
 
-const alinfo_t *
+const PadAliasInfo *
 ctx_getc_alinfo(const context_t *self) {
     return self->alinfo;
 }
@@ -385,7 +385,7 @@ ctx_deep_copy(const context_t *other) {
 
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
-    self->alinfo = alinfo_deep_copy(other->alinfo);
+    self->alinfo = PadAliasInfo_DeepCopy(other->alinfo);
     self->stdout_buf = str_deep_copy(other->stdout_buf);
     self->stderr_buf = str_deep_copy(other->stderr_buf);
     self->scope = scope_deep_copy(other->scope);
@@ -407,7 +407,7 @@ ctx_shallow_copy(const context_t *other) {
 
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
-    self->alinfo = alinfo_shallow_copy(other->alinfo);
+    self->alinfo = PadAliasInfo_ShallowCopy(other->alinfo);
     self->stdout_buf = str_shallow_copy(other->stdout_buf);
     self->stderr_buf = str_shallow_copy(other->stderr_buf);
     self->scope = scope_shallow_copy(other->scope);

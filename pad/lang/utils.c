@@ -21,7 +21,7 @@ trv_import_builtin_modules(ast_t *ast);
 static object_t *
 invoke_func_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -122,7 +122,7 @@ pull_ref_all(const object_t *idn_obj) {
 }
 
 string_t *
-obj_to_string(errstack_t *err, const node_t *ref_node, const object_t *obj) {
+obj_to_string(PadErrStack *err, const node_t *ref_node, const object_t *obj) {
     if (!err || !obj) {
         return NULL;
     }
@@ -148,7 +148,7 @@ again:
 
 bool
 move_obj_at_cur_varmap(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     context_t *ctx,
     object_array_t *owns,
@@ -183,7 +183,7 @@ move_obj_at_cur_varmap(
 
 bool
 set_ref_at_cur_varmap(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     context_t *ctx,
     object_array_t *owns,
@@ -231,7 +231,7 @@ set_ref(object_dict_t *varmap, const char *identifier, object_t *ref_obj) {
  */
 static object_t *
 refer_chain_dot(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     gc_t *ref_gc,
     context_t *ref_context,
@@ -349,7 +349,7 @@ again2:
 
 static object_t *
 refer_and_set_ref_chain_dot(
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     object_array_t *owns,
@@ -357,7 +357,7 @@ refer_and_set_ref_chain_dot(
     object_t *ref
 ) {
 #define error(fmt, ...) \
-    errstack_pushb(err, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__);
+    PadErrStack_PushBack(err, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__);
 
     if (!err || !ref_gc || !ref_context || !owns || !co) {
         return NULL;
@@ -543,7 +543,7 @@ invoke_builtin_module_func(
 static object_t *
 copy_func_args(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -582,7 +582,7 @@ copy_func_args(
             break;
         case OBJ_TYPE_CHAIN:
             arg = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, arg);
-            if (errstack_len(err)) {
+            if (PadErrStack_Len(err)) {
                 pushb_error("failed to refer chain object");
                 return NULL;
             }
@@ -608,7 +608,7 @@ copy_func_args(
 static object_t *
 copy_array_args(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -644,7 +644,7 @@ copy_array_args(
             break;
         case OBJ_TYPE_CHAIN:
             arg = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, arg);
-            if (errstack_len(err)) {
+            if (PadErrStack_Len(err)) {
                 pushb_error("failed to refer chain object");
                 return NULL;
             }
@@ -673,7 +673,7 @@ copy_array_args(
 static void
 extract_func_args(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -721,7 +721,7 @@ extract_func_args(
 
         // extract reference from current context
         object_t *extract_arg = extract_ref_of_obj_all(ref_ast, err, ref_gc, ref_context, ref_node, ref_aarg);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to extract reference");
             return;
         }
@@ -738,7 +738,7 @@ extract_func_args(
 }
 
 static object_t *
-exec_func_suites(errstack_t *err, object_t *func_obj) {
+exec_func_suites(PadErrStack *err, object_t *func_obj) {
     object_func_t *func = &func_obj->func;
     object_t *result = NULL;
 
@@ -751,7 +751,7 @@ exec_func_suites(errstack_t *err, object_t *func_obj) {
             .func_obj = func_obj,
         });
         if (ast_has_errors(func->ref_ast)) {
-            errstack_extendb_other(err, func->ref_ast->error_stack);
+            PadErrStack_ExtendBackOther(err, func->ref_ast->error_stack);
             return NULL;
         }
         if (ctx_get_do_return(func->ref_ast->ref_context)) {
@@ -765,7 +765,7 @@ exec_func_suites(errstack_t *err, object_t *func_obj) {
 static object_t *
 invoke_func_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -786,7 +786,7 @@ invoke_func_obj(
     object_t *args = NULL;
     if (drtargs) {
         args = copy_func_args(ref_ast, err, ref_gc, ref_context, ref_node, drtargs);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to copy function arguments");
             return NULL;
         }
@@ -814,7 +814,7 @@ invoke_func_obj(
 
     // extract function arguments to function's varmap in current context
     extract_func_args(ref_ast, err, ref_gc, ref_context, ref_node, owns, func_obj, args);
-    if (errstack_len(err)) {
+    if (PadErrStack_Len(err)) {
         pushb_error("failed to extract function arguments");
         return NULL;
     }
@@ -822,7 +822,7 @@ invoke_func_obj(
 
     // execute function suites
     object_t *result = exec_func_suites(err, func_obj);
-    if (errstack_len(err)) {
+    if (PadErrStack_Len(err)) {
         pushb_error("failed to execute function suites");
         return NULL;
     }
@@ -860,7 +860,7 @@ extract_idn_name(const object_t *obj) {
 static object_t *
 invoke_builtin_modules(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -966,7 +966,7 @@ unpack_args(context_t *ctx, object_t *args) {
 static object_t *
 gen_struct(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     const node_t *ref_node,
     object_array_t *owns,
@@ -1003,7 +1003,7 @@ gen_struct(
 static object_t *
 invoke_type_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1164,7 +1164,7 @@ again:
 object_t *
 refer_chain_call(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     gc_t *ref_gc,
     context_t *ref_context,
@@ -1198,7 +1198,7 @@ refer_chain_call(
     object_t *func_obj = extract_func(own);
     if (func_obj) {
         result = _invoke_func_obj(func_obj, actual_args);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to invoke func obj");
             return NULL;
         } else if (result) {
@@ -1207,7 +1207,7 @@ refer_chain_call(
     }
 
     result = _invoke_builtin_modules(actual_args);
-    if (errstack_len(err)) {
+    if (PadErrStack_Len(err)) {
         pushb_error("failed to invoke builtin modules");
         return NULL;
     } else if (result) {
@@ -1215,7 +1215,7 @@ refer_chain_call(
     }
 
     result = _invoke_owner_func_obj(actual_args);
-    if (errstack_len(err)) {
+    if (PadErrStack_Len(err)) {
         pushb_error("failed to invoke owner func obj");
         return NULL;
     } else if (result) {
@@ -1223,7 +1223,7 @@ refer_chain_call(
     }
 
     result = _invoke_type_obj(actual_args);
-    if (errstack_len(err)) {
+    if (PadErrStack_Len(err)) {
         pushb_error("failed to invoke type obj");
         return NULL;
     } else if (result) {
@@ -1231,7 +1231,7 @@ refer_chain_call(
     }
 
     result = _gen_struct(actual_args);
-    if (errstack_len(err)) {
+    if (PadErrStack_Len(err)) {
         pushb_error("failed to generate structure");
         return NULL;
     } else if (result) {
@@ -1249,7 +1249,7 @@ refer_chain_call(
 
 static object_t *
 refer_unicode_index(
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     const node_t *ref_node,
     object_t *owner,
@@ -1293,7 +1293,7 @@ again:
 
 static object_t *
 refer_array_index(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     object_t *owner,
     object_t *indexobj
@@ -1335,7 +1335,7 @@ again:
 
 static object_t *
 refer_and_set_ref_array_index(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     object_t *owner,
     object_t *indexobj,
@@ -1380,7 +1380,7 @@ again:
 
 static object_t *
 refer_dict_index(
-    errstack_t *err, 
+    PadErrStack *err, 
     const node_t *ref_node,
     object_t *owner,
     object_t *indexobj
@@ -1422,7 +1422,7 @@ again:
 
 static object_t *
 refer_and_set_ref_dict_index(
-    errstack_t *err, 
+    PadErrStack *err, 
     const node_t *ref_node,
     object_t *owner,
     object_t *indexobj,
@@ -1464,7 +1464,7 @@ again:
 
 static object_t *
 refer_chain_index(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     gc_t *ref_gc,
     object_array_t *owns,
@@ -1510,7 +1510,7 @@ again:
 
 static object_t *
 refer_and_set_ref_chain_index(
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     const node_t *ref_node,
     object_array_t *owns,
@@ -1559,7 +1559,7 @@ again:
 object_t *
 refer_chain_three_objs(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1571,21 +1571,21 @@ refer_chain_three_objs(
     switch (chain_obj_getc_type(co)) {
     case CHAIN_OBJ_TYPE_DOT: {
         operand = refer_chain_dot(err, ref_node, ref_gc, ref_context, owns, co);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain dot");
             return NULL;
         }
     } break;
     case CHAIN_OBJ_TYPE_CALL: {
         operand = refer_chain_call(ref_ast, err, ref_node, ref_gc, ref_context, owns, co);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain call");
             return NULL;
         }
     } break;
     case CHAIN_OBJ_TYPE_INDEX: {
         operand = refer_chain_index(err, ref_node, ref_gc, owns, co);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain index");
             return NULL;
         }
@@ -1598,7 +1598,7 @@ refer_chain_three_objs(
 object_t *
 refer_and_set_ref_chain_three_objs(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     gc_t *ref_gc,
     context_t *ref_context,
@@ -1614,7 +1614,7 @@ refer_and_set_ref_chain_three_objs(
             err, ref_gc, ref_context,
             owns, co, ref
         );
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain dot");
             return NULL;
         }
@@ -1628,7 +1628,7 @@ refer_and_set_ref_chain_three_objs(
             err, ref_gc, ref_node,
             owns, co, ref
         );
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain index");
             return NULL;
         }
@@ -1641,7 +1641,7 @@ refer_and_set_ref_chain_three_objs(
 object_t *
 refer_chain_obj_with_ref(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1673,7 +1673,7 @@ refer_chain_obj_with_ref(
             ref_ast, err, ref_gc, ref_context, ref_node,
             owns, co
         );
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer three objects");
             goto fail;
         }
@@ -1693,7 +1693,7 @@ fail:
 object_t *
 refer_and_set_ref(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1726,7 +1726,7 @@ refer_and_set_ref(
             ref_ast, err, ref_gc, ref_context, ref_node,
             owns, co
         );
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer three objects");
             goto fail;
         }
@@ -1758,7 +1758,7 @@ fail:
 object_t *
 extract_copy_of_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1821,7 +1821,7 @@ extract_copy_of_obj(
 static object_t *
 _extract_ref_of_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1888,7 +1888,7 @@ _extract_ref_of_obj(
 object_t *
 extract_ref_of_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1900,7 +1900,7 @@ extract_ref_of_obj(
 object_t *
 extract_ref_of_obj_all(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1926,7 +1926,7 @@ dump_array_obj(const object_t *arrobj) {
 bool
 parse_bool(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -1962,7 +1962,7 @@ parse_bool(
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_CHAIN: {
         object_t *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain object");
             return false;
         }
@@ -1981,7 +1981,7 @@ parse_bool(
 objint_t
 parse_int(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -2020,7 +2020,7 @@ parse_int(
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_CHAIN: {
         object_t *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain object");
             return -1;
         }
@@ -2039,7 +2039,7 @@ parse_int(
 objfloat_t
 parse_float(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -2078,7 +2078,7 @@ parse_float(
     case OBJ_TYPE_DICT: return objdict_len(obj->objdict); break;
     case OBJ_TYPE_CHAIN: {
         object_t *ref = refer_chain_obj_with_ref(ref_ast, err, ref_gc, ref_context, ref_node, obj);
-        if (errstack_len(err)) {
+        if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain object");
             return -1.0;
         }

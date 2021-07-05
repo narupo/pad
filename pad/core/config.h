@@ -5,33 +5,33 @@
 #include <pad/lib/path.h>
 #include <pad/core/constant.h>
 
-typedef struct config {
+typedef struct PadConfig {
     char line_encoding[32+1];  // line encoding "cr" | "crlf" | "lf"
     char std_lib_dir_path[FILE_NPATH];  // standard libraries directory path
-} config_t;
+} PadConfig;
 
 /**
- * destruct config_t
+ * destruct PadConfig_t
  * 
  * @param[in] *self 
  */
 void
-config_del(config_t *self);
+PadConfig_Del(PadConfig *self);
 
 /**
- * construct config_t
+ * construct PadConfig_t
  * 
- * @return pointer to config_t dynamic allocate memory
+ * @return pointer to PadConfig dynamic allocate memory
  */
-config_t *
-config_new(void);
+PadConfig *
+PadConfig_New(void);
 
 /**
- * initialize config_t
+ * initialize PadConfig
  * 
  * @param[in] *self 
  * 
  * @return pointer to self
  */
-config_t *
-config_init(config_t *self);
+PadConfig *
+PadConfig_Init(PadConfig *self);

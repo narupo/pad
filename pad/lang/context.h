@@ -141,9 +141,9 @@ ctx_getc_stderr_buf(const context_t *self);
  *
  * @param[in] *self pointer to context_t
  *
- * @return pointer to alinfo_t read-only
+ * @return pointer to PadAliasInfo read-only
  */
-const alinfo_t *
+const PadAliasInfo *
 ctx_getc_alinfo(const context_t *self);
 
 /**

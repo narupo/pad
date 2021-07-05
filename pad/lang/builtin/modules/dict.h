@@ -19,4 +19,4 @@
  * @return
  */
 object_t *
-builtin_dict_module_new(const config_t *ref_config, gc_t *ref_gc);
+builtin_dict_module_new(const PadConfig *ref_config, gc_t *ref_gc);

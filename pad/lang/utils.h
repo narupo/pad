@@ -26,7 +26,7 @@
             src = t->program_source; \
             pos = t->program_source_pos; \
         } \
-        errstack_pushb(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
+        PadErrStack_PushBack(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
     }
 
 #undef pushb_error_node
@@ -45,7 +45,7 @@
                 pos = t->program_source_pos; \
             } \
         } \
-        errstack_pushb(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
+        PadErrStack_PushBack(errstack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
     }
 
 /************
@@ -82,7 +82,7 @@ pull_ref_all(const object_t *idn_obj);
  * @return success to pointer to string_t copied (can delete)
  */
 string_t *
-obj_to_string(errstack_t *err, const node_t *ref_node, const object_t *obj);
+obj_to_string(PadErrStack *err, const node_t *ref_node, const object_t *obj);
 
 /**
  * move object at varmap of current scope of context by identifier
@@ -90,7 +90,7 @@ obj_to_string(errstack_t *err, const node_t *ref_node, const object_t *obj);
  */
 bool
 move_obj_at_cur_varmap(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     context_t *ctx,
     object_array_t *ref_owners,
@@ -104,7 +104,7 @@ move_obj_at_cur_varmap(
  */
 bool
 set_ref_at_cur_varmap(
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     context_t *ctx,
     object_array_t *ref_owners,
@@ -123,7 +123,7 @@ set_ref(object_dict_t *varmap, const char *identifier, object_t *ref_obj);
 object_t *
 extract_ref_of_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -133,7 +133,7 @@ extract_ref_of_obj(
 object_t *
 extract_ref_of_obj_all(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -153,7 +153,7 @@ extract_ref_of_obj_all(
 object_t *
 extract_copy_of_obj(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -172,7 +172,7 @@ extract_copy_of_obj(
 object_t *
 refer_chain_obj_with_ref(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -193,7 +193,7 @@ refer_chain_obj_with_ref(
 object_t *
 refer_chain_three_objs(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -214,7 +214,7 @@ refer_chain_three_objs(
 object_t *
 refer_chain_call(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     const node_t *ref_node,
     gc_t *ref_gc,
     context_t *ref_context,
@@ -225,7 +225,7 @@ refer_chain_call(
 object_t *
 refer_and_set_ref(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -249,7 +249,7 @@ dump_array_obj(const object_t *arrobj);
 bool
 parse_bool(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -264,7 +264,7 @@ parse_bool(
 objint_t
 parse_int(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,
@@ -279,7 +279,7 @@ parse_int(
 objfloat_t
 parse_float(
     ast_t *ref_ast,
-    errstack_t *err,
+    PadErrStack *err,
     gc_t *ref_gc,
     context_t *ref_context,
     const node_t *ref_node,

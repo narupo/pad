@@ -306,7 +306,7 @@ sock_open(const char *src, const char *mode) {
         return NULL;
     }
 
-#if defined(_PAD_WINDOWS)
+#if defined(PAD_WINDOWS)
     if (pthread_once(&wsa_sock_once, wsa_sock_init) != 0) {
         sock_set_error(self, "failed to pthread once");
         return NULL;
@@ -450,7 +450,7 @@ sock_send(socket_t *self, const char *bytes, int32_t size) {
 
     int32_t ret = 0;
 
-#if defined(_PAD_WINDOWS)
+#if defined(PAD_WINDOWS)
     ret = send(self->socket, bytes, size, 0);
 #else
     ret = send(self->socket, bytes, size, 0);

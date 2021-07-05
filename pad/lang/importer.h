@@ -29,7 +29,7 @@ importer_del(importer_t *self);
  * @return pointer to importer_t
  */
 importer_t *
-importer_new(const config_t *ref_config);
+importer_new(const PadConfig *ref_config);
 
 /**
  * import module from path as alias

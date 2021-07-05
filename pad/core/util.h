@@ -28,7 +28,7 @@
 #include <pad/lang/traverser.h>
 #include <pad/lang/context.h>
 
-#ifdef _PAD_WINDOWS
+#ifdef PAD_WINDOWS
 # include <windows.h>
 #endif
 
@@ -137,7 +137,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text);
  * @return failed to NULL
  */
 char *
-compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[], const char *src);
+compile_argv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src);
 
 /**
  * clear screen

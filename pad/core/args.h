@@ -8,16 +8,16 @@ typedef struct {
     char **argv;
     int cmd_argc;
     char **cmd_argv;
-} distribute_args_t;
+} PadDistriArgs;
 
 /**
  * distribute program arguments to application side and command side
  * 
- * @param[in] *dargs pointer to distribute_args_t 
+ * @param[in] *dargs pointer to PadDistriArgs 
  * @param[in] argc   number of arguments
  * @param[in] **argv arguments
  * 
  * @return pointer to dargs
  */
-distribute_args_t *
-distribute_args(distribute_args_t *dargs, int argc, char **argv);
+PadDistriArgs *
+PadDistriArgs_Distribute(PadDistriArgs *dargs, int argc, char **argv);

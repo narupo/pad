@@ -156,9 +156,9 @@ tkr_getc_first_error_message(const tokenizer_t *self);
  *
  * @param[in] *self
  *
- * @return pointer to errstack_t
+ * @return pointer to PadErrStack
  */
-const errstack_t *
+const PadErrStack *
 tkr_getc_error_stack(const tokenizer_t *self);
 
 /**

@@ -481,7 +481,7 @@ static object_t *
 builtin_setattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
     const node_t *ref_node = fargs->ref_node;
-    errstack_t *errstack = ref_ast->error_stack;
+    PadErrStack *errstack = ref_ast->error_stack;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -522,7 +522,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
     }
 
     set_ref_at_cur_varmap(errstack, fargs->ref_node, ref_context, NULL, key, obj);
-    if (errstack_len(errstack)) {
+    if (PadErrStack_Len(errstack)) {
         push_error("failed to set reference at varmap");
         return NULL;
     }
@@ -602,7 +602,7 @@ builtin_dance(builtin_func_args_t *fargs) {
 #undef return_fail_es
 #define return_fail_es(es) { \
         object_array_t *ret = objarr_new(); \
-        const errelem_t *elem = errstack_getc(es, errstack_len(es) - 1); \
+        const PadErrElem *elem = PadErrStack_Getc(es, PadErrStack_Len(es) - 1); \
         object_t *err = obj_new_unicode_cstr(ref_gc, elem->message); \
         objarr_moveb(ret, mem_move(obj_new_nil(ref_gc))); \
         objarr_moveb(ret, mem_move(err)); \
@@ -642,7 +642,7 @@ builtin_dance(builtin_func_args_t *fargs) {
 
     tkr_parse(tkr, code);
     if (tkr_has_error_stack(tkr)) {
-        const errstack_t *es = tkr_getc_error_stack(tkr);
+        const PadErrStack *es = tkr_getc_error_stack(tkr);
         return_fail_es(es);
     }
 
@@ -652,13 +652,13 @@ builtin_dance(builtin_func_args_t *fargs) {
 
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_errors(ast)) {
-        const errstack_t *es = ast_getc_error_stack(ast);
+        const PadErrStack *es = ast_getc_error_stack(ast);
         return_fail_es(es);
     }
 
     trv_traverse(ast, ctx);
     if (ast_has_errors(ast)) {
-        const errstack_t *es = ast_getc_error_stack(ast);
+        const PadErrStack *es = ast_getc_error_stack(ast);
         return_fail_es(es);
     }
 
@@ -779,7 +779,7 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_module_new(const config_t *ref_config, gc_t *ref_gc) {
+builtin_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(ref_config);
     context_t *ctx = ctx_new(ref_gc);

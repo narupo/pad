@@ -386,12 +386,12 @@ ast_del(ast_t *self) {
 
     ast_del_nodes(self, self->root);
     opts_del(self->opts);
-    errstack_del(self->error_stack);
+    PadErrStack_Del(self->error_stack);
     free(self);
 }
 
 ast_t *
-ast_new(const config_t *ref_config) {
+ast_new(const PadConfig *ref_config) {
     ast_t *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -404,7 +404,7 @@ ast_new(const config_t *ref_config) {
         return NULL;
     }
 
-    self->error_stack = errstack_new();
+    self->error_stack = PadErrStack_New();
     if (!self->error_stack) {
         ast_del(self);
         return NULL;
@@ -442,7 +442,7 @@ ast_deep_copy(const ast_t *other) {
 
     self->ref_gc = other->ref_gc;
     self->import_level = other->import_level;
-    self->error_stack = errstack_deep_copy(other->error_stack);
+    self->error_stack = PadErrStack_DeepCopy(other->error_stack);
     if (!self->error_stack) {
         ast_del(self);
         return NULL;
@@ -483,7 +483,7 @@ ast_shallow_copy(const ast_t *other) {
 
     self->ref_gc = other->ref_gc;
     self->import_level = other->import_level;
-    self->error_stack = errstack_shallow_copy(other->error_stack);
+    self->error_stack = PadErrStack_ShallowCopy(other->error_stack);
     if (!self->error_stack) {
         ast_del(self);
         return NULL;
@@ -537,7 +537,7 @@ ast_clear(ast_t *self) {
     self->ref_gc = NULL;  // do not delete
     self->import_level = 0;
 
-    errstack_clear(self->error_stack);
+    PadErrStack_Clear(self->error_stack);
     // do not null clear
 
     self->debug = false;  // reset
@@ -545,32 +545,32 @@ ast_clear(ast_t *self) {
 
 const char *
 ast_getc_last_error_message(const ast_t *self) {
-    if (!errstack_len(self->error_stack)) {
+    if (!PadErrStack_Len(self->error_stack)) {
         return NULL;
     }
 
-    const errelem_t *elem = errstack_getc(self->error_stack, errstack_len(self->error_stack)-1);
+    const PadErrElem *elem = PadErrStack_Getc(self->error_stack, PadErrStack_Len(self->error_stack)-1);
     return elem->message;
 }
 
 const char *
 ast_getc_first_error_message(const ast_t *self) {
-    if (!errstack_len(self->error_stack)) {
+    if (!PadErrStack_Len(self->error_stack)) {
         return NULL;
     }
 
-    const errelem_t *elem = errstack_getc(self->error_stack, 0);
+    const PadErrElem *elem = PadErrStack_Getc(self->error_stack, 0);
     return elem->message;
 }
 
 bool
 ast_has_errors(const ast_t *self) {
-    return errstack_len(self->error_stack);
+    return PadErrStack_Len(self->error_stack);
 }
 
 void
 ast_clear_errors(ast_t *self) {
-    errstack_clear(self->error_stack);
+    PadErrStack_Clear(self->error_stack);
 }
 
 void
@@ -600,10 +600,10 @@ ast_trace_error(const ast_t *self, FILE *fout) {
     }
 
     ast_trace_error_tokens(self, fout);
-    errstack_trace(self->error_stack, fout);
+    PadErrStack_Trace(self->error_stack, fout);
 }
 
-const errstack_t *
+const PadErrStack *
 ast_getc_error_stack(const ast_t *self) {
     if (!self) {
         return NULL;

@@ -10,13 +10,13 @@
 #include <pad/lang/kit.h>
 
 struct kit {
-    const config_t *ref_config;
+    const PadConfig *ref_config;
     char *program_source;
     tokenizer_t *tkr;
     ast_t *ast;
     gc_t *gc;
     context_t *ctx;
-    errstack_t *errstack;
+    PadErrStack *errstack;
     bool gc_is_reference;
 };
 
@@ -37,7 +37,7 @@ kit_del(kit_t *self) {
 }
 
 kit_t *
-kit_new(const config_t *config) {
+kit_new(const PadConfig *config) {
     kit_t *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -68,7 +68,7 @@ kit_new(const config_t *config) {
         return NULL;
     }
 
-    self->errstack = errstack_new();
+    self->errstack = PadErrStack_New();
     if (!self->errstack) {
         kit_del(self);
         return NULL;
@@ -78,7 +78,7 @@ kit_new(const config_t *config) {
 }
 
 kit_t *
-kit_new_ref_gc(const config_t *config, gc_t *ref_gc) {
+kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc) {
     kit_t *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -107,7 +107,7 @@ kit_new_ref_gc(const config_t *config, gc_t *ref_gc) {
         return NULL;
     }
 
-    self->errstack = errstack_new();
+    self->errstack = PadErrStack_New();
     if (!self->errstack) {
         kit_del(self);
         return NULL;
@@ -148,7 +148,7 @@ kit_compile_from_string_args(
     int argc,
     char *argv[]
 ) {
-    errstack_clear(self->errstack);
+    PadErrStack_Clear(self->errstack);
     opts_t *opts = NULL;
 
     const char *program_filename = path;
@@ -159,7 +159,7 @@ kit_compile_from_string_args(
     if (argv) {
         opts = opts_new();
         if (!opts_parse(opts, argc, argv)) {
-            pusherr("failed to parse options");
+            Pad_PushErr("failed to parse options");
             return NULL;
         }
     }
@@ -171,14 +171,14 @@ kit_compile_from_string_args(
     tkr_parse(src_tkr, builtin_structs_source);
 
     if (!tkr_extendf_other(self->tkr, src_tkr)) {
-        pusherr("failed to extend front other tokenizer");
+        Pad_PushErr("failed to extend front other tokenizer");
         return NULL;
     }
     tkr_del(src_tkr);
 
     if (tkr_has_error_stack(self->tkr)) {
-        const errstack_t *err = tkr_getc_error_stack(self->tkr);
-        errstack_extendf_other(self->errstack, err);
+        const PadErrStack *err = tkr_getc_error_stack(self->tkr);
+        PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }
 
@@ -190,15 +190,15 @@ kit_compile_from_string_args(
 
     cc_compile(self->ast, tkr_get_tokens(self->tkr));
     if (ast_has_errors(self->ast)) {
-        const errstack_t *err = ast_getc_error_stack(self->ast);
-        errstack_extendf_other(self->errstack, err);
+        const PadErrStack *err = ast_getc_error_stack(self->ast);
+        PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }
 
     trv_traverse(self->ast, self->ctx);
     if (ast_has_errors(self->ast)) {
-        const errstack_t *err = ast_getc_error_stack(self->ast);
-        errstack_extendf_other(self->errstack, err);
+        const PadErrStack *err = ast_getc_error_stack(self->ast);
+        PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }
 
@@ -232,10 +232,10 @@ kit_getc_stderr_buf(const kit_t *self) {
 
 bool
 kit_has_error_stack(const kit_t *self) {
-    return errstack_len(self->errstack);
+    return PadErrStack_Len(self->errstack);
 }
 
-const errstack_t *
+const PadErrStack *
 kit_getc_error_stack(const kit_t *self) {
     return self->errstack;
 }
@@ -251,7 +251,7 @@ kit_trace_error(const kit_t *self, FILE *fout) {
         return;
     }
 
-    errstack_trace(self->errstack, fout);
+    PadErrStack_Trace(self->errstack, fout);
 }
 
 void
@@ -260,5 +260,5 @@ kit_trace_error_debug(const kit_t *self, FILE *fout) {
         return;
     }
 
-    errstack_trace_debug(self->errstack, fout);
+    PadErrStack_TraceDebug(self->errstack, fout);
 }

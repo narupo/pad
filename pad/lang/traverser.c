@@ -1391,7 +1391,7 @@ assign_to_chain_dot(
 ) {
     object_t *ref_owner = objarr_get_last(owners);
     object_t *child = chain_obj_get_obj(co);
-    errstack_t *errstack = ast->error_stack;
+    PadErrStack *errstack = ast->error_stack;
     context_t *ref_context = ast->ref_context;
 
 again1:
@@ -1568,7 +1568,7 @@ marley:
     default: break;
     case OBJ_TYPE_CHAIN: {
         rhs = _refer_chain_obj_with_ref(rhs);
-        if (errstack_len(ast->error_stack)) {
+        if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to refer chain object");
             return NULL;
         }
@@ -8408,7 +8408,7 @@ again:
     } break;
     case OBJ_TYPE_CHAIN: {
         rhs = _extract_ref_of_obj_all(rhs);
-        if (errstack_len(ast->error_stack)) {
+        if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to extract chain object");
             return_trav(NULL);
         }

@@ -16,10 +16,10 @@ void
 kit_del(kit_t *self);
 
 kit_t *
-kit_new(const config_t *config);
+kit_new(const PadConfig *config);
 
 kit_t *
-kit_new_ref_gc(const config_t *config, gc_t *ref_gc);
+kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc);
 
 kit_t *
 kit_compile_from_path(kit_t *self, const char *path);
@@ -48,7 +48,7 @@ kit_get_context(kit_t *self);
 bool
 kit_has_error_stack(const kit_t *self);
 
-const errstack_t *
+const PadErrStack *
 kit_getc_error_stack(const kit_t *self);
 
 void

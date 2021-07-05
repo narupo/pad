@@ -35,7 +35,7 @@ safesystem(const char *cmdline, int option) {
         return system(cmdline);
     }
 
-#ifdef _PAD_WINDOWS
+#ifdef PAD_WINDOWS
     int flag = 0;
     if (option & SAFESYSTEM_EDIT) {
         // option for edit command
@@ -191,7 +191,7 @@ trim_first_line(char *dst, int32_t dstsz, const char *text) {
 }
 
 char *
-compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[], const char *src) {
+compile_argv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = ast_new(config);
     gc_t *gc = gc_new();
@@ -200,7 +200,7 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
 
     if (!opts_parse(opts, argc, argv)) {
         if (errstack) {
-            errstack_pushb(errstack, NULL, 0, NULL, 0, "failed to compile argv. failed to parse options");
+            PadErrStack_PushBack(errstack, NULL, 0, NULL, 0, "failed to compile argv. failed to parse options");
         }
         return NULL;
     }
@@ -208,8 +208,8 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
     tkr_parse(tkr, src);
     if (tkr_has_error_stack(tkr)) {
         if (errstack) {
-            const errstack_t *es = tkr_getc_error_stack(tkr);
-            errstack_extendb_other(errstack, es);
+            const PadErrStack *es = tkr_getc_error_stack(tkr);
+            PadErrStack_ExtendBackOther(errstack, es);
         }
         return NULL;
     }
@@ -221,8 +221,8 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
     cc_compile(ast, tkr_get_tokens(tkr));
     if (ast_has_errors(ast)) {
         if (errstack) {
-            const errstack_t *es = ast_getc_error_stack(ast);
-            errstack_extendb_other(errstack, es);
+            const PadErrStack *es = ast_getc_error_stack(ast);
+            PadErrStack_ExtendBackOther(errstack, es);
         }
         return NULL;
     }
@@ -230,8 +230,8 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
     trv_traverse(ast, ctx);
     if (ast_has_errors(ast)) {
         if (errstack) {
-            const errstack_t *es = ast_getc_error_stack(ast);
-            errstack_extendb_other(errstack, es);
+            const PadErrStack *es = ast_getc_error_stack(ast);
+            PadErrStack_ExtendBackOther(errstack, es);
         }
         return NULL;
     }
@@ -251,7 +251,7 @@ compile_argv(const config_t *config, errstack_t *errstack, int argc, char *argv[
 
 void
 clear_screen(void) {
-#ifdef _PAD_WINDOWS
+#ifdef PAD_WINDOWS
     system("cls");
 #else
     system("clear");
@@ -259,7 +259,7 @@ clear_screen(void) {
 }
 
 static char *
-read_path_var_from_resource(const config_t *config, const char *rcpath) {
+read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     char *src = file_readcp_from_path(rcpath);
 
     tokenizer_t *tkr = tkr_new(tkropt_new());
@@ -400,7 +400,7 @@ is_dot_file(const char *path) {
 char *
 pop_tail_slash(char *path) {
     int32_t pathlen = strlen(path);
-#ifdef _PAD_WINDOWS
+#ifdef PAD_WINDOWS
     if (pathlen == 3 && path[2] == '\\') {
         return path;
     } else {

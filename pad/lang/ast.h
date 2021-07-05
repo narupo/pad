@@ -29,7 +29,7 @@ enum {
  */
 struct ast {
     // reference of config (do not delete)
-    const config_t *ref_config;
+    const PadConfig *ref_config;
 
     // reference of tokens with null terminated (do not delete)
     token_t **ref_tokens;
@@ -50,7 +50,7 @@ struct ast {
     gc_t *ref_gc;
 
     // error stack for errors
-    errstack_t *error_stack;
+    PadErrStack *error_stack;
 
     // error tokens for display error to developer
     token_t *error_tokens[AST_ERR_TOKENS_SIZE];
@@ -87,12 +87,12 @@ ast_del(ast_t *self);
 /**
  * construct object
  *
- * @param[in] *ref_config pointer to read-only config_t
+ * @param[in] *ref_config pointer to read-only PadConfig
  *
  * @return pointer to ast_t dynamic allocate memory (do ast_del)
  */
 ast_t *
-ast_new(const config_t *ref_config);
+ast_new(const PadConfig *ref_config);
 
 ast_t *
 ast_deep_copy(const ast_t *other);
@@ -138,7 +138,7 @@ ast_getc_root(const ast_t *self);
  * @param[in] ...   arguments of format
  */
 #define ast_pushb_error(ast, fname, lineno, src, pos, fmt, ...) \
-    errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__)
+    PadErrStack_PushBack(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__)
 
 /**
  * clear ast state (will call ast_del_nodes)
@@ -212,9 +212,9 @@ ast_trace_error(const ast_t *self, FILE *fout);
  *
  * @param[in] *self
  *
- * @return pointer to errstack_t
+ * @return pointer to PadErrStack
  */
-const errstack_t *
+const PadErrStack *
 ast_getc_error_stack(const ast_t *self);
 
 /**

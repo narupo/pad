@@ -14,11 +14,11 @@
 * macros *
 *********/
 
-#define pusherr(fmt, ...) \
-    errstack_pushb(self->errstack, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__)
+#define Pad_PushErr(fmt, ...) \
+    PadErrStack_PushBack(self->errstack, NULL, 0, NULL, 0, fmt, ##__VA_ARGS__)
 
-#define errstack_pushb(stack, prog_fname, prog_lineno, prog_src, prog_src_pos, fmt, ...) \
-    _errstack_pushb( \
+#define PadErrStack_PushBack(stack, prog_fname, prog_lineno, prog_src, prog_src_pos, fmt, ...) \
+    _PadErrStack_PushBack( \
         stack, \
         prog_fname, \
         prog_lineno, \
@@ -31,8 +31,8 @@
         ##__VA_ARGS__ \
     )
 
-#define errstack_add(stack, fmt, ...) \
-    _errstack_pushb( \
+#define PadErrStack_Add(stack, fmt, ...) \
+    _PadErrStack_PushBack( \
         stack, \
         NULL, \
         0, \
@@ -50,7 +50,7 @@
 **********/
 
 enum {
-    ERRELEM_MESSAGE_SIZE = 1024,
+    PAD_ERRELEM_MESSAGE_SIZE = 1024,
 };
 
 typedef struct {
@@ -61,58 +61,58 @@ typedef struct {
     int32_t program_lineno;
     int32_t program_source_pos;
     int32_t lineno;
-    char message[ERRELEM_MESSAGE_SIZE];
-} errelem_t;
+    char message[PAD_ERRELEM_MESSAGE_SIZE];
+} PadErrElem;
 
 /**
  * show element data at stream
  *
- * @param[in]  *self pointer to errelem_t
+ * @param[in]  *self pointer to PadErrElem
  * @param[out] fout  destination stream
  */
 void
-errelem_show(const errelem_t *self, FILE *fout);
+PadErrElem_Show(const PadErrElem *self, FILE *fout);
 
 /***********
 * errstack *
 ***********/
 
-struct errstack;
-typedef struct errstack errstack_t;
+struct PadErrStack;
+typedef struct PadErrStack PadErrStack;
 
 /**
  * destruct object
  *
- * @param[in] *self pointer to errstack_t
+ * @param[in] *self pointer to PadErrStack
  */
 void
-errstack_del(errstack_t *self);
+PadErrStack_Del(PadErrStack *self);
 
 /**
  * construct object
  *
- * @return pointer to errstack_t dynamic allocate memory (do errstack_del)
+ * @return pointer to PadErrStack dynamic allocate memory (do PadErrStack_Del)
  */
-errstack_t *
-errstack_new(void);
+PadErrStack *
+PadErrStack_New(void);
 
 /**
  * deep copy
  *
  * @param[in] *other
  *
- * @return pointer to errstack_t dynamic allocate memory (do errstack_del)
+ * @return pointer to PadErrStack dynamic allocate memory (do PadErrStack_Del)
  */
-errstack_t *
-errstack_deep_copy(const errstack_t *other);
+PadErrStack *
+PadErrStack_DeepCopy(const PadErrStack *other);
 
-errstack_t *
-errstack_shallow_copy(const errstack_t *other);
+PadErrStack *
+PadErrStack_ShallowCopy(const PadErrStack *other);
 
 /**
  * push back error stack info
  *
- * @param[in] *self     pointer to errstack_t
+ * @param[in] *self     pointer to PadErrStack
  * @param[in] *filename file name
  * @param[in] lineno    line number
  * @param[in] *funcname function name
@@ -122,9 +122,9 @@ errstack_shallow_copy(const errstack_t *other);
  * @return success to pointer to self
  * @return failed to pointer to NULL
  */
-errstack_t *
-_errstack_pushb(
-    errstack_t *self,
+PadErrStack *
+_PadErrStack_PushBack(
+    PadErrStack *self,
     const char *program_filename,
     int32_t program_lineno,
     const char *program_source,
@@ -139,69 +139,69 @@ _errstack_pushb(
 /**
  * get stack element from stack with read-only
  *
- * @param[in] *self pointer to errstack_t
+ * @param[in] *self pointer to PadErrStack
  * @param[in] idx   number of index of stack
  *
- * @return success to pointer to errelem_t
+ * @return success to pointer to PadErrElem
  * @return failed to pointer to NULL
  */
-const errelem_t *
-errstack_getc(const errstack_t *self, int32_t idx);
+const PadErrElem *
+PadErrStack_Getc(const PadErrStack *self, int32_t idx);
 
 /**
  * show stack trace
  *
- * @param[in]  *self pointer to errstack_t
+ * @param[in]  *self pointer to PadErrStack
  * @param[out] *fout destination stream
  */
 void
-errstack_trace(const errstack_t *self, FILE *fout);
+PadErrStack_Trace(const PadErrStack *self, FILE *fout);
 
 void
-errstack_trace_debug(const errstack_t *self, FILE *fout);
+PadErrStack_TraceDebug(const PadErrStack *self, FILE *fout);
 
 void
-errstack_trace_simple(const errstack_t *self, FILE *fout);
+PadErrStack_TraceSimple(const PadErrStack *self, FILE *fout);
 
 /**
  * get length of stack
  *
- * @param[in] *self pointer to errstack_t
+ * @param[in] *self pointer to PadErrStack
  *
  * @return number of length
  */
 int32_t
-errstack_len(const errstack_t *self);
+PadErrStack_Len(const PadErrStack *self);
 
 /**
  * clear state
  *
- * @param[in] *self pointer to errstack_t
+ * @param[in] *self pointer to PadErrStack
  */
 void
-errstack_clear(errstack_t *self);
+PadErrStack_Clear(PadErrStack *self);
 
 /**
  * extend front other error stack at error stack
  *
- * @param[in] *self pointer to errstack_t
+ * @param[in] *self pointer to PadErrStack
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
-errstack_t *
-errstack_extendf_other(errstack_t *self, const errstack_t *other);
+PadErrStack *
+PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *other);
 
 /**
  * extend back other error stack at error stack
  *
- * @param[in] *self pointer to errstack_t
+ * @param[in] *self pointer to PadErrStack
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
-errstack_t *
-errstack_extendb_other(errstack_t *self, const errstack_t *other);
+PadErrStack *
+PadErrStack_ExtendBackOther(PadErrStack *self, const PadErrStack *other);
 
 string_t *
-errstack_trim_around(const char *src, int32_t pos);
+PadErrStack_TrimAround(const char *src, int32_t pos);

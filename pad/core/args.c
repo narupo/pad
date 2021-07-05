@@ -1,7 +1,7 @@
 #include <pad/core/args.h>
 
-distribute_args_t *
-distribute_args(distribute_args_t *dargs, int argc, char **argv) {
+PadDistriArgs *
+PadDistriArgs_Distribute(PadDistriArgs *dargs, int argc, char **argv) {
     cstring_array_t *app_args = cstrarr_new();
     cstring_array_t *cmd_args = cstrarr_new();
 

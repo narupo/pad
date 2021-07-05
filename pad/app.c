@@ -24,9 +24,9 @@ typedef struct {
     char **argv;
     int cmd_argc;
     char **cmd_argv;
-    config_t *config;
+    PadConfig *config;
     struct opts opts;
-    errstack_t *errstack;
+    PadErrStack *errstack;
 } app_t;
 
 static int
@@ -67,7 +67,7 @@ app_parse_opts(app_t *self) {
         case 'd': self->opts.is_debug = true; break;
         case '?':
         default:
-            pusherr("invalid option");
+            Pad_PushErr("invalid option");
             return false; break;
         }
     }
@@ -87,8 +87,8 @@ app_parse_opts(app_t *self) {
 static void
 app_del(app_t *self) {
     if (self) {
-        config_del(self->config);
-        errstack_del(self->errstack);
+        PadConfig_Del(self->config);
+        PadErrStack_Del(self->errstack);
         free(self);
     }
 }
@@ -104,20 +104,20 @@ static bool
 app_deploy_env(const app_t *self) {
     char userhome[FILE_NPATH];
     if (!file_get_user_home(userhome, sizeof userhome)) {
-        pusherr("failed to get user's home directory. what is your file system?");
+        Pad_PushErr("failed to get user's home directory. what is your file system?");
         return false;
     }
 
     // make application directory
     char appdir[FILE_NPATH];
     if (!file_solvefmt(appdir, sizeof appdir, "%s/.pad", userhome)) {
-        pusherr("faield to create application directory path");
+        Pad_PushErr("faield to create application directory path");
         return false;
     }
 
     if (!file_exists(appdir)) {
         if (file_mkdirq(appdir) != 0) {
-            pusherr("failed to make application directory");
+            Pad_PushErr("failed to make application directory");
             return false;
         }
     }
@@ -141,13 +141,13 @@ app_new(void) {
         return NULL;
     }
 
-    self->errstack = errstack_new();
+    self->errstack = PadErrStack_New();
     if (!self->errstack) {
         app_del(self);
         return NULL;
     }
 
-    self->config = config_new();
+    self->config = PadConfig_New();
     if (!self->config) {
         app_del(self);
         return NULL;
@@ -191,14 +191,14 @@ static void
 app_version(app_t *self) {
     fflush(stdout);
     fflush(stderr);
-    printf("%s\n", _PAD_VERSION);
+    printf("%s\n", PAD_VERSION);
     fflush(stdout);
 }
 
 static bool
 app_parse_args(app_t *self, int argc, char *argv[]) {
-    distribute_args_t dargs = {0};
-    distribute_args(&dargs, argc, argv);
+    PadDistriArgs dargs = {0};
+    PadDistriArgs_Distribute(&dargs, argc, argv);
     self->argc = dargs.argc;
     self->argv = dargs.argv;
     self->cmd_argc = dargs.cmd_argc;
@@ -208,23 +208,23 @@ app_parse_args(app_t *self, int argc, char *argv[]) {
 
 static bool
 app_init(app_t *self, int argc, char *argv[]) {
-    if (!config_init(self->config)) {
-        pusherr("failed to configuration");
+    if (!PadConfig_Init(self->config)) {
+        Pad_PushErr("failed to configuration");
         return false;
     }
 
     if (!app_parse_args(self, argc, argv)) {
-        pusherr("failed to parse arguments");
+        Pad_PushErr("failed to parse arguments");
         return false;
     }
 
     if (!app_parse_opts(self)) {
-        pusherr("failed to parse options");
+        Pad_PushErr("failed to parse options");
         return false;
     }
 
     if (!app_deploy_env(self)) {
-        pusherr("failed to deploy environment at file system");
+        Pad_PushErr("failed to deploy environment at file system");
         return false;
     }
 
@@ -244,7 +244,7 @@ static int
 _app_run(app_t *self) {
     char *content = file_readcp(stdin);
     if (!content) {
-        pusherr("failed to read from stdin");
+        Pad_PushErr("failed to read from stdin");
         return 1;
     }
 
@@ -254,7 +254,7 @@ _app_run(app_t *self) {
 
     if (!kit_compile_from_string(kit, content)) {
         trace_kit(self, kit, stderr);
-        pusherr("failed to compile from stdin");
+        Pad_PushErr("failed to compile from stdin");
         return 1;
     }
 
@@ -271,13 +271,13 @@ app_run_args(app_t *self) {
     int argc = self->cmd_argc;
     char **argv = self->cmd_argv;
     if (!argc) {
-        pusherr("invalid arguments");
+        Pad_PushErr("invalid arguments");
         return 1;
     }
 
     const char *path = argv[0];
     if (!file_exists(path)) {
-        pusherr("not found \"%s\"", path);
+        Pad_PushErr("not found \"%s\"", path);
         return 1;
     }
 
@@ -287,7 +287,7 @@ app_run_args(app_t *self) {
     
     if (!kit_compile_from_path_args(kit, path, argc, argv)) {
         trace_kit(self, kit, stderr);
-        pusherr("failed to compile \"%s\"", path);
+        Pad_PushErr("failed to compile \"%s\"", path);
         return 1;
     }
 
@@ -336,9 +336,9 @@ app_run(app_t *self, int argc, char *argv[]) {
  */
 static void
 app_trace(const app_t *self) {
-    if (errstack_len(self->errstack)) {
+    if (PadErrStack_Len(self->errstack)) {
         fflush(stdout);
-        errstack_trace_simple(self->errstack, stderr);
+        PadErrStack_TraceSimple(self->errstack, stderr);
         fflush(stderr);        
     }
 }

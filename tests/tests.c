@@ -14,8 +14,8 @@
 #define showbuf() printf("stdout[%s]\n", ctx_getc_stdout_buf(ctx))
 #define showerr() printf("stderr[%s]\n", ctx_getc_stderr_buf(ctx))
 #define showdetail() printf("detail[%s]\n", ast_getc_first_error_message(ast))
-#define trace() errstack_trace_debug(ast->error_stack, stderr)
-#define ERR errstack_trace(ast->error_stack, stderr)
+#define trace() PadErrStack_TraceDebug(ast->error_stack, stderr)
+#define ERR PadErrStack_Trace(ast->error_stack, stderr)
 #define eq(s) assert(!strcmp(ctx_getc_stdout_buf(ctx), s))
 #define ast_debug(stmt) { \
     ast_set_debug(ast, true); \
@@ -130,7 +130,7 @@
     }
 
 #define trv_ready \
-    config_t *config = config_new(); \
+    PadConfig *config = PadConfig_New(); \
     tokenizer_option_t *opt = tkropt_new(); \
     tokenizer_t *tkr = tkr_new(mem_move(opt)); \
     ast_t *ast = ast_new(config); \
@@ -142,7 +142,7 @@
     gc_del(gc); \
     ast_del(ast); \
     tkr_del(tkr); \
-    config_del(config); \
+    PadConfig_Del(config); \
 
 /********
 * utils *
@@ -3599,7 +3599,7 @@ test_util_escape(void) {
 
 static void
 test_util_compile_argv(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     int argc = 4;
     char *argv[] = {
         "make",
@@ -3615,7 +3615,7 @@ test_util_compile_argv(void) {
     assert(!strcmp(compiled, "bbb"));
 
     free(compiled);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -5442,7 +5442,7 @@ test_cc_long_code(void) {
 "    puts(23)\n"
 "    puts(24)\n"
 "@}\n";
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5456,12 +5456,12 @@ test_cc_long_code(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_basic_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5476,12 +5476,12 @@ test_cc_basic_0(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_basic_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5543,12 +5543,12 @@ test_cc_basic_1(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_code_block(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5569,12 +5569,12 @@ test_cc_code_block(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_code_block_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5585,12 +5585,12 @@ test_cc_code_block_0(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_ref_block(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5752,12 +5752,12 @@ test_cc_ref_block(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_ref_block_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5768,12 +5768,12 @@ test_cc_ref_block_0(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_ref_block_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5784,12 +5784,12 @@ test_cc_ref_block_1(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_ref_block_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5800,12 +5800,12 @@ test_cc_ref_block_2(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_ref_block_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -5816,12 +5816,12 @@ test_cc_ref_block_3(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_formula(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -6108,12 +6108,12 @@ test_cc_formula(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_dict(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -6281,12 +6281,12 @@ test_cc_dict(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_dict_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -6297,12 +6297,12 @@ test_cc_dict_0(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_dict_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -6314,12 +6314,12 @@ test_cc_dict_1(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_dict_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -6330,12 +6330,12 @@ test_cc_dict_2(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_expr(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -7001,12 +7001,12 @@ test_cc_expr(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_index(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -7102,12 +7102,12 @@ test_cc_index(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_dot(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -7216,12 +7216,12 @@ test_cc_dot(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_call(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -7424,12 +7424,12 @@ test_cc_call(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_array(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -7685,12 +7685,12 @@ test_cc_array(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_asscalc(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -7978,12 +7978,12 @@ test_cc_asscalc(void) {
 */
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_atom(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -8278,13 +8278,13 @@ test_cc_atom(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_compile(void) {
     // head
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -11926,13 +11926,13 @@ test_cc_compile(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
     // tail
 }
 
 static void
 test_cc_import_stmt(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -12640,12 +12640,12 @@ test_cc_import_stmt(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_cc_func_def(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -12715,7 +12715,7 @@ test_cc_func_def(void) {
 
     tkr_del(tkr);
     ast_del(ast);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 /**
@@ -13227,7 +13227,7 @@ test_trv_comparison(void) {
 
 static void
 test_trv_array_index(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -13338,12 +13338,12 @@ test_trv_array_index(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_text_block_old(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -13363,12 +13363,12 @@ test_trv_text_block_old(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_ref_block_old(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -13479,12 +13479,12 @@ test_trv_ref_block_old(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -13520,7 +13520,7 @@ test_trv_assign_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -13717,7 +13717,7 @@ test_trv_atom_0(void) {
 
 static void
 test_trv_index(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -14099,12 +14099,12 @@ test_trv_index(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_string_index(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -14175,12 +14175,12 @@ test_trv_string_index(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_multi_assign(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -14235,12 +14235,12 @@ test_trv_multi_assign(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_and_test(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -15555,12 +15555,12 @@ test_trv_and_test(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_list(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -15743,12 +15743,12 @@ test_trv_assign_list(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_test_list(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -15787,12 +15787,12 @@ test_trv_test_list(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_negative_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -15877,12 +15877,12 @@ test_trv_negative_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_dot_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -15934,7 +15934,7 @@ test_trv_dot_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -16050,7 +16050,7 @@ test_trv_call(void) {
 
 static void
 test_trv_builtin_string(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -16231,7 +16231,7 @@ test_trv_builtin_string(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -16407,7 +16407,7 @@ test_trv_builtin_unicode_isspace(void) {
 
 static void
 test_trv_builtin_functions(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -16425,8 +16425,8 @@ test_trv_builtin_functions(void) {
         ctx_clear(ctx);
         (trv_traverse(ast, ctx));
         assert(!ast_has_errors(ast));
-        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
-        const char *value = alinfo_getc_value(alinfo, "abc");
+        const PadAliasInfo *alinfo = ctx_getc_alinfo(ctx);
+        const char *value = PadAliasInfo_GetcValue(alinfo, "abc");
         assert(value);
         assert(!strcmp(value, "def"));
     }
@@ -16438,11 +16438,11 @@ test_trv_builtin_functions(void) {
         ctx_clear(ctx);
         trv_traverse(ast, ctx);
         assert(!ast_has_errors(ast));
-        const alinfo_t *alinfo = ctx_getc_alinfo(ctx);
-        const char *value = alinfo_getc_value(alinfo, "abc");
+        const PadAliasInfo *alinfo = ctx_getc_alinfo(ctx);
+        const char *value = PadAliasInfo_GetcValue(alinfo, "abc");
         assert(value);
         assert(!strcmp(value, "def"));
-        const char *desc = alinfo_getc_desc(alinfo, "abc");
+        const char *desc = PadAliasInfo_GetcDesc(alinfo, "abc");
         assert(desc);
         assert(!strcmp(desc, "ghi"));
     }
@@ -16631,14 +16631,14 @@ test_trv_builtin_functions(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 extern const char *builtin_structs_source;
 
 static void
 test_trv_builtin_structs_error_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(config);
@@ -16698,13 +16698,13 @@ test_trv_builtin_structs_error_0(void) {
     ast_del(ast);
     tkr_del(s_tkr);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 // ATODO
 static void
 test_trv_builtin_structs_error_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = ast_new(config);
@@ -16764,7 +16764,7 @@ test_trv_builtin_structs_error_1(void) {
     ast_del(ast);
     tkr_del(s_tkr);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -16901,7 +16901,7 @@ test_trv_builtin_modules_array_1(void) {
 
 static void
 test_trv_builtin_functions_type_dict(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -16958,7 +16958,7 @@ test_trv_builtin_functions_type_dict(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -17014,7 +17014,7 @@ test_trv_builtin_functions_puts_0(void) {
 
 static void
 test_trv_builtin_functions_len_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -17065,7 +17065,7 @@ test_trv_builtin_functions_len_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -17178,7 +17178,7 @@ test_trv_builtin_functions_chr_0(void) {
 
 static void
 test_trv_traverse(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19186,7 +19186,7 @@ test_trv_traverse(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 /**
@@ -19195,7 +19195,7 @@ test_trv_traverse(void) {
  */
 static void
 test_trv_assign_and_reference_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19243,12 +19243,12 @@ test_trv_assign_and_reference_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19271,12 +19271,12 @@ test_trv_assign_and_reference_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19300,12 +19300,12 @@ test_trv_assign_and_reference_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19328,12 +19328,12 @@ test_trv_assign_and_reference_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_4(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19357,12 +19357,12 @@ test_trv_assign_and_reference_4(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_5(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19386,12 +19386,12 @@ test_trv_assign_and_reference_5(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_6(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19416,12 +19416,12 @@ test_trv_assign_and_reference_6(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_7(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19444,12 +19444,12 @@ test_trv_assign_and_reference_7(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_8(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19472,12 +19472,12 @@ test_trv_assign_and_reference_8(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_and_reference_9(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19501,7 +19501,7 @@ test_trv_assign_and_reference_9(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -19520,7 +19520,7 @@ test_trv_assign_and_reference_10(void) {
 
 static void
 test_trv_assign_and_reference_11(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19546,7 +19546,7 @@ test_trv_assign_and_reference_11(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -19641,7 +19641,7 @@ test_trv_assign_and_reference_12(void) {
 
 static void
 test_trv_assign_and_reference_13(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19664,7 +19664,7 @@ test_trv_assign_and_reference_13(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -19882,7 +19882,7 @@ test_trv_code_block_fail(void) {
 
 static void
 test_trv_ref_block(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -19973,7 +19973,7 @@ test_trv_ref_block(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -19991,7 +19991,7 @@ test_trv_ref_block_fail(void) {
 
 static void
 test_trv_text_block(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20052,12 +20052,12 @@ test_trv_text_block(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_import_stmt_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20239,7 +20239,7 @@ test_trv_import_stmt_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -20413,7 +20413,7 @@ test_trv_import_stmt_5(void) {
 
 static void
 test_trv_from_import_stmt_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20436,12 +20436,12 @@ test_trv_from_import_stmt_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_from_import_stmt_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20466,12 +20466,12 @@ test_trv_from_import_stmt_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_from_import_stmt_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20495,12 +20495,12 @@ test_trv_from_import_stmt_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_if_stmt_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20591,12 +20591,12 @@ test_trv_if_stmt_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_if_stmt_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20657,12 +20657,12 @@ test_trv_if_stmt_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_if_stmt_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20722,12 +20722,12 @@ test_trv_if_stmt_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_if_stmt_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20828,12 +20828,12 @@ test_trv_if_stmt_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_if_stmt_4(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20900,12 +20900,12 @@ test_trv_if_stmt_4(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_if_stmt_5(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -20928,7 +20928,7 @@ test_trv_if_stmt_5(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -21465,7 +21465,7 @@ test_trv_elif_stmt_1(void) {
 
 static void
 test_trv_elif_stmt_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -21556,12 +21556,12 @@ test_trv_elif_stmt_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_elif_stmt_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -21642,7 +21642,7 @@ test_trv_elif_stmt_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -22000,7 +22000,7 @@ test_trv_elif_stmt_7(void) {
 
 static void
 test_trv_else_stmt_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -22081,12 +22081,12 @@ test_trv_else_stmt_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_else_stmt_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -22177,12 +22177,12 @@ test_trv_else_stmt_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_else_stmt_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -22283,7 +22283,7 @@ test_trv_else_stmt_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -22428,7 +22428,7 @@ test_trv_else_stmt_4(void) {
 }
 static void
 test_trv_for_stmt_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -22559,12 +22559,12 @@ test_trv_for_stmt_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_for_stmt_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -22625,12 +22625,12 @@ test_trv_for_stmt_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_for_stmt_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -22651,7 +22651,7 @@ test_trv_for_stmt_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -23342,7 +23342,7 @@ test_trv_continue_stmt_5(void) {
 
 static void
 test_trv_return_stmt_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -23363,12 +23363,12 @@ test_trv_return_stmt_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_return_stmt_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -23395,7 +23395,7 @@ test_trv_return_stmt_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -25028,7 +25028,7 @@ test_trv_type_5(void) {
 
 static void
 test_trv_func_def_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25049,12 +25049,12 @@ test_trv_func_def_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_func_def_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25075,12 +25075,12 @@ test_trv_func_def_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_func_def_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25104,12 +25104,12 @@ test_trv_func_def_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_func_def_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25129,12 +25129,12 @@ test_trv_func_def_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_func_def_4(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25155,12 +25155,12 @@ test_trv_func_def_4(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_func_def_5(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25181,12 +25181,12 @@ test_trv_func_def_5(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_func_def_6(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -25214,7 +25214,7 @@ test_trv_func_def_6(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -26602,7 +26602,7 @@ test_trv_inject_stmt_fail_0(void) {
 
 static void
 test_trv_assign_list_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26623,12 +26623,12 @@ test_trv_assign_list_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_list_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26649,12 +26649,12 @@ test_trv_assign_list_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_assign_list_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26675,7 +26675,7 @@ test_trv_assign_list_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -26794,7 +26794,7 @@ test_trv_not_test_fail_0(void) {
 
 static void
 test_trv_comparison_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26815,12 +26815,12 @@ test_trv_comparison_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_comparison_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26841,12 +26841,12 @@ test_trv_comparison_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_comparison_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26867,12 +26867,12 @@ test_trv_comparison_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_comparison_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26893,12 +26893,12 @@ test_trv_comparison_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_comparison_4(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26919,12 +26919,12 @@ test_trv_comparison_4(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_comparison_5(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -26945,7 +26945,7 @@ test_trv_comparison_5(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -26972,7 +26972,7 @@ test_trv_comparison_7(void) {
 
 static void
 test_trv_asscalc_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -27035,12 +27035,12 @@ test_trv_asscalc_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_asscalc_1(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -27129,12 +27129,12 @@ test_trv_asscalc_1(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_asscalc_2(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -27273,12 +27273,12 @@ test_trv_asscalc_2(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_asscalc_3(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -27397,7 +27397,7 @@ test_trv_asscalc_3(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -29139,7 +29139,7 @@ test_trv_array_fail_0(void) {
 
 static void
 test_trv_nil(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29160,12 +29160,12 @@ test_trv_nil(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_false(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29186,12 +29186,12 @@ test_trv_false(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_true(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29212,12 +29212,12 @@ test_trv_true(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_digit(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29238,12 +29238,12 @@ test_trv_digit(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_string(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29264,7 +29264,7 @@ test_trv_string(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -29465,7 +29465,7 @@ test_trv_dict_fail_0(void) {
 
 static void
 test_trv_identifier(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29486,12 +29486,12 @@ test_trv_identifier(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_builtin_array_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29552,12 +29552,12 @@ test_trv_builtin_array_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
 test_trv_builtin_dict_0(void) {
-    config_t *config = config_new();
+    PadConfig *config = PadConfig_New();
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = ast_new(config);
@@ -29599,7 +29599,7 @@ test_trv_builtin_dict_0(void) {
     gc_del(gc);
     ast_del(ast);
     tkr_del(tkr);
-    config_del(config);
+    PadConfig_Del(config);
 }
 
 static void
@@ -30914,291 +30914,291 @@ traverser_tests[] = {
 **************/
 
 static void
-test_errstack_new(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrStack_New(void) {
+    PadErrStack *stack = PadErrStack_New();
     assert(stack);
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
-test_errstack_pushb(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrStack_PushBack(void) {
+    PadErrStack *stack = PadErrStack_New();
 
-    assert(errstack_len(stack) == 0);
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
-    assert(errstack_len(stack) == 2);
+    assert(PadErrStack_Len(stack) == 0);
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(PadErrStack_Len(stack) == 2);
 
-    const errelem_t *elem = errstack_getc(stack, 0);
+    const PadErrElem *elem = PadErrStack_Getc(stack, 0);
     assert(elem);
     assert(!strcmp(elem->filename, "file1"));
     assert(elem->lineno == 1);
     assert(!strcmp(elem->funcname, "func1"));
     assert(!strcmp(elem->message, "this is message1"));
 
-    elem = errstack_getc(stack, 1);
+    elem = PadErrStack_Getc(stack, 1);
     assert(elem);
     assert(!strcmp(elem->filename, "file2"));
     assert(elem->lineno == 2);
     assert(!strcmp(elem->funcname, "func2"));
     assert(!strcmp(elem->message, "this is message2"));
 
-    assert(errstack_getc(stack, 2) == NULL);
+    assert(PadErrStack_Getc(stack, 2) == NULL);
 
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
 test_errstack_resize(void) {
-    errstack_t *stack = errstack_new();
+    PadErrStack *stack = PadErrStack_New();
 
-    assert(errstack_len(stack) == 0);
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file5", 5, "func5", "this is %s", "message5"));
-    assert(errstack_len(stack) == 5);
+    assert(PadErrStack_Len(stack) == 0);
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file5", 5, "func5", "this is %s", "message5"));
+    assert(PadErrStack_Len(stack) == 5);
 
-    const errelem_t *elem = errstack_getc(stack, 0);
+    const PadErrElem *elem = PadErrStack_Getc(stack, 0);
     assert(elem);
     assert(!strcmp(elem->filename, "file1"));
     assert(elem->lineno == 1);
     assert(!strcmp(elem->funcname, "func1"));
     assert(!strcmp(elem->message, "this is message1"));
 
-    elem = errstack_getc(stack, 1);
+    elem = PadErrStack_Getc(stack, 1);
     assert(elem);
     assert(!strcmp(elem->filename, "file2"));
     assert(elem->lineno == 2);
     assert(!strcmp(elem->funcname, "func2"));
     assert(!strcmp(elem->message, "this is message2"));
 
-    elem = errstack_getc(stack, 2);
+    elem = PadErrStack_Getc(stack, 2);
     assert(elem);
     assert(!strcmp(elem->filename, "file3"));
     assert(elem->lineno == 3);
     assert(!strcmp(elem->funcname, "func3"));
     assert(!strcmp(elem->message, "this is message3"));
 
-    elem = errstack_getc(stack, 3);
+    elem = PadErrStack_Getc(stack, 3);
     assert(elem);
     assert(!strcmp(elem->filename, "file4"));
     assert(elem->lineno == 4);
     assert(!strcmp(elem->funcname, "func4"));
     assert(!strcmp(elem->message, "this is message4"));
 
-    elem = errstack_getc(stack, 4);
+    elem = PadErrStack_Getc(stack, 4);
     assert(elem);
     assert(!strcmp(elem->filename, "file5"));
     assert(elem->lineno == 5);
     assert(!strcmp(elem->funcname, "func5"));
     assert(!strcmp(elem->message, "this is message5"));
 
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
-test_errstack_trace(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrStack_Trace(void) {
+    PadErrStack *stack = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
 
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    errstack_trace(stack, stderr);
+    PadErrStack_Trace(stack, stderr);
     assert(strcmp(buf, "Error:\n    file1: 1: func1: This is message1.\n    file2: 2: func2: This is message2."));
 
     fseek(stderr, 0, SEEK_SET);
     setbuf(stderr, NULL);
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
-test_errelem_show(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrElem_Show(void) {
+    PadErrStack *stack = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
 
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
-    const errelem_t *elem = errstack_getc(stack, 0);
-    errelem_show(elem, stderr);
+    const PadErrElem *elem = PadErrStack_Getc(stack, 0);
+    PadErrElem_Show(elem, stderr);
     // assert(!strcmp(buf, "file1: 1: func1: This is message1.\n"));
 
     fseek(stderr, 0, SEEK_SET);
     buf[0] = '\0';
 
-    elem = errstack_getc(stack, 1);
-    errelem_show(elem, stderr);
+    elem = PadErrStack_Getc(stack, 1);
+    PadErrElem_Show(elem, stderr);
     // assert(!strcmp(buf, "file2: 2: func2: This is message2.\n"));
 
     setbuf(stderr, NULL);
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
-test_errstack_extendf_other_0(void) {
-    errstack_t *stack = errstack_new();
-    errstack_t *other = errstack_new();
+test_PadErrStack_ExtendFrontOther_0(void) {
+    PadErrStack *stack = PadErrStack_New();
+    PadErrStack *other = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
 
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
 
-    assert(errstack_len(stack) == 2);
-    assert(errstack_len(other) == 2);
+    assert(PadErrStack_Len(stack) == 2);
+    assert(PadErrStack_Len(other) == 2);
 
-    assert(errstack_extendf_other(stack, other));
-    assert(errstack_len(stack) == 4);
-    assert(errstack_len(other) == 2);
+    assert(PadErrStack_ExtendFrontOther(stack, other));
+    assert(PadErrStack_Len(stack) == 4);
+    assert(PadErrStack_Len(other) == 2);
 
-    errstack_del(stack);
-    errstack_del(other);
+    PadErrStack_Del(stack);
+    PadErrStack_Del(other);
 }
 
 static void
-test_errstack_extendf_other_1(void) {
-    errstack_t *stack = errstack_new();
-    errstack_t *other = errstack_new();
+test_PadErrStack_ExtendFrontOther_1(void) {
+    PadErrStack *stack = PadErrStack_New();
+    PadErrStack *other = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file5", 5, "func5", "this is %s", "message5"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file6", 6, "func6", "this is %s", "message6"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file5", 5, "func5", "this is %s", "message5"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file6", 6, "func6", "this is %s", "message6"));
 
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
 
-    assert(errstack_len(stack) == 2);
-    assert(errstack_len(other) == 4);
+    assert(PadErrStack_Len(stack) == 2);
+    assert(PadErrStack_Len(other) == 4);
 
-    assert(errstack_extendf_other(stack, other));
-    assert(errstack_len(stack) == 6);
-    assert(errstack_len(other) == 4);
+    assert(PadErrStack_ExtendFrontOther(stack, other));
+    assert(PadErrStack_Len(stack) == 6);
+    assert(PadErrStack_Len(other) == 4);
 
-    errstack_del(stack);
-    errstack_del(other);
+    PadErrStack_Del(stack);
+    PadErrStack_Del(other);
 }
 
 static void
-test_errstack_extendf_other_2(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrStack_ExtendFrontOther_2(void) {
+    PadErrStack *stack = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
 
-    assert(errstack_len(stack) == 4);
+    assert(PadErrStack_Len(stack) == 4);
 
-    assert(errstack_extendf_other(stack, stack));
-    assert(errstack_len(stack) == 8);
+    assert(PadErrStack_ExtendFrontOther(stack, stack));
+    assert(PadErrStack_Len(stack) == 8);
 
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
-test_errstack_extendb_other_0(void) {
-    errstack_t *stack = errstack_new();
-    errstack_t *other = errstack_new();
+test_PadErrStack_ExtendBackOther_0(void) {
+    PadErrStack *stack = PadErrStack_New();
+    PadErrStack *other = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
 
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
 
-    assert(errstack_len(stack) == 2);
-    assert(errstack_len(other) == 2);
+    assert(PadErrStack_Len(stack) == 2);
+    assert(PadErrStack_Len(other) == 2);
 
-    assert(errstack_extendb_other(stack, other));
-    assert(errstack_len(stack) == 4);
-    assert(errstack_len(other) == 2);
+    assert(PadErrStack_ExtendBackOther(stack, other));
+    assert(PadErrStack_Len(stack) == 4);
+    assert(PadErrStack_Len(other) == 2);
 
-    errstack_del(stack);
-    errstack_del(other);
+    PadErrStack_Del(stack);
+    PadErrStack_Del(other);
 }
 
 static void
-test_errstack_extendb_other_1(void) {
-    errstack_t *stack = errstack_new();
-    errstack_t *other = errstack_new();
+test_PadErrStack_ExtendBackOther_1(void) {
+    PadErrStack *stack = PadErrStack_New();
+    PadErrStack *other = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file5", 5, "func5", "this is %s", "message5"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file6", 4, "func6", "this is %s", "message6"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file5", 5, "func5", "this is %s", "message5"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file6", 4, "func6", "this is %s", "message6"));
 
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(other, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(other, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
 
-    assert(errstack_len(stack) == 2);
-    assert(errstack_len(other) == 4);
+    assert(PadErrStack_Len(stack) == 2);
+    assert(PadErrStack_Len(other) == 4);
 
-    assert(errstack_extendb_other(stack, other));
-    assert(errstack_len(stack) == 6);
-    assert(errstack_len(other) == 4);
+    assert(PadErrStack_ExtendBackOther(stack, other));
+    assert(PadErrStack_Len(stack) == 6);
+    assert(PadErrStack_Len(other) == 4);
 
-    errstack_del(stack);
-    errstack_del(other);
+    PadErrStack_Del(stack);
+    PadErrStack_Del(other);
 }
 
 static void
-test_errstack_extendb_other_2(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrStack_ExtendBackOther_2(void) {
+    PadErrStack *stack = PadErrStack_New();
 
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
-    assert(_errstack_pushb(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file1", 1, "func1", "this is %s", "message1"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file2", 2, "func2", "this is %s", "message2"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file3", 3, "func3", "this is %s", "message3"));
+    assert(_PadErrStack_PushBack(stack, NULL, 0, NULL, 0, "file4", 4, "func4", "this is %s", "message4"));
 
-    assert(errstack_len(stack) == 4);
+    assert(PadErrStack_Len(stack) == 4);
 
-    assert(errstack_extendb_other(stack, stack));
-    assert(errstack_len(stack) == 8);
+    assert(PadErrStack_ExtendBackOther(stack, stack));
+    assert(PadErrStack_Len(stack) == 8);
 
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static void
-test_errstack_trim_around(void) {
-    errstack_t *stack = errstack_new();
+test_PadErrStack_TrimAround(void) {
+    PadErrStack *stack = PadErrStack_New();
 
     const char *src = "the source strings";
     int32_t pos = 10;
-    _errstack_pushb(stack, NULL, 0, src, pos, "file1", 1, "func1", "this is dog");
-    _errstack_pushb(stack, NULL, 0, src, pos, "file1", 1, "func1", "this is bird");
+    _PadErrStack_PushBack(stack, NULL, 0, src, pos, "file1", 1, "func1", "this is dog");
+    _PadErrStack_PushBack(stack, NULL, 0, src, pos, "file1", 1, "func1", "this is bird");
 
-    string_t *s = errstack_trim_around(src, pos);
+    string_t *s = PadErrStack_TrimAround(src, pos);
     assert(s);
     assert(!strcmp(str_getc(s),
 "the source strings\n"
 "         ^"));
 
-    errstack_del(stack);
+    PadErrStack_Del(stack);
 }
 
 static const struct testcase
-errstack_tests[] = {
-    {"errelem_show", test_errelem_show},
-    {"errstack_new", test_errstack_new},
-    {"errstack_pushb", test_errstack_pushb},
+PadErrStackests[] = {
+    {"PadErrElem_Show", test_PadErrElem_Show},
+    {"PadErrStack_New", test_PadErrStack_New},
+    {"PadErrStack_PushBack", test_PadErrStack_PushBack},
     {"errstack_resize", test_errstack_resize},
-    {"errstack_trace", test_errstack_trace},
-    {"errstack_extendf_other_0", test_errstack_extendf_other_0},
-    {"errstack_extendf_other_1", test_errstack_extendf_other_1},
-    {"errstack_extendf_other_2", test_errstack_extendf_other_2},
-    {"errstack_extendb_other_0", test_errstack_extendb_other_0},
-    {"errstack_extendb_other_1", test_errstack_extendb_other_1},
-    {"errstack_extendb_other_2", test_errstack_extendb_other_2},
-    {"errstack_trim_around", test_errstack_trim_around},
+    {"PadErrStack_Trace", test_PadErrStack_Trace},
+    {"PadErrStack_ExtendFrontOther_0", test_PadErrStack_ExtendFrontOther_0},
+    {"PadErrStack_ExtendFrontOther_1", test_PadErrStack_ExtendFrontOther_1},
+    {"PadErrStack_ExtendFrontOther_2", test_PadErrStack_ExtendFrontOther_2},
+    {"PadErrStack_ExtendBackOther_0", test_PadErrStack_ExtendBackOther_0},
+    {"PadErrStack_ExtendBackOther_1", test_PadErrStack_ExtendBackOther_1},
+    {"PadErrStack_ExtendBackOther_2", test_PadErrStack_ExtendBackOther_2},
+    {"PadErrStack_TrimAround", test_PadErrStack_TrimAround},
     {0},
 };
 
@@ -31534,7 +31534,7 @@ testmodules[] = {
     {"traverser", traverser_tests},
     {"stdlib.list", stdlib_list_tests},
     {"stdlib.stream", stdlib_stream_tests},
-    {"error_stack", errstack_tests},
+    {"error_stack", PadErrStackests},
     {"gc", lang_gc_tests},
     {"objdict", lang_object_dict_tests},
     {0},

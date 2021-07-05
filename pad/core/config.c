@@ -1,15 +1,15 @@
 #include <pad/core/config.h>
 
 void
-config_del(config_t *self) {
+PadConfig_Del(PadConfig *self) {
     if (self) {
         free(self);
     }
 }
 
-config_t *
-config_new(void) {
-    config_t *self = mem_calloc(1, sizeof(*self));
+PadConfig *
+PadConfig_New(void) {
+    PadConfig *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -20,8 +20,8 @@ config_new(void) {
 char *
 pop_tail_slash(char *path);
 
-config_t *
-config_init(config_t *self) {
+PadConfig *
+PadConfig_Init(PadConfig *self) {
     strcpy(self->line_encoding, "lf");
 
     // standard libraries

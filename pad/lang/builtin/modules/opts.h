@@ -18,4 +18,4 @@
  * @return
  */
 object_t *
-builtin_opts_module_new(const config_t *config, gc_t *ref_gc);
+builtin_opts_module_new(const PadConfig *config, gc_t *ref_gc);

@@ -9,8 +9,8 @@ enum {
 **********/
 
 void
-errelem_show_debug(const errelem_t *self, FILE *fout) {
-    char msg[ERRELEM_MESSAGE_SIZE] = {0};
+PadErrElem_Show_debug(const PadErrElem *self, FILE *fout) {
+    char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
     err_fix_text(msg, sizeof msg, self->message);
 
     fprintf(fout, "%s: %d: %s: %s\n",
@@ -22,8 +22,8 @@ errelem_show_debug(const errelem_t *self, FILE *fout) {
 }
 
 void
-errelem_show(const errelem_t *self, FILE *fout) {
-    char msg[ERRELEM_MESSAGE_SIZE] = {0};
+PadErrElem_Show(const PadErrElem *self, FILE *fout) {
+    char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
     err_fix_text(msg, sizeof msg, self->message);
 
     const char *fname = self->program_filename;
@@ -36,8 +36,8 @@ errelem_show(const errelem_t *self, FILE *fout) {
 }
 
 void
-errelem_show_msg(const errelem_t *self, FILE *fout) {
-    char msg[ERRELEM_MESSAGE_SIZE] = {0};
+PadErrElem_Show_msg(const PadErrElem *self, FILE *fout) {
+    char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
     err_fix_text(msg, sizeof msg, self->message);
     fprintf(fout, "%s\n", msg);
 }
@@ -46,14 +46,14 @@ errelem_show_msg(const errelem_t *self, FILE *fout) {
 * errstack *
 ***********/
 
-struct errstack {
+struct PadErrStack {
     int32_t capa;
     int32_t len;
-    errelem_t *stack;
+    PadErrElem *stack;
 };
 
 void
-errstack_del(errstack_t *self) {
+PadErrStack_Del(PadErrStack *self) {
     if (!self) {
         return;
     }
@@ -62,16 +62,16 @@ errstack_del(errstack_t *self) {
     free(self);
 }
 
-errstack_t *
-errstack_new(void) {
-    errstack_t *self = mem_calloc(1, sizeof(*self));
+PadErrStack *
+PadErrStack_New(void) {
+    PadErrStack *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->stack = mem_calloc(ERRSTACK_INIT_CAPA, sizeof(errelem_t));
+    self->stack = mem_calloc(ERRSTACK_INIT_CAPA, sizeof(PadErrElem));
     if (!self->stack) {
-        errstack_del(self);
+        PadErrStack_Del(self);
         return NULL;
     }
 
@@ -80,17 +80,17 @@ errstack_new(void) {
     return self;
 }
 
-errstack_t *
-errstack_deep_copy(const errstack_t *other) {
+PadErrStack *
+PadErrStack_DeepCopy(const PadErrStack *other) {
     if (!other) {
         return NULL;
     }
 
-    errstack_t *self = errstack_new();
+    PadErrStack *self = PadErrStack_New();
 
     for (int32_t i = 0; i < other->len; ++i) {
-        const errelem_t *elem = &other->stack[i];
-        _errstack_pushb(
+        const PadErrElem *elem = &other->stack[i];
+        _PadErrStack_PushBack(
             self,
             elem->program_filename,
             elem->program_lineno,
@@ -107,16 +107,16 @@ errstack_deep_copy(const errstack_t *other) {
     return self;
 }
 
-errstack_t *
-errstack_shallow_copy(const errstack_t *other) {
-    return errstack_deep_copy(other);
+PadErrStack *
+PadErrStack_ShallowCopy(const PadErrStack *other) {
+    return PadErrStack_DeepCopy(other);
 }
 
-static errstack_t *
-errstack_resize(errstack_t *self, int32_t newcapa) {
-    int32_t byte = sizeof(errelem_t);
+static PadErrStack *
+errstack_resize(PadErrStack *self, int32_t newcapa) {
+    int32_t byte = sizeof(PadErrElem);
 
-    errelem_t *tmp = mem_realloc(self->stack, newcapa*byte);
+    PadErrElem *tmp = mem_realloc(self->stack, newcapa*byte);
     if (!tmp) {
         return NULL;
     }
@@ -127,9 +127,9 @@ errstack_resize(errstack_t *self, int32_t newcapa) {
     return self;
 }
 
-errstack_t *
-_errstack_pushb(
-    errstack_t *self,
+PadErrStack *
+_PadErrStack_PushBack(
+    PadErrStack *self,
     const char *program_filename,
     int32_t program_lineno,
     const char *program_source,
@@ -146,7 +146,7 @@ _errstack_pushb(
         }
     }
 
-    errelem_t *elem = &self->stack[self->len];
+    PadErrElem *elem = &self->stack[self->len];
 
     elem->program_filename = program_filename;
     elem->program_lineno = program_lineno;
@@ -166,8 +166,8 @@ _errstack_pushb(
     return self;
 }
 
-const errelem_t *
-errstack_getc(const errstack_t *self, int32_t idx) {
+const PadErrElem *
+PadErrStack_Getc(const PadErrStack *self, int32_t idx) {
     if (idx < 0 || idx >= self->len) {
         return NULL;
     }
@@ -176,7 +176,7 @@ errstack_getc(const errstack_t *self, int32_t idx) {
 }
 
 string_t *
-errstack_trim_around(const char *src, int32_t pos) {
+PadErrStack_TrimAround(const char *src, int32_t pos) {
     if (!src || pos < 0) {
         return NULL;
     }
@@ -233,12 +233,12 @@ errstack_trim_around(const char *src, int32_t pos) {
 }
 
 static void
-show_trim_around(const errelem_t *elem, FILE *fout) {
+show_trim_around(const PadErrElem *elem, FILE *fout) {
     if (!elem || !elem->program_source) {
         return;
     }
 
-    string_t *s = errstack_trim_around(elem->program_source, elem->program_source_pos);
+    string_t *s = PadErrStack_TrimAround(elem->program_source, elem->program_source_pos);
     string_t *ss = str_indent(s, ' ', 1, 4);
     str_del(s);
     fprintf(fout, "%s\n", str_getc(ss));
@@ -246,7 +246,7 @@ show_trim_around(const errelem_t *elem, FILE *fout) {
 }
 
 void
-_errstack_trace(const errstack_t *self, FILE *fout, bool debug) {
+_PadErrStack_Trace(const PadErrStack *self, FILE *fout, bool debug) {
     if (!self || !self->len || !fout) {
         return;
     }
@@ -254,61 +254,61 @@ _errstack_trace(const errstack_t *self, FILE *fout, bool debug) {
     fprintf(fout, "Stack trace:\n");
 
     for (int32_t i = self->len - 1; i >= 0; --i) {
-        const errelem_t *elem = &self->stack[i];
+        const PadErrElem *elem = &self->stack[i];
         fprintf(fout, "    ");
         if (debug) {
-            errelem_show_debug(elem, fout);
+            PadErrElem_Show_debug(elem, fout);
         } else {
-            errelem_show(elem, fout);
+            PadErrElem_Show(elem, fout);
         }
     }
 
     fputs("\n", fout);
 
-    const errelem_t *first = &self->stack[0];
+    const PadErrElem *first = &self->stack[0];
     show_trim_around(first, fout);
 }
 
 void
-errstack_trace(const errstack_t *self, FILE *fout) {
-    _errstack_trace(self, fout, false);
+PadErrStack_Trace(const PadErrStack *self, FILE *fout) {
+    _PadErrStack_Trace(self, fout, false);
 }
 
 void
-errstack_trace_debug(const errstack_t *self, FILE *fout) {
-    _errstack_trace(self, fout, true);
+PadErrStack_TraceDebug(const PadErrStack *self, FILE *fout) {
+    _PadErrStack_Trace(self, fout, true);
 }
 
 void
-errstack_trace_simple(const errstack_t *self, FILE *fout) {
+PadErrStack_TraceSimple(const PadErrStack *self, FILE *fout) {
     if (!self || !self->len || !fout) {
         return;
     }
 
     for (int32_t i = self->len - 1; i >= 0; --i) {
-        const errelem_t *elem = &self->stack[i];
-        errelem_show_msg(elem, fout);
+        const PadErrElem *elem = &self->stack[i];
+        PadErrElem_Show_msg(elem, fout);
     }
 }
 
 int32_t
-errstack_len(const errstack_t *self) {
+PadErrStack_Len(const PadErrStack *self) {
     return self->len;
 }
 
 void
-errstack_clear(errstack_t *self) {
+PadErrStack_Clear(PadErrStack *self) {
     self->len = 0;
 }
 
-errstack_t *
-errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
+PadErrStack *
+PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *_other) {
     if (!self || !_other) {
         return NULL;
     }
 
     // self == _other? need copy for safety
-    errstack_t *other = errstack_deep_copy(_other);
+    PadErrStack *other = PadErrStack_DeepCopy(_other);
     if (!other) {
         return NULL;
     }
@@ -318,7 +318,7 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     if (src->program_filename) { \
         dst->program_filename = cstr_dup(src->program_filename); \
         if (!dst->program_filename) { \
-            errstack_del(other); \
+            PadErrStack_Del(other); \
             return NULL; \
         } \
     } \
@@ -326,7 +326,7 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     if (src->program_source) { \
         dst->program_source = cstr_dup(src->program_source); \
         if (!dst->program_source) { \
-            errstack_del(other); \
+            PadErrStack_Del(other); \
             return NULL; \
         } \
     } \
@@ -338,14 +338,14 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     // copy stack
     int32_t save_len = self->len;
     int32_t save_capa = self->capa;
-    errelem_t *save_stack = mem_calloc(save_capa+1, sizeof(errelem_t));
+    PadErrElem *save_stack = mem_calloc(save_capa+1, sizeof(PadErrElem));
     if (!save_stack) {
         return NULL;
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        errelem_t *dst = &save_stack[i];
-        const errelem_t *src = &self->stack[i];
+        PadErrElem *dst = &save_stack[i];
+        const PadErrElem *src = &self->stack[i];
         copy(dst, src);
     }
 
@@ -358,12 +358,12 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
     }
 
     // clear
-    errstack_clear(self);
+    PadErrStack_Clear(self);
 
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
-        const errelem_t *src = &other->stack[i];
-        _errstack_pushb(
+        const PadErrElem *src = &other->stack[i];
+        _PadErrStack_PushBack(
             self,
             src->program_filename,
             src->program_lineno,
@@ -379,8 +379,8 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
 
     // append save stack at self stack
     for (int32_t i = 0; i < save_len; ++i) {
-        const errelem_t *src = &save_stack[i];
-        _errstack_pushb(
+        const PadErrElem *src = &save_stack[i];
+        _PadErrStack_PushBack(
             self,
             src->program_filename,
             src->program_lineno,
@@ -396,24 +396,24 @@ errstack_extendf_other(errstack_t *self, const errstack_t *_other) {
 
     // free copy stack
     free(save_stack);
-    errstack_del(other);
+    PadErrStack_Del(other);
 
     return self;
 }
 
-errstack_t *
-errstack_extendb_other(errstack_t *self, const errstack_t *_other) {
+PadErrStack *
+PadErrStack_ExtendBackOther(PadErrStack *self, const PadErrStack *_other) {
     if (!self || !_other) {
         return NULL;
     }
 
     // self == _other? need copy for safety
-    errstack_t *other = errstack_deep_copy(_other);
+    PadErrStack *other = PadErrStack_DeepCopy(_other);
 
     // append other at front of self
     for (int32_t i = 0; i < other->len; ++i) {
-        const errelem_t *src = &other->stack[i];
-        _errstack_pushb(
+        const PadErrElem *src = &other->stack[i];
+        _PadErrStack_PushBack(
             self,
             src->program_filename,
             src->program_lineno,
@@ -427,7 +427,7 @@ errstack_extendb_other(errstack_t *self, const errstack_t *_other) {
         );
     }
 
-    errstack_del(other);
+    PadErrStack_Del(other);
 
     return self;
 }

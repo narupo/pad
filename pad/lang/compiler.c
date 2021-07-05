@@ -81,7 +81,7 @@
             src = t->program_source; \
             pos = t->program_source_pos; \
         } \
-        errstack_pushb(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
+        PadErrStack_PushBack(ast->error_stack, fname, lineno, src, pos, fmt, ##__VA_ARGS__); \
     }
 
 #undef make_node

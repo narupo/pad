@@ -1,0 +1,55 @@
+./pad/app.h *
+./pad/core/alias_info.h *
+./pad/core/args.h *
+./pad/core/config.h *
+./pad/core/constant.h *
+./pad/core/error_stack.h *
+./pad/core/types.h
+./pad/core/util.h
+./pad/lang/arguments.h
+./pad/lang/ast.h
+./pad/lang/builtin/function.h
+./pad/lang/builtin/functions.h
+./pad/lang/builtin/modules/alias.h
+./pad/lang/builtin/modules/array.h
+./pad/lang/builtin/modules/dict.h
+./pad/lang/builtin/modules/opts.h
+./pad/lang/builtin/modules/unicode.h
+./pad/lang/chain_node.h
+./pad/lang/chain_nodes.h
+./pad/lang/chain_object.h
+./pad/lang/chain_objects.h
+./pad/lang/compiler.h
+./pad/lang/context.h
+./pad/lang/gc.h
+./pad/lang/importer.h
+./pad/lang/kit.h
+./pad/lang/nodes.h
+./pad/lang/node_array.h
+./pad/lang/node_dict.h
+./pad/lang/object.h
+./pad/lang/object_array.h
+./pad/lang/object_dict.h
+./pad/lang/opts.h
+./pad/lang/scope.h
+./pad/lang/tokenizer.h
+./pad/lang/tokens.h
+./pad/lang/traverser.h
+./pad/lang/types.h
+./pad/lang/utils.h
+./pad/lib/cl.h
+./pad/lib/cmdline.h
+./pad/lib/cstring.h
+./pad/lib/cstring_array.h
+./pad/lib/dict.h
+./pad/lib/error.h
+./pad/lib/file.h
+./pad/lib/format.h
+./pad/lib/memory.h
+./pad/lib/path.h
+./pad/lib/pipe.h
+./pad/lib/socket.h
+./pad/lib/string.h
+./pad/lib/term.h
+./pad/lib/unicode.h
+./tests/tests.h

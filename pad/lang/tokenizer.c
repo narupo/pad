@@ -61,7 +61,7 @@ tkropt_validate(tokenizer_option_t *self) {
 
 #undef pushb_error
 #define pushb_error(fmt, ...) \
-        errstack_pushb( \
+        PadErrStack_PushBack( \
             self->error_stack, \
             self->program_filename, \
             self->program_lineno, \
@@ -76,7 +76,7 @@ tkropt_validate(tokenizer_option_t *self) {
 ************/
 
 struct tokenizer {
-    errstack_t *error_stack;
+    PadErrStack *error_stack;
     char *program_filename;
     const char *program_source;
     const char *ptr;
@@ -100,7 +100,7 @@ tkr_del(tokenizer_t *self) {
     }
     free(self->program_filename);
     free(self->tokens);
-    errstack_del(self->error_stack);
+    PadErrStack_Del(self->error_stack);
     str_del(self->buf);
     tkropt_del(self->option);
     free(self);
@@ -113,7 +113,7 @@ tkr_new(tokenizer_option_t *move_option) {
         return NULL;
     }
 
-    self->error_stack = errstack_new();
+    self->error_stack = PadErrStack_New();
     if (!self->error_stack) {
         tkr_del(self);
         return NULL;
@@ -147,7 +147,7 @@ tkr_deep_copy(const tokenizer_t *other) {
         return NULL;
     }
 
-    self->error_stack = errstack_deep_copy(other->error_stack);
+    self->error_stack = PadErrStack_DeepCopy(other->error_stack);
     if (!self->error_stack) {
         tkr_del(self);
         return NULL;
@@ -463,7 +463,7 @@ fail:
 
 bool
 tkr_has_error_stack(const tokenizer_t *self) {
-    return errstack_len(self->error_stack);
+    return PadErrStack_Len(self->error_stack);
 }
 
 static token_t *
@@ -646,7 +646,7 @@ tokenizer_t *
 tkr_parse(tokenizer_t *self, const char *program_source) {
     self->program_source = program_source;
     self->ptr = program_source;
-    errstack_clear(self->error_stack);
+    PadErrStack_Clear(self->error_stack);
     str_clear(self->buf);
     tkr_clear_tokens(self);
 
@@ -966,15 +966,15 @@ tkr_tokens_getc(tokenizer_t *self, int32_t index) {
 
 const char *
 tkr_getc_first_error_message(const tokenizer_t *self) {
-    if (!errstack_len(self->error_stack)) {
+    if (!PadErrStack_Len(self->error_stack)) {
         return NULL;
     }
 
-    const errelem_t *elem = errstack_getc(self->error_stack, 0);
+    const PadErrElem *elem = PadErrStack_Getc(self->error_stack, 0);
     return elem->message;
 }
 
-const errstack_t *
+const PadErrStack *
 tkr_getc_error_stack(const tokenizer_t *self) {
     if (!self) {
         return NULL;
@@ -994,7 +994,7 @@ tkr_set_debug(tokenizer_t *self, bool debug) {
 
 void
 tkr_trace_error(const tokenizer_t *self, FILE *fout) {
-    errstack_trace(self->error_stack, fout);
+    PadErrStack_Trace(self->error_stack, fout);
 }
 
 const char *

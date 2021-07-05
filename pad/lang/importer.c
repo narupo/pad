@@ -1,7 +1,7 @@
 #include <pad/lang/importer.h>
 
 struct importer {
-    const config_t *ref_config;
+    const PadConfig *ref_config;
     char error[1024];
 };
 
@@ -14,7 +14,7 @@ importer_del(importer_t *self) {
 }
 
 importer_t *
-importer_new(const config_t *ref_config) {
+importer_new(const PadConfig *ref_config) {
     importer_t *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
