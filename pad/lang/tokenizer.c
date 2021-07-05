@@ -491,11 +491,11 @@ tkr_parse_identifier(tokenizer_t *self) {
     } else if (cstr_eq(token->text, "for")) {
         token->type = TOKEN_TYPE_STMT_FOR;
     } else if (cstr_eq(token->text, "or")) {
-        token->type = TOKEN_TYPE_OP_OR;
+        token->type = TOKEN_TYPE_PAD_OP__OR;
     } else if (cstr_eq(token->text, "and")) {
-        token->type = TOKEN_TYPE_OP_AND;
+        token->type = TOKEN_TYPE_PAD_OP__AND;
     } else if (cstr_eq(token->text, "not")) {
-        token->type = TOKEN_TYPE_OP_NOT;
+        token->type = TOKEN_TYPE_PAD_OP__NOT;
     } else if (cstr_eq(token->text, "nil")) {
         token->type = TOKEN_TYPE_NIL;
     } else if (cstr_eq(token->text, "break")) {
@@ -741,48 +741,48 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                 }
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ASS, TOKEN_TYPE_OP_EQ)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_OP_NOT_EQ);
+                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__NOT_EQ);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_OP_LTE);
+                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__LTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_OP_GTE);
+                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__GTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_OP_LT)));
+                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__LT)));
             } else if (c == '>') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_OP_GT)));
+                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_SUB, TOKEN_TYPE_OP_SUB_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_MUL, TOKEN_TYPE_OP_MUL_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_DIV, TOKEN_TYPE_OP_DIV_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_MOD, TOKEN_TYPE_OP_MOD_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {
@@ -839,48 +839,48 @@ tkr_parse(tokenizer_t *self, const char *program_source) {
                m = 0;
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ASS, TOKEN_TYPE_OP_EQ)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_OP_NOT_EQ);
+                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__NOT_EQ);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_OP_LTE);
+                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__LTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_OP_GTE);
+                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__GTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_OP_LT)));
+                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__LT)));
             } else if (c == '>') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_OP_GT)));
+                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_ADD, TOKEN_TYPE_OP_ADD_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_SUB, TOKEN_TYPE_OP_SUB_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_MUL, TOKEN_TYPE_OP_MUL_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_DIV, TOKEN_TYPE_OP_DIV_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!tkr_parse_op(self, c, TOKEN_TYPE_OP_MOD, TOKEN_TYPE_OP_MOD_ASS)) {
+                if (!tkr_parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {

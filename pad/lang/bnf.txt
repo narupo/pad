@@ -66,8 +66,8 @@ BNF of Pad's template language
            asscalc: expr [ augassign expr ]*
               expr: term [ add_sub_op term ]*
               term: negative [ mul_div_op negative ]*
-          nagative: ( '-' ) chain
-             chain: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
+          nagative: ( '-' ) ring
+              ring: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
             factor: atom | '(' formula ')'
             * atom: nil |
                     false |

@@ -8,9 +8,9 @@
  * number of type of PadChainNode
  */
 typedef enum {
-    PAD_CHAIN_NODE_TYPE__DOT,
-    PAD_CHAIN_NODE_TYPE__CALL,
-    PAD_CHAIN_NODE_TYPE__INDEX,
+    PAD_CHAIN_PAD_NODE_TYPE___DOT,
+    PAD_CHAIN_PAD_NODE_TYPE___CALL,
+    PAD_CHAIN_PAD_NODE_TYPE___INDEX,
 } PadChainNodeType;
 
 /**

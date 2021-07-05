@@ -4,17 +4,17 @@ enum {
     NODEDICT_INIT_CAPA = 128,
 };
 
-struct node_dict {
+struct PadNode_dict {
     node_dict_item_t *map;
     size_t capa;
     size_t len;
 };
 
 void
-node_del(PadNode *self);
+PadNode_Del(PadNode *self);
 
 typedef struct string string_t;
-string_t * PadNodeo_str(const PadNode *self);
+string_t * PadNode_ToStr(const PadNode *self);
 
 void
 nodedict_del(node_dict_t *self) {
@@ -24,7 +24,7 @@ nodedict_del(node_dict_t *self) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         PadNode *node = self->map[i].value;
-        node_del(node);
+        PadNode_Del(node);
     }
 
     free(self->map);
@@ -97,7 +97,7 @@ nodedict_deep_copy(const node_dict_t *other) {
         node_dict_item_t *dstitem = &self->map[i];
         node_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
-        dstitem->value = node_deep_copy(srcitem->value);  // deep copy
+        dstitem->value = PadNode_DeepCopy(srcitem->value);  // deep copy
         if (!dstitem->value) {
             nodedict_del(self);
             return NULL;
@@ -130,7 +130,7 @@ nodedict_shallow_copy(const node_dict_t *other) {
         node_dict_item_t *dstitem = &self->map[i];
         node_dict_item_t *srcitem = &other->map[i];
         strcpy(dstitem->key, srcitem->key);
-        dstitem->value = node_shallow_copy(srcitem->value);  // deep copy
+        dstitem->value = PadNode_ShallowCopy(srcitem->value);  // deep copy
         if (!dstitem->value) {
             nodedict_del(self);
             return NULL;
@@ -159,7 +159,7 @@ nodedict_resize(node_dict_t *self, int32_t newcapa) {
 }
 
 node_dict_t *
-nodedict_move(node_dict_t *self, const char *key, struct node *move_value) {
+nodedict_move(node_dict_t *self, const char *key, struct PadNode *move_value) {
     if (!self || !key || !move_value) {
         return NULL;
     }
@@ -168,7 +168,7 @@ nodedict_move(node_dict_t *self, const char *key, struct node *move_value) {
     for (int i = 0; i < self->len; ++i) {
         if (cstr_eq(self->map[i].key, key)) {
             // over write
-            node_del(self->map[i].value);
+            PadNode_Del(self->map[i].value);
             self->map[i].value = mem_move(move_value);
             return self;
         }
@@ -226,7 +226,7 @@ nodedict_clear(node_dict_t *self) {
 
     for (int i = 0; i < self->len; ++i) {
         self->map[i].key[0] = '\0';
-        node_del(self->map[i].value);
+        PadNode_Del(self->map[i].value);
         self->map[i].value = NULL;
     }
     self->len = 0;
@@ -304,9 +304,9 @@ nodedict_dump(const node_dict_t *self, FILE *fout) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         const node_dict_item_t *item = &self->map[i];
-        string_t *s = PadNodeo_str(item->value);
+        string_t *s = PadNode_ToStr(item->value);
         fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
         str_del(s);
-        node_dump(item->value, fout);
+        PadNode_Dump(item->value, fout);
     }
 }

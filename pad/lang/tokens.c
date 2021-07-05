@@ -127,30 +127,30 @@ token_type_to_str(const token_t *self) {
     case TOKEN_TYPE_TRUE: return "true"; break;
 
     // operators
-    case TOKEN_TYPE_OP_ADD: return "+"; break;
-    case TOKEN_TYPE_OP_SUB: return "-"; break;
-    case TOKEN_TYPE_OP_MUL: return "*"; break;
-    case TOKEN_TYPE_OP_DIV: return "/"; break;
-    case TOKEN_TYPE_OP_MOD: return "%"; break;
-    case TOKEN_TYPE_OP_OR: return "or"; break;
-    case TOKEN_TYPE_OP_AND: return "and"; break;
-    case TOKEN_TYPE_OP_NOT: return "not"; break;
+    case TOKEN_TYPE_PAD_OP__ADD: return "+"; break;
+    case TOKEN_TYPE_PAD_OP__SUB: return "-"; break;
+    case TOKEN_TYPE_PAD_OP__MUL: return "*"; break;
+    case TOKEN_TYPE_PAD_OP__DIV: return "/"; break;
+    case TOKEN_TYPE_PAD_OP__MOD: return "%"; break;
+    case TOKEN_TYPE_PAD_OP__OR: return "or"; break;
+    case TOKEN_TYPE_PAD_OP__AND: return "and"; break;
+    case TOKEN_TYPE_PAD_OP__NOT: return "not"; break;
 
     // assign operators
-    case TOKEN_TYPE_OP_ASS: return "="; break;
-    case TOKEN_TYPE_OP_ADD_ASS: return "+="; break;
-    case TOKEN_TYPE_OP_SUB_ASS: return "-="; break;
-    case TOKEN_TYPE_OP_MUL_ASS: return "*="; break;
-    case TOKEN_TYPE_OP_DIV_ASS: return "/="; break;
-    case TOKEN_TYPE_OP_MOD_ASS: return "%="; break;
+    case TOKEN_TYPE_PAD_OP__ASS: return "="; break;
+    case TOKEN_TYPE_PAD_OP__ADD_ASS: return "+="; break;
+    case TOKEN_TYPE_PAD_OP__SUB_ASS: return "-="; break;
+    case TOKEN_TYPE_PAD_OP__MUL_ASS: return "*="; break;
+    case TOKEN_TYPE_PAD_OP__DIV_ASS: return "/="; break;
+    case TOKEN_TYPE_PAD_OP__MOD_ASS: return "%="; break;
 
     // comparison operators
-    case TOKEN_TYPE_OP_EQ: return "=="; break;
-    case TOKEN_TYPE_OP_NOT_EQ: return "!="; break;
-    case TOKEN_TYPE_OP_LTE: return "<="; break;
-    case TOKEN_TYPE_OP_GTE: return ">="; break;
-    case TOKEN_TYPE_OP_LT: return "<"; break;
-    case TOKEN_TYPE_OP_GT: return ">"; break;
+    case TOKEN_TYPE_PAD_OP__EQ: return "=="; break;
+    case TOKEN_TYPE_PAD_OP__NOT_EQ: return "!="; break;
+    case TOKEN_TYPE_PAD_OP__LTE: return "<="; break;
+    case TOKEN_TYPE_PAD_OP__GTE: return ">="; break;
+    case TOKEN_TYPE_PAD_OP__LT: return "<"; break;
+    case TOKEN_TYPE_PAD_OP__GT: return ">"; break;
 
     // statements
     case TOKEN_TYPE_STMT_END: return "end"; break;

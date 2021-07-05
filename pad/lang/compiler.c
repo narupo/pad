@@ -86,7 +86,7 @@
 
 #undef make_node
 #define make_node(type, real) \
-    node_new(type, real, *ast->ref_ptr)
+    PadNode_New(type, real, *ast->ref_ptr)
 
 /*************
 * prototypes *
@@ -138,7 +138,7 @@ static PadNode *
 cc_expr(ast_t *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_chain(ast_t *ast, cc_args_t *cargs);
+cc_ring(ast_t *ast, cc_args_t *cargs);
 
 static PadNode *
 cc_content(ast_t *ast, cc_args_t *cargs);
@@ -217,7 +217,7 @@ cc_skip_newlines(ast_t *ast) {
 static PadNode *
 cc_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_assign_t, cur);
+    declare(PadAssignNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -253,7 +253,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
     }
 
     token_t *t = next_tok(ast);
-    if (t->type != TOKEN_TYPE_OP_ASS) {
+    if (t->type != TOKEN_TYPE_PAD_OP__ASS) {
         return_cleanup("");
     }
     check("read =");
@@ -272,14 +272,14 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            PadNode *node = node_new(NODE_TYPE_ASSIGN, cur, back_tok(ast));
+            PadNode *node = PadNode_New(PAD_NODE_TYPE__ASSIGN, cur, back_tok(ast));
             return_parse(node);
         }
 
         t = next_tok(ast);
-        if (t->type != TOKEN_TYPE_OP_ASS) {
+        if (t->type != TOKEN_TYPE_PAD_OP__ASS) {
             prev_tok(ast);
-            PadNode *node = node_new(NODE_TYPE_ASSIGN, cur, *ast->ref_ptr);
+            PadNode *node = PadNode_New(PAD_NODE_TYPE__ASSIGN, cur, *ast->ref_ptr);
             return_parse(node);
         }
         check("read =");
@@ -303,7 +303,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_assign_list(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_assign_list_t, cur);
+    declare(PadAssignListNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -337,14 +337,14 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
     token_t *t = cur_tok(ast);
     for (;;) {
         if (is_end(ast)) {
-            PadNode *node = node_new(NODE_TYPE_ASSIGN_LIST, cur, back_tok(ast));
+            PadNode *node = PadNode_New(PAD_NODE_TYPE__ASSIGN_LIST, cur, back_tok(ast));
             return_parse(node);
         }
 
         t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_ASSIGN_LIST, cur, *ast->ref_ptr));
+            return_parse(PadNode_New(PAD_NODE_TYPE__ASSIGN_LIST, cur, *ast->ref_ptr));
         }
         check("read ,");
 
@@ -367,7 +367,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_formula(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_formula_t, cur);
+    declare(PadFormulaNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -393,7 +393,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->assign_list) {
-        return_parse(node_new(NODE_TYPE_FORMULA, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__FORMULA, cur, savetok));
     }
 
     check("call cc_multi_assign");
@@ -407,13 +407,13 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");  // not error
     }
 
-    return_parse(node_new(NODE_TYPE_FORMULA, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FORMULA, cur, savetok));
 }
 
 static PadNode *
 cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_multi_assign_t, cur);
+    declare(PadMultiAssignNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -450,14 +450,14 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
     token_t *t = cur_tok(ast);
     for (;;) {
         if (is_end(ast)) {
-            PadNode *node = node_new(NODE_TYPE_MULTI_ASSIGN, cur, back_tok(ast));
+            PadNode *node = PadNode_New(PAD_NODE_TYPE__MULTI_ASSIGN, cur, back_tok(ast));
             return_parse(node);
         }
 
         t = next_tok(ast);
-        if (t->type != TOKEN_TYPE_OP_ASS) {
+        if (t->type != TOKEN_TYPE_PAD_OP__ASS) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_MULTI_ASSIGN, cur, *ast->ref_ptr));
+            return_parse(PadNode_New(PAD_NODE_TYPE__MULTI_ASSIGN, cur, *ast->ref_ptr));
         }
 
         check("call rhs cc_test_list");
@@ -479,7 +479,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_test_list(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(PadNodeest_list_t, cur);
+    declare(PadTestListNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -514,13 +514,13 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            return node_new(NODE_TYPE_TEST_LIST, cur, back_tok(ast));
+            return PadNode_New(PAD_NODE_TYPE__TEST_LIST, cur, back_tok(ast));
         }
 
         token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
             prev_tok(ast);
-            return node_new(NODE_TYPE_TEST_LIST, cur, *ast->ref_ptr);
+            return PadNode_New(PAD_NODE_TYPE__TEST_LIST, cur, *ast->ref_ptr);
         }
         check("read ,");
 
@@ -542,7 +542,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_call_args(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_call_args_t, cur);
+    declare(PadCallArgsNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -571,20 +571,20 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
-        return node_new(NODE_TYPE_CALL_ARGS, cur, savetok);
+        return PadNode_New(PAD_NODE_TYPE__CALL_ARGS, cur, savetok);
     }
 
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
         if (is_end(ast)) {
-            return node_new(NODE_TYPE_CALL_ARGS, cur, back_tok(ast));
+            return PadNode_New(PAD_NODE_TYPE__CALL_ARGS, cur, back_tok(ast));
         }
 
         token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
             prev_tok(ast);
-            return node_new(NODE_TYPE_CALL_ARGS, cur, cur_tok(ast));
+            return PadNode_New(PAD_NODE_TYPE__CALL_ARGS, cur, cur_tok(ast));
         }
         check("read ,");
 
@@ -606,7 +606,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_for_stmt_t, cur);
+    declare(PadForStmtNode, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
     bool is_in_loop = cargs->is_in_loop;
@@ -886,13 +886,13 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     }
 
     cargs->is_in_loop = is_in_loop;
-    return_parse(node_new(NODE_TYPE_FOR_STMT, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FOR_STMT, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_break_stmt_t, cur);
+    declare(PadBreakStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -915,13 +915,13 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("invalid break statement. not in loop");
     }
 
-    return_parse(node_new(NODE_TYPE_BREAK_STMT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__BREAK_STMT, cur, t));
 }
 
 static PadNode *
 cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_continue_stmt_t, cur);
+    declare(PadContinueStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -944,13 +944,13 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("invalid continue statement. not in loop");
     }
 
-    return_parse(node_new(NODE_TYPE_CONTINUE_STMT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__CONTINUE_STMT, cur, t));
 }
 
 static PadNode *
 cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_return_stmt_t, cur);
+    declare(PadReturnStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -985,13 +985,13 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     }
     // allow null
 
-    return_parse(node_new(NODE_TYPE_RETURN_STMT, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__RETURN_STMT, cur, savetok));
 }
 
 static PadNode *
 cc_augassign(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_augassign_t, cur);
+    declare(PadAugassignNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1010,21 +1010,21 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
     default:
         return_cleanup("");
         break;
-    case TOKEN_TYPE_OP_ADD_ASS: cur->op = OP_ADD_ASS; break;
-    case TOKEN_TYPE_OP_SUB_ASS: cur->op = OP_SUB_ASS; break;
-    case TOKEN_TYPE_OP_MUL_ASS: cur->op = OP_MUL_ASS; break;
-    case TOKEN_TYPE_OP_DIV_ASS: cur->op = OP_DIV_ASS; break;
-    case TOKEN_TYPE_OP_MOD_ASS: cur->op = OP_MOD_ASS; break;
+    case TOKEN_TYPE_PAD_OP__ADD_ASS: cur->op = PAD_OP__ADD_ASS; break;
+    case TOKEN_TYPE_PAD_OP__SUB_ASS: cur->op = PAD_OP__SUB_ASS; break;
+    case TOKEN_TYPE_PAD_OP__MUL_ASS: cur->op = PAD_OP__MUL_ASS; break;
+    case TOKEN_TYPE_PAD_OP__DIV_ASS: cur->op = PAD_OP__DIV_ASS; break;
+    case TOKEN_TYPE_PAD_OP__MOD_ASS: cur->op = PAD_OP__MOD_ASS; break;
     }
     check("read op");
 
-    return_parse(node_new(NODE_TYPE_AUGASSIGN, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__AUGASSIGN, cur, t));
 }
 
 static PadNode *
 cc_identifier(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_identifier_t, cur);
+    declare(PadIdentNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1050,13 +1050,13 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("failed to duplicate");
     }
 
-    return_parse(node_new(NODE_TYPE_IDENTIFIER, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__IDENTIFIER, cur, t));
 }
 
 static PadNode *
 cc_string(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_string_t, cur);
+    declare(PadStrNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1082,13 +1082,13 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("failed to duplicate")
     }
 
-    return_parse(node_new(NODE_TYPE_STRING, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__STRING, cur, t));
 }
 
 static PadNode *
 cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_simple_assign_t, cur);
+    declare(PadSimpleAssignNode, cur);
     cur->nodearr = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -1124,13 +1124,13 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur, back_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__SIMPLE_ASSIGN, cur, back_tok(ast)));
         }
 
         token_t *t = next_tok(ast);
-        if (t->type != TOKEN_TYPE_OP_ASS) {
+        if (t->type != TOKEN_TYPE_PAD_OP__ASS) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_SIMPLE_ASSIGN, cur, cur_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__SIMPLE_ASSIGN, cur, cur_tok(ast)));
         }
         check("read '='")
 
@@ -1154,7 +1154,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_array_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_array_elems_t, cur);
+    declare(PadAryElemsNode_, cur);
     cur->nodearr = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -1184,7 +1184,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ARRAY_ELEMS, cur, t));
     }
 
     nodearr_moveb(cur->nodearr, lhs);
@@ -1197,13 +1197,13 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, back_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__ARRAY_ELEMS, cur, back_tok(ast)));
         }
 
         token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, cur_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__ARRAY_ELEMS, cur, cur_tok(ast)));
         }
         check("read ','")
 
@@ -1222,7 +1222,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
         if (!rhs) {
-            return_parse(node_new(NODE_TYPE_ARRAY_ELEMS, cur, t));  // not error
+            return_parse(PadNode_New(PAD_NODE_TYPE__ARRAY_ELEMS, cur, t));  // not error
         }
 
         nodearr_moveb(cur->nodearr, rhs);
@@ -1235,7 +1235,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_array(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_array_t_, cur);
+    declare(PadAryNode_, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1285,13 +1285,13 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
     }
     check("read ']'");
 
-    return_parse(node_new(NODE_TYPE_ARRAY, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__ARRAY, cur, t));
 }
 
 static PadNode *
 cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_dict_elem_t, cur);
+    declare(PadDictElemNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1346,13 +1346,13 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found value in parse dict elem");
     }
 
-    return_parse(node_new(NODE_TYPE_DICT_ELEM, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__DICT_ELEM, cur, savetok));
 }
 
 static PadNode *
 cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_dict_elems_t, cur);
+    declare(PadDictElemsNode, cur);
     cur->nodearr = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -1382,14 +1382,14 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (!lhs) {
-        return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__DICT_ELEMS, cur, t));
     }
 
     nodearr_moveb(cur->nodearr, lhs);
 
     for (;;) {
         if (is_end(ast)) {
-            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, back_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__DICT_ELEMS, cur, back_tok(ast)));
         }
 
         check("skip newlines");
@@ -1401,7 +1401,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, cur_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__DICT_ELEMS, cur, cur_tok(ast)));
         }
         check("read ','")
 
@@ -1420,7 +1420,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         }
         if (!rhs) {
             // not error
-            return_parse(node_new(NODE_TYPE_DICT_ELEMS, cur, t));
+            return_parse(PadNode_New(PAD_NODE_TYPE__DICT_ELEMS, cur, t));
         }
 
         nodearr_moveb(cur->nodearr, rhs);
@@ -1433,7 +1433,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_dict(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(_node_dict_t, cur);
+    declare(_PadDictNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1487,13 +1487,13 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
     }
     check("read '}'");
 
-    return_parse(node_new(NODE_TYPE_DICT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__DICT, cur, t));
 }
 
 static PadNode *
 cc_nil(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_nil_t, cur);
+    declare(PadNilNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1513,13 +1513,13 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
     }
     check("read nil");
 
-    return_parse(node_new(NODE_TYPE_NIL, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__NIL, cur, t));
 }
 
 static PadNode *
 cc_digit(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_digit_t, cur);
+    declare(PadDigitNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1541,13 +1541,13 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
 
     cur->lvalue = t->lvalue;
 
-    return_parse(node_new(NODE_TYPE_DIGIT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__DIGIT, cur, t));
 }
 
 static PadNode *
 cc_float(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_float_t, cur);
+    declare(PadFloatNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1569,13 +1569,13 @@ cc_float(ast_t *ast, cc_args_t *cargs) {
 
     cur->value = t->float_value;
 
-    return_parse(node_new(NODE_TYPE_FLOAT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FLOAT, cur, t));
 }
 
 static PadNode *
 cc_false_(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_false_t, cur);
+    declare(PadFalseNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1596,13 +1596,13 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
 
     cur->boolean = false;
 
-    return_parse(node_new(NODE_TYPE_FALSE, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FALSE, cur, t));
 }
 
 static PadNode *
 cc_true_(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(PadNoderue_t, cur);
+    declare(PadTrueNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1623,13 +1623,13 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
 
     cur->boolean = true;
 
-    return_parse(node_new(NODE_TYPE_TRUE, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__TRUE, cur, t));
 }
 
 static PadNode *
 cc_atom(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_atom_t, cur);
+    declare(PadAtomNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1662,7 +1662,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->nil) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_false_");
@@ -1673,7 +1673,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->false_) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_true_");
@@ -1684,7 +1684,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->true_) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_digit");
@@ -1695,7 +1695,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->digit) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_float");
@@ -1706,7 +1706,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->float_) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_string");
@@ -1717,7 +1717,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->string) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_array");
@@ -1728,7 +1728,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->array) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_dict");
@@ -1739,7 +1739,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->dict) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     check("call cc_identifier");
@@ -1750,7 +1750,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
     if (cur->identifier) {
-        return_parse(node_new(NODE_TYPE_ATOM, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ATOM, cur, savetok));
     }
 
     return_cleanup("");
@@ -1759,7 +1759,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_factor(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_factor_t, cur);
+    declare(PadFactorNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1816,14 +1816,14 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
         check("read )")
     }
 
-    PadNode *node = node_new(NODE_TYPE_FACTOR, mem_move(cur), back_tok(ast));
+    PadNode *node = PadNode_New(PAD_NODE_TYPE__FACTOR, mem_move(cur), back_tok(ast));
     return_parse(node);
 }
 
 static PadNode *
 cc_asscalc(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_asscalc_t, cur);
+    declare(PadAssCalcNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -1867,7 +1867,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
             }
-            return_parse(node_new(NODE_TYPE_ASSCALC, cur, savetok));
+            return_parse(PadNode_New(PAD_NODE_TYPE__ASSCALC, cur, savetok));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -1893,7 +1893,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_term(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(PadNodeerm_t, cur);
+    declare(PadTermNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -1937,7 +1937,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
             return_cleanup("");
         }
         if (!op) {
-            return_parse(node_new(NODE_TYPE_TERM, cur, savetok));
+            return_parse(PadNode_New(PAD_NODE_TYPE__TERM, cur, savetok));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -1963,7 +1963,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_negative(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_negative_t, cur);
+    declare(PadNegativeNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1981,7 +1981,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     token_t *t = next_tok(ast);
-    if (t->type != TOKEN_TYPE_OP_SUB) {
+    if (t->type != TOKEN_TYPE_PAD_OP__SUB) {
         prev_tok(ast);
     } else {
         check("read op sub in negative");
@@ -1991,7 +1991,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
     check("call left cc_dot");
     const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
-    cur->chain = cc_chain(ast, cargs);
+    cur->chain = cc_ring(ast, cargs);
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     }
@@ -1999,13 +1999,13 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
         return_cleanup(""); // not error
     }
 
-    return_parse(node_new(NODE_TYPE_NEGATIVE, mem_move(cur), savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__NEGATIVE, mem_move(cur), savetok));
 }
 
 static PadNode *
-cc_chain(ast_t *ast, cc_args_t *cargs) {
+cc_ring(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_chain_t, cur);
+    declare(PadRingNode, cur);
     cur->chain_nodes = PadChainNodes_New();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -2056,7 +2056,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
                 m = 150;
             } else {
                 prev_tok(ast);
-                return_parse(node_new(NODE_TYPE_CHAIN, mem_move(cur), cur_tok(ast)));
+                return_parse(PadNode_New(PAD_NODE_TYPE__RING, mem_move(cur), cur_tok(ast)));
             }
         } break;
         case 50: {  // found '.'
@@ -2072,7 +2072,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             }
             assert(factor);
 
-            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE__DOT, mem_move(factor));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_PAD_NODE_TYPE___DOT, mem_move(factor));
             PadChainNodes_MoveBack(cur->chain_nodes, mem_move(nchain));
             m = 0;
         } break;
@@ -2093,7 +2093,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
                 return_cleanup("not found expression");
             }
 
-            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE__INDEX, mem_move(simple_assign));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_PAD_NODE_TYPE___INDEX, mem_move(simple_assign));
             PadChainNodes_MoveBack(cur->chain_nodes, mem_move(nchain));
 
             if (is_end(ast)) {
@@ -2122,7 +2122,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             }
             assert(call_args);
 
-            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE__CALL, mem_move(call_args));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_PAD_NODE_TYPE___CALL, mem_move(call_args));
             PadChainNodes_MoveBack(cur->chain_nodes, mem_move(nchain));
 
             if (is_end(ast)) {
@@ -2147,7 +2147,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_mul_div_op_t, cur);
+    declare(PadMulDivOpNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2170,19 +2170,19 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
     default:
         return_cleanup(""); // not error
         break;
-    case TOKEN_TYPE_OP_MUL: cur->op = OP_MUL; break;
-    case TOKEN_TYPE_OP_DIV: cur->op = OP_DIV; break;
-    case TOKEN_TYPE_OP_MOD: cur->op = OP_MOD; break;
+    case TOKEN_TYPE_PAD_OP__MUL: cur->op = PAD_OP__MUL; break;
+    case TOKEN_TYPE_PAD_OP__DIV: cur->op = PAD_OP__DIV; break;
+    case TOKEN_TYPE_PAD_OP__MOD: cur->op = PAD_OP__MOD; break;
     }
     check("read op");
 
-    return_parse(node_new(NODE_TYPE_MUL_DIV_OP, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__MUL_DIV_OP, cur, t));
 }
 
 static PadNode *
 cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_add_sub_op_t, cur);
+    declare(PadAddSubOpNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2205,18 +2205,18 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
     default:
         return_cleanup(""); // not error
         break;
-    case TOKEN_TYPE_OP_ADD: cur->op = OP_ADD; break;
-    case TOKEN_TYPE_OP_SUB: cur->op = OP_SUB; break;
+    case TOKEN_TYPE_PAD_OP__ADD: cur->op = PAD_OP__ADD; break;
+    case TOKEN_TYPE_PAD_OP__SUB: cur->op = PAD_OP__SUB; break;
     }
     check("read op");
 
-    return_parse(node_new(NODE_TYPE_ADD_SUB_OP, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__ADD_SUB_OP, cur, t));
 }
 
 static PadNode *
 cc_expr(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_expr_t, cur);
+    declare(PadExprNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -2260,7 +2260,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
             }
-            return_parse(node_new(NODE_TYPE_EXPR, cur, savetok));
+            return_parse(PadNode_New(PAD_NODE_TYPE__EXPR, cur, savetok));
         }
 
         nodearr_moveb(cur->nodearr, op);
@@ -2286,7 +2286,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_comp_op(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_comp_op_t, cur);
+    declare(PadCompOpNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2310,39 +2310,39 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
         prev_tok(ast);
         return_cleanup(""); // not error
         break;
-    case TOKEN_TYPE_OP_EQ:
-        cur->op = OP_EQ;
+    case TOKEN_TYPE_PAD_OP__EQ:
+        cur->op = PAD_OP__EQ;
         check("read ==");
         break;
-    case TOKEN_TYPE_OP_NOT_EQ:
-        cur->op = OP_NOT_EQ;
+    case TOKEN_TYPE_PAD_OP__NOT_EQ:
+        cur->op = PAD_OP__NOT_EQ;
         check("read !=");
         break;
-    case TOKEN_TYPE_OP_LTE:
-        cur->op = OP_LTE;
+    case TOKEN_TYPE_PAD_OP__LTE:
+        cur->op = PAD_OP__LTE;
         check("read <=");
         break;
-    case TOKEN_TYPE_OP_GTE:
-        cur->op = OP_GTE;
+    case TOKEN_TYPE_PAD_OP__GTE:
+        cur->op = PAD_OP__GTE;
         check("read >=");
         break;
-    case TOKEN_TYPE_OP_LT:
-        cur->op = OP_LT;
+    case TOKEN_TYPE_PAD_OP__LT:
+        cur->op = PAD_OP__LT;
         check("read <");
         break;
-    case TOKEN_TYPE_OP_GT:
-        cur->op = OP_GT;
+    case TOKEN_TYPE_PAD_OP__GT:
+        cur->op = PAD_OP__GT;
         check("read >");
         break;
     }
 
-    return_parse(node_new(NODE_TYPE_COMP_OP, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__COMP_OP, cur, t));
 }
 
 static PadNode *
 cc_comparison(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_comparison_t, cur);
+    declare(PadComparisonNode, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -2386,7 +2386,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
             }
-            return_parse(node_new(NODE_TYPE_COMPARISON, cur, savetok));
+            return_parse(PadNode_New(PAD_NODE_TYPE__COMPARISON, cur, savetok));
         }
 
         check("call right cc_asscalc");
@@ -2398,7 +2398,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
             }
-            node_del(comp_op);
+            PadNode_Del(comp_op);
             return_cleanup("syntax error. not found rhs operand in comparison");
         }
 
@@ -2414,7 +2414,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_not_test(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_not_test_t, cur);
+    declare(PadNotTestNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2433,7 +2433,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     token_t *t = next_tok(ast);
-    if (t->type == TOKEN_TYPE_OP_NOT) {
+    if (t->type == TOKEN_TYPE_PAD_OP__NOT) {
         check("call cc_not_test");
         cc_skip_newlines(ast);
 
@@ -2459,13 +2459,13 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(node_new(NODE_TYPE_NOT_TEST, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__NOT_TEST, cur, t));
 }
 
 static PadNode *
 cc_and_test(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_and_test_t, cur);
+    declare(PadAndTestNode, cur);
     cur->nodearr = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -2499,13 +2499,13 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            return_parse(node_new(NODE_TYPE_AND_TEST, cur, back_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__AND_TEST, cur, back_tok(ast)));
         }
 
         token_t *t = next_tok(ast);
-        if (t->type != TOKEN_TYPE_OP_AND) {
+        if (t->type != TOKEN_TYPE_PAD_OP__AND) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_AND_TEST, cur, cur_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__AND_TEST, cur, cur_tok(ast)));
         }
         check("read 'or'")
         cc_skip_newlines(ast);
@@ -2531,7 +2531,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_or_test(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_or_test_t, cur);
+    declare(PadOrTestNode, cur);
     cur->nodearr = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -2565,13 +2565,13 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            return_parse(node_new(NODE_TYPE_OR_TEST, cur, back_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__OR_TEST, cur, back_tok(ast)));
         }
 
         token_t *t = next_tok(ast);
-        if (t->type != TOKEN_TYPE_OP_OR) {
+        if (t->type != TOKEN_TYPE_PAD_OP__OR) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_OR_TEST, cur, cur_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__OR_TEST, cur, cur_tok(ast)));
         }
         check("read 'or'")
         cc_skip_newlines(ast);
@@ -2597,7 +2597,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_test(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(PadNodeest_t, cur);
+    declare(PadTestNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2622,13 +2622,13 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("");
     }
 
-    return_parse(node_new(NODE_TYPE_TEST, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__TEST, cur, savetok));
 }
 
 static PadNode *
 cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_else_stmt_t, cur);
+    declare(PadElseStmtNode, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -2728,16 +2728,16 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(node_new(NODE_TYPE_ELSE_STMT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__ELSE_STMT, cur, t));
 }
 
 static PadNode *
 cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_if_stmt_t, cur);
+    declare(PadIfStmtNode, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
-    PadNodeype_t PadNodeype = NODE_TYPE_IF_STMT;
+    PadNodeType PadNodeype = PAD_NODE_TYPE__IF_STMT;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
@@ -2761,13 +2761,13 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
         if (t->type != TOKEN_TYPE_STMT_IF) {
             return_cleanup("");  // not error
         }
-        PadNodeype = NODE_TYPE_IF_STMT;
+        PadNodeype = PAD_NODE_TYPE__IF_STMT;
         check("read if");
     } else if (cargs->if_stmt_type == 1) {
         if (t->type != TOKEN_TYPE_STMT_ELIF) {
             return_cleanup("");  // not error
         }
-        PadNodeype = NODE_TYPE_ELIF_STMT;
+        PadNodeype = PAD_NODE_TYPE__ELIF_STMT;
         check("read elif");
     } else {
         err_die("invalid type in if stmt");
@@ -2813,7 +2813,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
         t = next_tok(ast);
         if (t->type == TOKEN_TYPE_STMT_END) {
-            if (PadNodeype == NODE_TYPE_ELIF_STMT) {
+            if (PadNodeype == PAD_NODE_TYPE__ELIF_STMT) {
                 // do not read 'end' token because this token will read in if statement
                 prev_tok(ast);
                 check("found 'end'")
@@ -2906,13 +2906,13 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(node_new(PadNodeype, cur, t));
+    return_parse(PadNode_New(PadNodeype, cur, t));
 }
 
 static PadNode *
 cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_import_as_stmt_t, cur);
+    declare(PadImportAsStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2960,13 +2960,13 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found alias in compile import as statement");
     }
 
-    return_parse(node_new(NODE_TYPE_IMPORT_AS_STMT, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__IMPORT_AS_STMT, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_import_var(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_import_var_t, cur);
+    declare(PadImportVarNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3001,7 +3001,7 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
     token_t *t = next_tok(ast);
     if (t->type != TOKEN_TYPE_AS) {
         prev_tok(ast);
-        return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur, cur_tok(ast)));
+        return_parse(PadNode_New(PAD_NODE_TYPE__IMPORT_VAR, cur, cur_tok(ast)));
     }
     check("readed 'as'");
 
@@ -3015,13 +3015,13 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
     }
     check("readed second identifier");
 
-    return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__IMPORT_VAR, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_import_vars(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_import_vars_t, cur);
+    declare(PadImportVarsNode, cur);
     cur->nodearr = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -3067,7 +3067,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         check("readed single import variable");
 
         push(import_var);
-        return_parse(node_new(NODE_TYPE_IMPORT_VARS, cur, tok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__IMPORT_VARS, cur, tok));
     }
     check("readed '('");
 
@@ -3125,13 +3125,13 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(node_new(NODE_TYPE_IMPORT_VARS, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__IMPORT_VARS, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_from_import_stmt_t, cur);
+    declare(PadFromImportStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3181,13 +3181,13 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     }
     check("readed import variables");
 
-    return_parse(node_new(NODE_TYPE_FROM_IMPORT_STMT, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FROM_IMPORT_STMT, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_import_stmt_t, cur);
+    declare(PadImportStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3240,13 +3240,13 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
     check("found NEWLINE or '@}'");
     prev_tok(ast);
 
-    return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__IMPORT_STMT, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_stmt_t, cur);
+    declare(PadStmtNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3276,7 +3276,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->import_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_if_stmt");
@@ -3287,7 +3287,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->if_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_for_stmt");
@@ -3297,7 +3297,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->for_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_break_stmt");
@@ -3307,7 +3307,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->break_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_continue_stmt");
@@ -3317,7 +3317,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->continue_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_return_stmt");
@@ -3327,7 +3327,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->return_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_block_stmt");
@@ -3337,7 +3337,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->block_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     check("call cc_inject_stmt");
@@ -3347,7 +3347,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->inject_stmt) {
-        return_parse(node_new(NODE_TYPE_STMT, cur, t));
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
     return_cleanup("");
@@ -3356,7 +3356,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_block_stmt_t, cur);
+    declare(PadBlockStmtNode, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -3424,8 +3424,8 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->contents, mem_move(content));
     }
 
-    PadNode *node = node_new(NODE_TYPE_BLOCK_STMT, cur, cur_tok(ast));
-    node_identifier_t *idnnode = cur->identifier->real;
+    PadNode *node = PadNode_New(PAD_NODE_TYPE__BLOCK_STMT, cur, cur_tok(ast));
+    PadIdentNode *idnnode = cur->identifier->real;
     assert(cargs->func_def->blocks);
     nodedict_move(cargs->func_def->blocks, idnnode->identifier, node);
 
@@ -3436,7 +3436,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_inject_stmt_t, cur);
+    declare(PadInjectStmtNode, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -3505,14 +3505,14 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     }
 
     // done
-    PadNode *node = node_new(NODE_TYPE_INJECT_STMT, cur, savetok);
+    PadNode *node = PadNode_New(PAD_NODE_TYPE__INJECT_STMT, cur, savetok);
     return_parse(node);
 }
 
 static PadNode *
 cc_struct(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_struct_t, cur);
+    declare(PadStructNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3575,14 +3575,14 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
     }
 
     // done
-    PadNode *node = node_new(NODE_TYPE_STRUCT, cur, t);
+    PadNode *node = PadNode_New(PAD_NODE_TYPE__STRUCT, cur, t);
     return_parse(node);
 }
 
 static PadNode *
 cc_content(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_content_t, cur);
+    declare(PadContentNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3628,13 +3628,13 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
     check("skip newlines");
     cc_skip_newlines(ast);
 
-    return_parse(node_new(NODE_TYPE_CONTENT, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__CONTENT, cur, t));
 }
 
 static PadNode *
 cc_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_elems_t, cur);
+    declare(PadElemsNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3711,16 +3711,16 @@ elem_readed:
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
-        return_parse(node_new(NODE_TYPE_ELEMS, cur, savetok));
+        return_parse(PadNode_New(PAD_NODE_TYPE__ELEMS, cur, savetok));
     }
 
-    return_parse(node_new(NODE_TYPE_ELEMS, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__ELEMS, cur, savetok));
 }
 
 static PadNode *
 cc_text_block(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(PadNodeext_block_t, cur);
+    declare(PadTextBlockNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
     token_t *t = next_tok(ast);
@@ -3738,13 +3738,13 @@ cc_text_block(ast_t *ast, cc_args_t *cargs) {
         return_parse(NULL);
     }
 
-    return_parse(node_new(NODE_TYPE_TEXT_BLOCK, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__TEXT_BLOCK, cur, t));
 }
 
 static PadNode *
 cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_ref_block_t, cur);
+    declare(PadRefBlockNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3787,13 +3787,13 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     }
     check("read ':}'")
 
-    return_parse(node_new(NODE_TYPE_REF_BLOCK, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__REF_BLOCK, cur, t));
 }
 
 static PadNode *
 cc_code_block(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_code_block_t, cur);
+    declare(PadCodeBlockNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3842,13 +3842,13 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
     cc_skip_newlines(ast);
     check("skip newlines");
 
-    return_parse(node_new(NODE_TYPE_CODE_BLOCK, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__CODE_BLOCK, cur, t));
 }
 
 static PadNode *
 cc_blocks(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_blocks_t, cur);
+    declare(PadBlocksNode, cur);
 
 #undef return_cleanup
 #define return_cleanup() { \
@@ -3894,13 +3894,13 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
         return_cleanup();
     }
 
-    return_parse(node_new(NODE_TYPE_BLOCKS, cur, back_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__BLOCKS, cur, back_tok(ast)));
 }
 
 static PadNode *
 cc_program(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_program_t, cur);
+    declare(PadProgramNode, cur);
 
 #undef return_cleanup
 #define return_cleanup(fmt) { \
@@ -3925,13 +3925,13 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found blocks");
     }
 
-    return_parse(node_new(NODE_TYPE_PROGRAM, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__PROGRAM, cur, savetok));
 }
 
 static PadNode *
 cc_def(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_def_t, cur);
+    declare(PadDefNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -3959,13 +3959,13 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
         return_cleanup(""); // not error
     }
 
-    return_parse(node_new(NODE_TYPE_DEF, cur, savetok));
+    return_parse(PadNode_New(PAD_NODE_TYPE__DEF, cur, savetok));
 }
 
 static PadNode *
 cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_func_def_args_t, cur);
+    declare(PadFuncDefArgsNode, cur);
     cur->identifiers = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
 
@@ -3994,20 +3994,20 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
-        return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur, savetok)); // not error, empty args
+        return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_DEF_ARGS, cur, savetok)); // not error, empty args
     }
 
     nodearr_moveb(cur->identifiers, identifier);
 
     for (;;) {
         if (is_end(ast)) {
-            return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur, back_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_DEF_ARGS, cur, back_tok(ast)));
         }
 
         token_t *t = next_tok(ast);
         if (t->type != TOKEN_TYPE_COMMA) {
             prev_tok(ast);
-            return_parse(node_new(NODE_TYPE_FUNC_DEF_ARGS, cur, cur_tok(ast)));
+            return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_DEF_ARGS, cur, cur_tok(ast)));
         }
         check("read ,");
 
@@ -4031,7 +4031,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
 static PadNode *
 cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_func_def_params_t, cur);
+    declare(PadFuncDefParamsNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -4074,13 +4074,13 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
     }
     check("read )");
 
-    return_parse(node_new(NODE_TYPE_FUNC_DEF_PARAMS, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_DEF_PARAMS, cur, t));
 }
 
 static PadNode *
 cc_func_extends(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_func_def_t, cur);
+    declare(PadFuncDefNode, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -4109,13 +4109,13 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
         return_cleanup("not found identifier in function extends");
     }
 
-    return_parse(node_new(NODE_TYPE_FUNC_EXTENDS, cur, cur_tok(ast)));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_EXTENDS, cur, cur_tok(ast)));
 }
 
 static PadNode *
 cc_func_def(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_func_def_t, cur);
+    declare(PadFuncDefNode, cur);
     cur->contents = nodearr_new();
     cur->blocks = nodedict_new();
     assert(cur->blocks);
@@ -4235,7 +4235,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
 
     cargs->is_in_loop = is_in_loop;
     cargs->is_in_func = is_in_func;
-    return_parse(node_new(NODE_TYPE_FUNC_DEF, cur, t));
+    return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_DEF, cur, t));
 }
 
 #undef viss

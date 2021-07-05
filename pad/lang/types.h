@@ -40,11 +40,11 @@ typedef struct object_type object_type_t;
 struct object_builtin_func;
 typedef struct object_builtin_func object_builtin_func_t;
 
-struct node_array;
-typedef struct node_array node_array_t;
+struct PadNode_array;
+typedef struct PadNode_array node_array_t;
 
-struct node_dict;
-typedef struct node_dict node_dict_t;
+struct PadNode_dict;
+typedef struct PadNode_dict node_dict_t;
 
 struct tokenizer;
 typedef struct tokenizer tokenizer_t;
@@ -95,8 +95,8 @@ typedef struct chain_object PadChainObj;
 struct chain_objects;
 typedef struct chain_objects PadChainObjs;
 
-struct node;
-typedef struct node PadNode;
+struct PadNode;
+typedef struct PadNode PadNode;
 
 struct kit;
 typedef struct kit PadKit;

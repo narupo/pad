@@ -32,7 +32,7 @@ struct PadCcArgs {
     int if_stmt_type;
 
     // if context is in function to enable this pointer
-    node_func_def_t *func_def;
+    PadFuncDefNode *func_def;
 };
 
 /**
@@ -50,16 +50,16 @@ struct PadTrvArgs {
     PadNode *ref_node;
 
     // node of compare operator
-    node_comp_op_t *comp_op_node;
+    PadCompOpNode *comp_op_node;
 
     // node add-sub operator
-    node_add_sub_op_t *add_sub_op_node;
+    PadAddSubOpNode *add_sub_op_node;
 
     // node mul-div operator
-    node_mul_div_op_t *mul_div_op_node;
+    PadMulDivOpNode *mul_div_op_node;
 
     // node augassign operator
-    node_augassign_t *augassign_op_node;
+    PadAugassignNode *augassign_op_node;
 
     // number of depth of function
     depth_t depth;

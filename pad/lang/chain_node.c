@@ -5,7 +5,7 @@
 *************/
 
 void
-node_del(PadNode *self);
+PadNode_Del(PadNode *self);
 
 void
 nodearr_del(node_array_t *self);
@@ -19,9 +19,9 @@ struct chain_node {
     PadChainNodeType type;
 
     // node
-    // if type == PAD_CHAIN_NODE_TYPE__DOT then node is factor
-    // if type == PAD_CHAIN_NODE_TYPE__CALL then node is call_args
-    // if type == PAD_CHAIN_NODE_TYPE__INDEX then node is simple_assign
+    // if type == PAD_CHAIN_PAD_NODE_TYPE___DOT then node is factor
+    // if type == PAD_CHAIN_PAD_NODE_TYPE___CALL then node is call_args
+    // if type == PAD_CHAIN_PAD_NODE_TYPE___INDEX then node is simple_assign
     PadNode *node;
 };
 
@@ -35,7 +35,7 @@ PadChainNode_Del(PadChainNode *self) {
         return;
     }
 
-    node_del(self->node);
+    PadNode_Del(self->node);
     free(self);
 }
 
@@ -68,7 +68,7 @@ PadChainNode_DeepCopy(const PadChainNode *other) {
     }
 
     self->type = other->type;
-    self->node = node_deep_copy(other->node);
+    self->node = PadNode_DeepCopy(other->node);
     if (!self->node) {
         PadChainNode_Del(self);
         return NULL;

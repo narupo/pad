@@ -4,7 +4,7 @@ enum {
     NODEARR_INIT_CAPA = 4,
 };
 
-struct node_array {
+struct PadNode_array {
     int32_t len;
     int32_t capa;
     PadNode **parray;
@@ -22,7 +22,7 @@ nodearr_del(node_array_t* self) {
 
     for (int i = 0; i < self->len; ++i) {
         PadNode *node = self->parray[i];
-        node_del(node);
+        PadNode_Del(node);
     }
 
     free(self->parray);
@@ -60,7 +60,7 @@ nodearr_new(void) {
 }
 
 PadNode *
-node_deep_copy(const PadNode *other);
+PadNode_DeepCopy(const PadNode *other);
 
 node_array_t *
 nodearr_deep_copy(const node_array_t *other) {
@@ -82,7 +82,7 @@ nodearr_deep_copy(const node_array_t *other) {
 
     for (int32_t i = 0; i < other->len; ++i) {
         PadNode *node = other->parray[i];
-        PadNode *copied = node_deep_copy(node);
+        PadNode *copied = PadNode_DeepCopy(node);
         if (!copied) {
             nodearr_del(self);
             return NULL;
