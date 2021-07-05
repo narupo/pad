@@ -63,7 +63,7 @@ typedef enum {
     PAD_OBJ_TYPE__OBJECT,
 
     // A function object
-    // That has ref_suites of context of nodes in ast_t
+    // That has ref_suites of context of nodes in PadAST
     // Time to execute to execute this context
     PAD_OBJ_TYPE__FUNC,
 
@@ -75,8 +75,8 @@ typedef enum {
 
     // A module object
     // モジュールオブジェクト
-    // このオブジェクトは内部にast_tへの参照を持つ
-    // このast_tへの参照はモジュール内のオブジェクト群への参照である
+    // このオブジェクトは内部にPadASTへの参照を持つ
+    // このPadASTへの参照はモジュール内のオブジェクト群への参照である
     PAD_OBJ_TYPE__MODULE,
 
     // A owner's method object
@@ -95,7 +95,7 @@ typedef enum {
  * function object
  */
 struct PadFuncObj {
-    ast_t *ref_ast;  // function object refer this reference of ast on execute
+    PadAST *ref_ast;  // function object refer this reference of ast on execute
     PadCtx *ref_context;  // reference of context
     PadObj *name;  // type == PAD_OBJ_TYPE__IDENT
     PadObj *args;  // type == PAD_OBJ_TYPE__ARRAY
@@ -113,7 +113,7 @@ struct PadModObj {
     char *program_filename;
     char *program_source;
     PadTkr *tokenizer;
-    ast_t *ast;
+    PadAST *ast;
     PadCtx *context;
     builtin_func_info_t *builtin_func_infos;  // builtin functions
 };
@@ -146,9 +146,9 @@ struct PadOwnsMethodObj {
  * A struct PadObj
  */
 struct PadDefStructObj {
-    ast_t *ref_ast;  // reference
+    PadAST *ref_ast;  // reference
     PadObj *identifier;  // moved (type == PAD_OBJ_TYPE__UNICODE)
-    ast_t *ast;  // moved (struct's ast (node tree))
+    PadAST *ast;  // moved (struct's ast (node tree))
     PadCtx *context;  // moved (struct's context)
 };
 
@@ -156,8 +156,8 @@ struct PadDefStructObj {
  * A instance of struct (and class)
  */
 struct PadObjObj {
-    ast_t *ref_ast;  // DO NOT DELETE
-    ast_t *ref_struct_ast;  // DO NOT DELETE
+    PadAST *ref_ast;  // DO NOT DELETE
+    PadAST *ref_struct_ast;  // DO NOT DELETE
     PadCtx *struct_context;  // moved
     PadObj *ref_def_obj;  // DO NOT DELETE
 };
@@ -289,7 +289,7 @@ PadObj_NewBool(PadGc *ref_gc, bool boolean);
  * if failed to allocate memory then exit from process
  *
  * @param[in]      *ref_gc      reference to PadGc (do not delete)
- * @param[in|out]  *ref_ast     reference to ast_t current context (do not delete)
+ * @param[in|out]  *ref_ast     reference to PadAST current context (do not delete)
  * @param [in|out] *ref_context reference to PadCtx
  * @param[in]      *identifier  C strings of identifier
  *
@@ -308,7 +308,7 @@ PadObj_NewCIdent(
  * if failed to allocate memory then exit from process
  *
  * @param[in]     *ref_gc          reference to PadGc (do not delete)
- * @param[in|out] *ref_ast         reference to ast_t current context (do not delete)
+ * @param[in|out] *ref_ast         reference to PadAST current context (do not delete)
  * @param [in|out] *ref_context    reference to PadCtx
  * @param[in]     *move_identifier pointer to string_t (with move semantics)
  *
@@ -405,7 +405,7 @@ PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict);
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc       reference to PadGc (do not delete)
- * @param[in] *ref_ast      reference to ast_t (do not delete). The function object refer this context
+ * @param[in] *ref_ast      reference to PadAST (do not delete). The function object refer this context
  * @param[in] *move_name    pointer to identifier object for function name (with move semantics)
  * @param[in] *move_args    pointer to array object for function arguments (with move semantics)
  * @param[in] *ref_suites   reference to nodes of function content (do not delete)
@@ -418,7 +418,7 @@ PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict);
 PadObj *
 PadObj_NewFunc(
     PadGc *ref_gc,
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadCtx *ref_context,
     PadObj *move_name,
     PadObj *move_args,
@@ -465,7 +465,7 @@ PadObj *
 PadObj_NewDefStruct(
     PadGc *ref_gc,
     PadObj *move_idn,
-    ast_t *move_ast,
+    PadAST *move_ast,
     PadCtx *move_context
 );
 
@@ -479,7 +479,7 @@ PadObj_NewDefStruct(
 PadObj *
 PadObj_NewObj(
     PadGc *ref_gc,
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadCtx *move_context,
     PadObj *ref_def_obj
 );
@@ -493,7 +493,7 @@ PadObj_NewObj(
  * @param[in] *program_filename    file name
  * @param[in] *move_program_source program source
  * @param[in] *move_tkr            pointer to PadTkr (with move semantics)
- * @param[in] *move_ast            pointer to ast_t (with move semantics)
+ * @param[in] *move_ast            pointer to PadAST (with move semantics)
  * @param[in] *move_context        context
  * @param[in] *func_infos          array of functions
  *
@@ -506,7 +506,7 @@ PadObj_NewModBy(
     const char *program_filename,
     char *move_program_source,
     PadTkr *move_tkr,
-    ast_t *move_ast,
+    PadAST *move_ast,
     PadCtx *move_context,
     builtin_func_info_t *func_infos
 );

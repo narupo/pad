@@ -56,7 +56,7 @@ struct scope;
 typedef struct scope PadScope;
 
 struct PadAst;
-typedef struct PadAst ast_t;
+typedef struct PadAst PadAST;
 
 struct PadCcArgs;
 typedef struct PadCcArgs cc_args_t;

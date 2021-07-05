@@ -1,7 +1,7 @@
 #include <pad/lang/builtin/modules/unicode.h>
 
 static PadObj *
-extract_unicode_object(ast_t *ref_ast, PadObjAry *ref_owners, const char *method_name) {
+extract_unicode_object(PadAST *ref_ast, PadObjAry *ref_owners, const char *method_name) {
     if (!ref_ast || !ref_owners || !method_name) {
         return NULL;
     }
@@ -227,7 +227,7 @@ builtin_unicode_is(const char *method_name, builtin_func_args_t *fargs) {
     if (!fargs) {
         return NULL;
     }
-    ast_t *ref_ast = fargs->ref_ast;
+    PadAST *ref_ast = fargs->ref_ast;
 
     PadObj *owner = extract_unicode_object(
         fargs->ref_ast,
@@ -289,7 +289,7 @@ builtin_func_infos[] = {
 PadObj *
 Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGc *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
-    ast_t *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 

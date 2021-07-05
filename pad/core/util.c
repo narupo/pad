@@ -193,7 +193,7 @@ Pad_TrimFirstLine(char *dst, int32_t dstsz, const char *text) {
 char *
 Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
-    ast_t *ast = PadAst_New(config);
+    PadAST *ast = PadAst_New(config);
     PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
     PadOpts *opts = PadOpts_New();
@@ -227,7 +227,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
         return NULL;
     }
 
-    trv_traverse(ast, ctx);
+    PadTrv_Trav(ast, ctx);
     if (PadAst_HasErrs(ast)) {
         if (errstack) {
             const PadErrStack *es = PadAst_GetcErrStack(ast);
@@ -263,7 +263,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     char *src = file_readcp_from_path(rcpath);
 
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
-    ast_t *ast = PadAst_New(config);
+    PadAST *ast = PadAst_New(config);
     PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
     PadOpts *opts = PadOpts_New();
@@ -286,7 +286,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
         return NULL;
     }
 
-    trv_traverse(ast, ctx);
+    PadTrv_Trav(ast, ctx);
     if (PadAst_HasErrs(ast)) {
         err_error("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;

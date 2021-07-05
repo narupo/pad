@@ -70,65 +70,65 @@ struct PadAst {
 /**
  * delete node tree
  *
- * @param[in] *self pointer to ast_t
+ * @param[in] *self pointer to PadAST
  * @param[in] *node start node
  */
 void
-PadAst_DelNodes(const ast_t *self, PadNode *node);
+PadAst_DelNodes(const PadAST *self, PadNode *node);
 
 /**
  * destruct PadObj
  *
- * @param[in] *self pointer to ast_t
+ * @param[in] *self pointer to PadAST
  */
 void
-PadAst_Del(ast_t *self);
+PadAst_Del(PadAST *self);
 
 /**
  * construct PadObj
  *
  * @param[in] *ref_config pointer to read-only PadConfig
  *
- * @return pointer to ast_t dynamic allocate memory (do PadAst_Del)
+ * @return pointer to PadAST dynamic allocate memory (do PadAst_Del)
  */
-ast_t *
+PadAST *
 PadAst_New(const PadConfig *ref_config);
 
-ast_t *
-PadAst_DeepCopy(const ast_t *other);
+PadAST *
+PadAst_DeepCopy(const PadAST *other);
 
-ast_t *
-PadAst_ShallowCopy(const ast_t *other);
+PadAST *
+PadAst_ShallowCopy(const PadAST *other);
 
 /**
  * move opts at ast
  *
- * @param[in] *self      pointer to ast_t
+ * @param[in] *self      pointer to PadAST
  * @param[in] *move_opts pointer to PadOpts with move semantics
  */
 void
-PadAst_MoveOpts(ast_t *self, PadOpts *move_opts);
+PadAst_MoveOpts(PadAST *self, PadOpts *move_opts);
 
 void
-PadAst_SetRefCtx(ast_t *ast, PadCtx *ref_context);
+PadAst_SetRefCtx(PadAST *ast, PadCtx *ref_context);
 
 void
-PadAst_SetRefGc(ast_t *ast, PadGc *ref_gc);
+PadAst_SetRefGc(PadAST *ast, PadGc *ref_gc);
 
 /**
  * get root node read-only
  *
- * @param[in] *self pointer to ast_t
+ * @param[in] *self pointer to PadAST
  *
  * @return pointer to PadNode root
  */
 const PadNode *
-PadAst_GetcRoot(const ast_t *self);
+PadAst_GetcRoot(const PadAST *self);
 
 /**
  * push back error at ast error stack
  *
- * @param[in] ast    pointer to ast_t
+ * @param[in] ast    pointer to PadAST
  * @param[in] fname  file name of current module
  * @param[in] lineno line number of current module
  * @param[in] src    source string of current module
@@ -143,10 +143,10 @@ PadAst_GetcRoot(const ast_t *self);
 /**
  * clear ast state (will call PadAst_DelNodes)
  *
- * @param[in] *self pointer to ast_t
+ * @param[in] *self pointer to PadAST
  */
 void
-PadAst_Clear(ast_t *self);
+PadAst_Clear(PadAST *self);
 
 /**
  * get first error message from error stack
@@ -157,7 +157,7 @@ PadAst_Clear(ast_t *self);
  * @return if not has error stack then return NULL
  */
 const char *
-PadAst_GetcFirstErrMsg(const ast_t *self);
+PadAst_GetcFirstErrMsg(const PadAST *self);
 
 /**
  * get last error message from error stack
@@ -168,7 +168,7 @@ PadAst_GetcFirstErrMsg(const ast_t *self);
  * @return if not has error stack then return NULL
  */
 const char *
-PadAst_GetcLastErrMsg(const ast_t *self);
+PadAst_GetcLastErrMsg(const PadAST *self);
 
 /**
  * if ast has error stack then return true else return false
@@ -178,7 +178,7 @@ PadAst_GetcLastErrMsg(const ast_t *self);
  * @return if has error then true else false
  */
 bool
-PadAst_HasErrs(const ast_t *self);
+PadAst_HasErrs(const PadAST *self);
 
 /**
  * clear error stack
@@ -186,17 +186,17 @@ PadAst_HasErrs(const ast_t *self);
  * @param[in] *self
  */
 void
-PadAst_ClearErrs(ast_t *self);
+PadAst_ClearErrs(PadAST *self);
 
 /**
  * set debug mode
  * debug of argument is true to debug mode false to non debug mode
  *
- * @param[in] *self pointer to ast_t
+ * @param[in] *self pointer to PadAST
  * @param[in] debug debug mode
  */
 void
-PadAst_SetDebug(ast_t *self, bool debug);
+PadAst_SetDebug(PadAST *self, bool debug);
 
 /**
  * trace error stack at stream
@@ -205,7 +205,7 @@ PadAst_SetDebug(ast_t *self, bool debug);
  * @param[in] *fout stream
  */
 void
-PadAst_TraceErr(const ast_t *self, FILE *fout);
+PadAst_TraceErr(const PadAST *self, FILE *fout);
 
 /**
  * get error stack read only
@@ -215,26 +215,26 @@ PadAst_TraceErr(const ast_t *self, FILE *fout);
  * @return pointer to PadErrStack
  */
 const PadErrStack *
-PadAst_GetcErrStack(const ast_t *self);
+PadAst_GetcErrStack(const PadAST *self);
 
 /**
- * dump ast_t at stream
+ * dump PadAST at stream
  *
  * @param[in] *self
  * @param[in] *fout stream
  */
 void
-PadAst_Dump(const ast_t *self, FILE *fout);
+PadAst_Dump(const PadAST *self, FILE *fout);
 
 /**
  * get ast reference of context
  *
  * @param[in] *self
  *
- * @return reference to ast_t (do not delete)
+ * @return reference to PadAST (do not delete)
  */
 PadCtx *
-PadAst_GetRefCtx(ast_t *self);
+PadAst_GetRefCtx(PadAST *self);
 
 /**
  * read token and increment pointer of tokens
@@ -244,7 +244,7 @@ PadAst_GetRefCtx(ast_t *self);
  * @return
  */
 PadTok *
-PadAst_ReadTok(ast_t *self);
+PadAst_ReadTok(PadAST *self);
 
 /**
  * step back pointer of tokens
@@ -252,7 +252,7 @@ PadAst_ReadTok(ast_t *self);
  * @param[in] *self
  */
 void
-PadAst_PrevPtr(ast_t *self);
+PadAst_PrevPtr(PadAST *self);
 
 /**
  * get reference of PadGc
@@ -262,7 +262,7 @@ PadAst_PrevPtr(ast_t *self);
  * @return reference to PadGc (do not delete)
  */
 PadGc *
-PadAst_GetRefGc(ast_t *self);
+PadAst_GetRefGc(PadAST *self);
 
-ast_t *
-PadAst_PushBackErrTok(ast_t *self, PadTok *ref_token);
+PadAST *
+PadAst_PushBackErrTok(PadAST *self, PadTok *ref_token);

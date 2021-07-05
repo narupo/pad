@@ -13,7 +13,7 @@ struct kit {
     const PadConfig *ref_config;
     char *program_source;
     PadTkr *tkr;
-    ast_t *ast;
+    PadAST *ast;
     PadGc *gc;
     PadCtx *ctx;
     PadErrStack *errstack;
@@ -195,7 +195,7 @@ PadKit_CompileFromStrArgs(
         return NULL;
     }
 
-    trv_traverse(self->ast, self->ctx);
+    PadTrv_Trav(self->ast, self->ctx);
     if (PadAst_HasErrs(self->ast)) {
         const PadErrStack *err = PadAst_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);

@@ -48,7 +48,7 @@ PadImporter *
 PadImporter_ImportAs(
     PadImporter *self,
     PadGc *ref_gc,
-    const ast_t *ref_ast,
+    const PadAST *ref_ast,
     PadCtx *dstctx,
     const char *path,
     const char *alias
@@ -72,7 +72,7 @@ PadImporter *
 PadImporter_FromImport(
     PadImporter *self,
     PadGc *ref_gc,
-    const ast_t *ref_ast,
+    const PadAST *ref_ast,
     PadCtx *dstctx,
     const char *path,
     PadObjAry *vars

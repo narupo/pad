@@ -88,7 +88,7 @@ struct PadTrvArgs {
     PadIndexValue index_value;
 
     // a callback function
-    PadObj * (*callback)(ast_t *ast, struct PadTrvArgs *targs);
+    PadObj * (*callback)(PadAST *ast, struct PadTrvArgs *targs);
 
     // if do not refer chain object on context then store true else store false
     // this flag refer in trv_chain function
@@ -103,7 +103,7 @@ struct PadTrvArgs {
  * The abstract arguments for builtin functions
  */
 struct PadBuiltFuncArgs {
-    ast_t *ref_ast;  // the ast of current context
+    PadAST *ref_ast;  // the ast of current context
     const PadNode *ref_node;  // reference of node for errors
     PadObj *ref_args;  // the arguments object of builtin functions
     PadObjAry *ref_owners;  // reference to owners of array

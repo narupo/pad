@@ -93,71 +93,71 @@
 *************/
 
 static PadNode *
-cc_program(ast_t *ast, cc_args_t *cargs);
+cc_program(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_elems(ast_t *ast, cc_args_t *cargs);
+cc_elems(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_blocks(ast_t *ast, cc_args_t *cargs);
+cc_blocks(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_def(ast_t *ast, cc_args_t *cargs);
+cc_def(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_func_def(ast_t *ast, cc_args_t *cargs);
+cc_func_def(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_test(ast_t *ast, cc_args_t *cargs);
+cc_test(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_test_list(ast_t *ast, cc_args_t *cargs);
+cc_test_list(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_identifier(ast_t *ast, cc_args_t *cargs);
+cc_identifier(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_mul_div_op(ast_t *ast, cc_args_t *cargs);
+cc_mul_div_op(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_dot(ast_t *ast, cc_args_t *cargs);
+cc_dot(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_negative(ast_t *ast, cc_args_t *cargs);
+cc_negative(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_call(ast_t *ast, cc_args_t *cargs);
+cc_call(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_dot_op(ast_t *ast, cc_args_t *cargs);
+cc_dot_op(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_multi_assign(ast_t *ast, cc_args_t *cargs);
+cc_multi_assign(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_expr(ast_t *ast, cc_args_t *cargs);
+cc_expr(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_ring(ast_t *ast, cc_args_t *cargs);
+cc_ring(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_content(ast_t *ast, cc_args_t *cargs);
+cc_content(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_inject_stmt(ast_t *ast, cc_args_t *cargs);
+cc_inject_stmt(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_block_stmt(ast_t *ast, cc_args_t *cargs);
+cc_block_stmt(PadAST *ast, cc_args_t *cargs);
 
 static PadNode *
-cc_struct(ast_t *ast, cc_args_t *cargs);
+cc_struct(PadAST *ast, cc_args_t *cargs);
 
 /************
 * functions *
 ************/
 
 static PadTok *
-back_tok(ast_t *ast) {
+back_tok(PadAST *ast) {
     for (PadTok **p = ast->ref_ptr; ast->ref_tokens != p; p--) {
         if (*p) {
             return *p;
@@ -167,12 +167,12 @@ back_tok(ast_t *ast) {
 }
 
 static PadTok *
-cur_tok(ast_t *ast) {
+cur_tok(PadAST *ast) {
     return *ast->ref_ptr;
 }
 
 static PadTok *
-next_tok(ast_t *ast) {
+next_tok(PadAST *ast) {
     if (*ast->ref_ptr) {
         return *ast->ref_ptr++;
     }
@@ -180,7 +180,7 @@ next_tok(ast_t *ast) {
 }
 
 static PadTok *
-prev_tok(ast_t *ast) {
+prev_tok(PadAST *ast) {
     if (ast->ref_ptr != ast->ref_tokens) {
         return *ast->ref_ptr--;
     }
@@ -188,12 +188,12 @@ prev_tok(ast_t *ast) {
 }
 
 static bool
-is_end(ast_t *ast) {
+is_end(PadAST *ast) {
     return *ast->ref_ptr == NULL;
 }
 
-ast_t *
-PadCc_Compile(ast_t *ast, PadTok *ref_tokens[]) {
+PadAST *
+PadCc_Compile(PadAST *ast, PadTok *ref_tokens[]) {
     ast->ref_tokens = ref_tokens;
     ast->ref_ptr = ref_tokens;
     ast->root = cc_program(ast, &(cc_args_t) {
@@ -204,7 +204,7 @@ PadCc_Compile(ast_t *ast, PadTok *ref_tokens[]) {
 }
 
 static void
-cc_skip_newlines(ast_t *ast) {
+cc_skip_newlines(PadAST *ast) {
     for (; cur_tok(ast); ) {
         PadTok *t = next_tok(ast);
         if (t->type != PAD_TOK_TYPE__NEWLINE) {
@@ -215,7 +215,7 @@ cc_skip_newlines(ast_t *ast) {
 }
 
 static PadNode *
-cc_assign(ast_t *ast, cc_args_t *cargs) {
+cc_assign(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAssignNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -301,7 +301,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_assign_list(ast_t *ast, cc_args_t *cargs) {
+cc_assign_list(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAssignListNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -365,7 +365,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_formula(ast_t *ast, cc_args_t *cargs) {
+cc_formula(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFormulaNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -411,7 +411,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
+cc_multi_assign(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadMultiAssignNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -477,7 +477,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_test_list(ast_t *ast, cc_args_t *cargs) {
+cc_test_list(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadTestListNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -540,7 +540,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_call_args(ast_t *ast, cc_args_t *cargs) {
+cc_call_args(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadCallArgsNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -604,7 +604,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_for_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadForStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -890,7 +890,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_break_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadBreakStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -919,7 +919,7 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_continue_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadContinueStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -948,7 +948,7 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_return_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadReturnStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -989,7 +989,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_augassign(ast_t *ast, cc_args_t *cargs) {
+cc_augassign(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAugassignNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1022,7 +1022,7 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_identifier(ast_t *ast, cc_args_t *cargs) {
+cc_identifier(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadIdentNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1054,7 +1054,7 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_string(ast_t *ast, cc_args_t *cargs) {
+cc_string(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadStrNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1086,7 +1086,7 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
+cc_simple_assign(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadSimpleAssignNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -1152,7 +1152,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_array_elems(ast_t *ast, cc_args_t *cargs) {
+cc_array_elems(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAryElemsNode_, cur);
     cur->nodearr = PadNodeAry_New();
@@ -1233,7 +1233,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_array(ast_t *ast, cc_args_t *cargs) {
+cc_array(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAryNode_, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1289,7 +1289,7 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
+cc_dict_elem(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadDictElemNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1350,7 +1350,7 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
+cc_dict_elems(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadDictElemsNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -1431,7 +1431,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_dict(ast_t *ast, cc_args_t *cargs) {
+cc_dict(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(_PadDictNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1491,7 +1491,7 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_nil(ast_t *ast, cc_args_t *cargs) {
+cc_nil(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadNilNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1517,7 +1517,7 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_digit(ast_t *ast, cc_args_t *cargs) {
+cc_digit(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadDigitNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1545,7 +1545,7 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_float(ast_t *ast, cc_args_t *cargs) {
+cc_float(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFloatNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1573,7 +1573,7 @@ cc_float(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_false_(ast_t *ast, cc_args_t *cargs) {
+cc_false_(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFalseNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1600,7 +1600,7 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_true_(ast_t *ast, cc_args_t *cargs) {
+cc_true_(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadTrueNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1627,7 +1627,7 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_atom(ast_t *ast, cc_args_t *cargs) {
+cc_atom(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAtomNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1757,7 +1757,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_factor(ast_t *ast, cc_args_t *cargs) {
+cc_factor(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFactorNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1821,7 +1821,7 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_asscalc(ast_t *ast, cc_args_t *cargs) {
+cc_asscalc(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAssCalcNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1891,7 +1891,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_term(ast_t *ast, cc_args_t *cargs) {
+cc_term(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadTermNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -1961,7 +1961,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_negative(ast_t *ast, cc_args_t *cargs) {
+cc_negative(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadNegativeNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2003,7 +2003,7 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_ring(ast_t *ast, cc_args_t *cargs) {
+cc_ring(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadRingNode, cur);
     cur->chain_nodes = PadChainNodes_New();
@@ -2145,7 +2145,7 @@ cc_ring(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
+cc_mul_div_op(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadMulDivOpNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2180,7 +2180,7 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
+cc_add_sub_op(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAddSubOpNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2214,7 +2214,7 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_expr(ast_t *ast, cc_args_t *cargs) {
+cc_expr(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadExprNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2284,7 +2284,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_comp_op(ast_t *ast, cc_args_t *cargs) {
+cc_comp_op(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadCompOpNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2340,7 +2340,7 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_comparison(ast_t *ast, cc_args_t *cargs) {
+cc_comparison(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadComparisonNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2412,7 +2412,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_not_test(ast_t *ast, cc_args_t *cargs) {
+cc_not_test(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadNotTestNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2463,7 +2463,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_and_test(ast_t *ast, cc_args_t *cargs) {
+cc_and_test(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadAndTestNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -2529,7 +2529,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_or_test(ast_t *ast, cc_args_t *cargs) {
+cc_or_test(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadOrTestNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -2595,7 +2595,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_test(ast_t *ast, cc_args_t *cargs) {
+cc_test(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadTestNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2626,7 +2626,7 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_else_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadElseStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -2732,7 +2732,7 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_if_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadIfStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -2910,7 +2910,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_import_as_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadImportAsStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -2964,7 +2964,7 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_var(ast_t *ast, cc_args_t *cargs) {
+cc_import_var(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadImportVarNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3019,7 +3019,7 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_vars(ast_t *ast, cc_args_t *cargs) {
+cc_import_vars(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadImportVarsNode, cur);
     cur->nodearr = PadNodeAry_New();
@@ -3129,7 +3129,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_from_import_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFromImportStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3185,7 +3185,7 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_import_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadImportStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3244,7 +3244,7 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadStmtNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3354,7 +3354,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_block_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadBlockStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -3434,7 +3434,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
+cc_inject_stmt(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadInjectStmtNode, cur);
     cur->contents = PadNodeAry_New();
@@ -3510,7 +3510,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_struct(ast_t *ast, cc_args_t *cargs) {
+cc_struct(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadStructNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3580,7 +3580,7 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_content(ast_t *ast, cc_args_t *cargs) {
+cc_content(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadContentNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3632,7 +3632,7 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_elems(ast_t *ast, cc_args_t *cargs) {
+cc_elems(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadElemsNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3718,7 +3718,7 @@ elem_readed:
 }
 
 static PadNode *
-cc_text_block(ast_t *ast, cc_args_t *cargs) {
+cc_text_block(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadTextBlockNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3742,7 +3742,7 @@ cc_text_block(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_ref_block(ast_t *ast, cc_args_t *cargs) {
+cc_ref_block(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadRefBlockNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3791,7 +3791,7 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_code_block(ast_t *ast, cc_args_t *cargs) {
+cc_code_block(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadCodeBlockNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3846,7 +3846,7 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_blocks(ast_t *ast, cc_args_t *cargs) {
+cc_blocks(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadBlocksNode, cur);
 
@@ -3898,7 +3898,7 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_program(ast_t *ast, cc_args_t *cargs) {
+cc_program(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadProgramNode, cur);
 
@@ -3929,7 +3929,7 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_def(ast_t *ast, cc_args_t *cargs) {
+cc_def(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadDefNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -3963,7 +3963,7 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
+cc_func_def_args(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFuncDefArgsNode, cur);
     cur->identifiers = PadNodeAry_New();
@@ -4029,7 +4029,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
 
 
 static PadNode *
-cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
+cc_func_def_params(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFuncDefParamsNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -4078,7 +4078,7 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_func_extends(ast_t *ast, cc_args_t *cargs) {
+cc_func_extends(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFuncDefNode, cur);
     PadTok **save_ptr = ast->ref_ptr;
@@ -4113,7 +4113,7 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
 }
 
 static PadNode *
-cc_func_def(ast_t *ast, cc_args_t *cargs) {
+cc_func_def(PadAST *ast, cc_args_t *cargs) {
     ready();
     declare(PadFuncDefNode, cur);
     cur->contents = PadNodeAry_New();

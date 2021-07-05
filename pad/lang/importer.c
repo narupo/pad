@@ -64,7 +64,7 @@ static PadObj *
 create_modobj(
     PadImporter *self,
     PadGc *ref_gc,
-    const ast_t *ref_ast,
+    const PadAST *ref_ast,
     const char *path
 ) {
     // read source
@@ -87,7 +87,7 @@ create_modobj(
 
     // compile source
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
-    ast_t *ast = PadAst_New(self->ref_config);
+    PadAST *ast = PadAst_New(self->ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
     PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
 
@@ -110,7 +110,7 @@ create_modobj(
         return NULL;
     }
 
-    trv_traverse(ast, ctx);
+    PadTrv_Trav(ast, ctx);
     if (PadAst_HasErrs(ast)) {
         PadImporter_SetErr(self, PadAst_GetcFirstErrMsg(ast));
         free(src);
@@ -135,7 +135,7 @@ PadImporter *
 PadImporter_ImportAs(
     PadImporter *self,
     PadGc *ref_gc,
-    const ast_t *ref_ast,
+    const PadAST *ref_ast,
     PadCtx *dstctx,
     const char *path,
     const char *alias
@@ -163,7 +163,7 @@ PadImporter *
 PadImporter_FromImport(
     PadImporter *self,
     PadGc *ref_gc,
-    const ast_t *ref_ast,
+    const PadAST *ref_ast,
     PadCtx *dstctx,
     const char *path,
     PadObjAry *vars   // import_vars

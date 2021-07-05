@@ -1,7 +1,7 @@
 #include <pad/lang/ast.h>
 
 void
-PadAst_DelNodes(const ast_t *self, PadNode *node) {
+PadAst_DelNodes(const PadAST *self, PadNode *node) {
     if (!node) {
         return;
     }
@@ -379,7 +379,7 @@ PadAst_DelNodes(const ast_t *self, PadNode *node) {
 }
 
 void
-PadAst_Del(ast_t *self) {
+PadAst_Del(PadAST *self) {
     if (!self) {
         return;
     }
@@ -390,9 +390,9 @@ PadAst_Del(ast_t *self) {
     free(self);
 }
 
-ast_t *
+PadAST *
 PadAst_New(const PadConfig *ref_config) {
-    ast_t *self = mem_calloc(1, sizeof(*self));
+    PadAST *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -413,13 +413,13 @@ PadAst_New(const PadConfig *ref_config) {
     return self;
 }
 
-ast_t *
-PadAst_DeepCopy(const ast_t *other) {
+PadAST *
+PadAst_DeepCopy(const PadAST *other) {
     if (!other) {
         return NULL;
     }
 
-    ast_t *self = mem_calloc(1, sizeof(*self));
+    PadAST *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -454,13 +454,13 @@ PadAst_DeepCopy(const ast_t *other) {
     return self;
 }
 
-ast_t *
-PadAst_ShallowCopy(const ast_t *other) {
+PadAST *
+PadAst_ShallowCopy(const PadAST *other) {
     if (!other) {
         return NULL;
     }
 
-    ast_t *self = mem_calloc(1, sizeof(*self));
+    PadAST *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -496,7 +496,7 @@ PadAst_ShallowCopy(const ast_t *other) {
 }
 
 void
-PadAst_MoveOpts(ast_t *self, PadOpts *move_opts) {
+PadAst_MoveOpts(PadAST *self, PadOpts *move_opts) {
     if (self->opts) {
         PadOpts_Del(self->opts);
     }
@@ -505,12 +505,12 @@ PadAst_MoveOpts(ast_t *self, PadOpts *move_opts) {
 }
 
 const PadNode *
-PadAst_GetcRoot(const ast_t *self) {
+PadAst_GetcRoot(const PadAST *self) {
     return self->root;
 }
 
 static void
-ast_show_debug(const ast_t *self, const char *funcname) {
+ast_show_debug(const PadAST *self, const char *funcname) {
     if (self->debug) {
         PadTok *t = *self->ref_ptr;
         printf("debug: %s: token type[%d]\n", funcname, (t ? t->type : -1));
@@ -518,7 +518,7 @@ ast_show_debug(const ast_t *self, const char *funcname) {
 }
 
 void
-PadAst_Clear(ast_t *self) {
+PadAst_Clear(PadAST *self) {
     // self->ref_config
     // do not null clear
 
@@ -544,7 +544,7 @@ PadAst_Clear(ast_t *self) {
 }
 
 const char *
-PadAst_GetcLastErrMsg(const ast_t *self) {
+PadAst_GetcLastErrMsg(const PadAST *self) {
     if (!PadErrStack_Len(self->error_stack)) {
         return NULL;
     }
@@ -554,7 +554,7 @@ PadAst_GetcLastErrMsg(const ast_t *self) {
 }
 
 const char *
-PadAst_GetcFirstErrMsg(const ast_t *self) {
+PadAst_GetcFirstErrMsg(const PadAST *self) {
     if (!PadErrStack_Len(self->error_stack)) {
         return NULL;
     }
@@ -564,22 +564,22 @@ PadAst_GetcFirstErrMsg(const ast_t *self) {
 }
 
 bool
-PadAst_HasErrs(const ast_t *self) {
+PadAst_HasErrs(const PadAST *self) {
     return PadErrStack_Len(self->error_stack);
 }
 
 void
-PadAst_ClearErrs(ast_t *self) {
+PadAst_ClearErrs(PadAST *self) {
     PadErrStack_Clear(self->error_stack);
 }
 
 void
-PadAst_SetDebug(ast_t *self, bool debug) {
+PadAst_SetDebug(PadAST *self, bool debug) {
     self->debug = debug;
 }
 
 void
-PadAst_TraceErr_tokens(const ast_t *self, FILE *fout) {
+PadAst_TraceErr_tokens(const PadAST *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
@@ -594,7 +594,7 @@ PadAst_TraceErr_tokens(const ast_t *self, FILE *fout) {
 }
 
 void
-PadAst_TraceErr(const ast_t *self, FILE *fout) {
+PadAst_TraceErr(const PadAST *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
@@ -604,7 +604,7 @@ PadAst_TraceErr(const ast_t *self, FILE *fout) {
 }
 
 const PadErrStack *
-PadAst_GetcErrStack(const ast_t *self) {
+PadAst_GetcErrStack(const PadAST *self) {
     if (!self) {
         return NULL;
     }
@@ -612,7 +612,7 @@ PadAst_GetcErrStack(const ast_t *self) {
 }
 
 void
-PadAst_Dump(const ast_t *self, FILE *fout) {
+PadAst_Dump(const PadAST *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
@@ -623,22 +623,22 @@ PadAst_Dump(const ast_t *self, FILE *fout) {
 }
 
 PadCtx *
-PadAst_GetRefCtx(ast_t *self) {
+PadAst_GetRefCtx(PadAST *self) {
     return self->ref_context;
 }
 
 void
-PadAst_SetRefCtx(ast_t *ast, PadCtx *ref_context) {
+PadAst_SetRefCtx(PadAST *ast, PadCtx *ref_context) {
     ast->ref_context = ref_context;
 }
 
 void
-PadAst_SetRefGc(ast_t *ast, PadGc *ref_gc) {
+PadAst_SetRefGc(PadAST *ast, PadGc *ref_gc) {
     ast->ref_gc = ref_gc;
 }
 
 PadTok *
-PadAst_ReadTok(ast_t *self) {
+PadAst_ReadTok(PadAST *self) {
     if (!self || !self->ref_ptr) {
         return NULL;
     }
@@ -647,7 +647,7 @@ PadAst_ReadTok(ast_t *self) {
 }
 
 void
-PadAst_PrevPtr(ast_t *self) {
+PadAst_PrevPtr(PadAST *self) {
     if (!self) {
         return;
     }
@@ -656,12 +656,12 @@ PadAst_PrevPtr(ast_t *self) {
 }
 
 PadGc *
-PadAst_GetRefGc(ast_t *self) {
+PadAst_GetRefGc(PadAST *self) {
     return self->ref_gc;
 }
 
-ast_t *
-PadAst_PushBackErrTok(ast_t *self, PadTok *ref_token) {
+PadAST *
+PadAst_PushBackErrTok(PadAST *self, PadTok *ref_token) {
     if (!self || !ref_token) {
         return NULL;
     }

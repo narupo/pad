@@ -122,7 +122,7 @@ set_ref(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
  */
 PadObj *
 extract_ref_of_obj(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -132,7 +132,7 @@ extract_ref_of_obj(
 
 PadObj *
 extract_ref_of_obj_all(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -152,7 +152,7 @@ extract_ref_of_obj_all(
  */
 PadObj *
 extract_copy_of_obj(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -171,7 +171,7 @@ extract_copy_of_obj(
  */
 PadObj *
 refer_chain_obj_with_ref(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -183,7 +183,7 @@ refer_chain_obj_with_ref(
  * refer three objects (dot, call, index)
  * this function will be used in loop
  *
- * @param[in] *ast    pointer to ast_t
+ * @param[in] *ast    pointer to PadAST
  * @param[in] *owners owner objects (contain first operand)
  * @param[in] *co     chain object
  *
@@ -192,7 +192,7 @@ refer_chain_obj_with_ref(
  */
 PadObj *
 refer_chain_three_objs(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -204,7 +204,7 @@ refer_chain_three_objs(
 /**
  * refer chain call
  *
- * @param[in] *ast    pointer to ast_t
+ * @param[in] *ast    pointer to PadAST
  * @param[in] *owners owner objects (contain first operand)
  * @param[in] *co     chain object
  *
@@ -213,7 +213,7 @@ refer_chain_three_objs(
  */
 PadObj *
 refer_chain_call(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
     PadGc *ref_gc,
@@ -224,7 +224,7 @@ refer_chain_call(
 
 PadObj *
 refer_and_set_ref(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -248,7 +248,7 @@ dump_array_obj(const PadObj *arrobj);
  */
 bool
 parse_bool(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -263,7 +263,7 @@ parse_bool(
  */
 objint_t
 parse_int(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,
@@ -278,7 +278,7 @@ parse_int(
  */
 objfloat_t
 parse_float(
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadErrStack *err,
     PadGc *ref_gc,
     PadCtx *ref_context,

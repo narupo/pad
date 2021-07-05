@@ -2,7 +2,7 @@
 
 static PadObj *
 builtin_dict_get(builtin_func_args_t *fargs) {
-    ast_t *ref_ast = fargs->ref_ast;
+    PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
     PadGc * ref_gc = PadAst_GetRefGc(ref_ast);
     assert(ref_gc);
@@ -92,7 +92,7 @@ builtin_func_infos[] = {
 PadObj *
 Pad_NewBltDictMod(const PadConfig *ref_config, PadGc *ref_gc) {
     PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
-    ast_t *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;  // set reference
 

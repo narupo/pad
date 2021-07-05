@@ -7,13 +7,13 @@ extern void
 PadTkr_Del(PadTkr *self);
 
 extern void
-PadAst_Del(ast_t *self);
+PadAst_Del(PadAST *self);
 
-extern ast_t *
-PadAst_DeepCopy(const ast_t *other);
+extern PadAST *
+PadAst_DeepCopy(const PadAST *other);
 
-extern ast_t *
-PadAst_ShallowCopy(const ast_t *other);
+extern PadAST *
+PadAst_ShallowCopy(const PadAST *other);
 
 extern void
 PadCtx_Del(PadCtx *self);
@@ -614,7 +614,7 @@ PadObj_NewDict(PadGc *ref_gc, PadObjDict *move_objdict) {
 PadObj *
 PadObj_NewFunc(
     PadGc *ref_gc,
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadCtx *ref_context,
     PadObj *move_name,
     PadObj *move_args,
@@ -681,7 +681,7 @@ PadObj *
 PadObj_NewDefStruct(
     PadGc *ref_gc,
     PadObj *move_idn,
-    ast_t *move_ast,
+    PadAST *move_ast,
     PadCtx *move_context
 ) {
     if (!ref_gc || !move_idn || !move_ast || !move_context) {
@@ -704,7 +704,7 @@ PadObj_NewDefStruct(
 PadObj *
 PadObj_NewObj(
     PadGc *ref_gc,
-    ast_t *ref_ast,
+    PadAST *ref_ast,
     PadCtx *move_struct_context,
     PadObj *ref_def_obj
 ) {
@@ -752,7 +752,7 @@ PadObj_NewModBy(
     const char *program_filename,
     char *move_program_source,
     PadTkr *move_tkr,
-    ast_t *move_ast,
+    PadAST *move_ast,
     PadCtx *move_context,
     builtin_func_info_t *infos  // allow null
 ) {

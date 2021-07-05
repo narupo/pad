@@ -17,5 +17,5 @@
 #include <pad/lang/arguments.h>
 #include <pad/lang/types.h>
 
-ast_t *
-PadCc_Compile(ast_t *ast, PadTok *tokens[]);
+PadAST *
+PadCc_Compile(PadAST *ast, PadTok *tokens[]);

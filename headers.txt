@@ -34,7 +34,7 @@
 ./pad/lang/scope.h *
 ./pad/lang/tokenizer.h *
 ./pad/lang/tokens.h *
-./pad/lang/traverser.h
+./pad/lang/traverser.h *
 ./pad/lang/types.h
 ./pad/lang/utils.h
 ./pad/lib/cl.h

@@ -18,10 +18,10 @@
 #include <pad/lang/builtin/modules/opts.h>
 
 void
-trv_traverse(ast_t *ast, PadCtx *context);
+PadTrv_Trav(PadAST *ast, PadCtx *context);
 
 PadObj *
-_trv_traverse(ast_t *ast, trv_args_t *targs);
+_PadTrv_Trav(PadAST *ast, trv_args_t *targs);
 
-ast_t *
-trv_import_builtin_modules(ast_t *ast);
+PadAST *
+PadTrv_ImportBltMods(PadAST *ast);
