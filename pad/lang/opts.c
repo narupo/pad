@@ -2,7 +2,7 @@
 
 struct PadOpts {
     dict_t *opts;
-    cstring_array_t *args;
+    PadCStrAry *args;
 };
 
 void
@@ -12,7 +12,7 @@ PadOpts_Del(PadOpts *self) {
     }
     
     dict_del(self->opts);
-    cstrarr_del(self->args);
+    PadCStrAry_Del(self->args);
     free(self);
 }
 
@@ -29,7 +29,7 @@ PadOpts_New(void) {
         return NULL;
     }
 
-    self->args = cstrarr_new();
+    self->args = PadCStrAry_New();
     if (!self->args) {
         PadOpts_Del(self);
         return NULL;
@@ -55,7 +55,7 @@ PadOpts_DeepCopy(const PadOpts *other) {
         return NULL;
     }
 
-    self->args = cstrarr_deep_copy(other->args);
+    self->args = PadCStrAry_DeepCopy(other->args);
     if (!self->args) {
         PadOpts_Del(self);
         return NULL;
@@ -81,7 +81,7 @@ PadOpts_ShallowCopy(const PadOpts *other) {
         return NULL;
     }
 
-    self->args = cstrarr_shallow_copy(other->args);
+    self->args = PadCStrAry_ShallowCopy(other->args);
     if (!self->args) {
         PadOpts_Del(self);
         return NULL;
@@ -97,7 +97,7 @@ PadOpts_Clear(PadOpts *self) {
     }
 
     dict_clear(self->opts);
-    cstrarr_clear(self->args);
+    PadCStrAry_Clear(self->args);
 }
 
 PadOpts *
@@ -115,8 +115,8 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
         return NULL;
     }
 
-    cstrarr_clear(self->args);
-    cstrarr_pushb(self->args, argv[0]);
+    PadCStrAry_Clear(self->args);
+    PadCStrAry_PushBack(self->args, argv[0]);
 
     for (int i = 1; i < argc && argv[i]; ++i) {
         const char *arg = argv[i];
@@ -129,7 +129,7 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
                 str_set(key, arg+1);
                 m = 20;
             } else {
-                if (!cstrarr_pushb(self->args, arg)) {
+                if (!PadCStrAry_PushBack(self->args, arg)) {
                     return NULL;
                 }
             }
@@ -204,11 +204,11 @@ PadOpts_GetcArgs(const PadOpts *self, int32_t idx) {
     if (!self) {
         return NULL;
     }
-    if (idx < 0 || idx >= cstrarr_len(self->args)) {
+    if (idx < 0 || idx >= PadCStrAry_Len(self->args)) {
         return NULL;
     }
 
-    return cstrarr_getc(self->args, idx);
+    return PadCStrAry_Getc(self->args, idx);
 }
 
 int32_t
@@ -216,5 +216,5 @@ PadOpts_ArgsLen(const PadOpts *self) {
     if (!self) {
         return -1;
     }
-    return cstrarr_len(self->args);
+    return PadCStrAry_Len(self->args);
 }

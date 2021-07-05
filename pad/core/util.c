@@ -146,9 +146,9 @@ Pad_SafeSystem(const char *cmdline, int option) {
 #endif
 }
 
-cstring_array_t *
+PadCStrAry *
 Pad_ArgsByOptind(int argc, char *argv[], int optind) {
-    cstring_array_t *args = cstrarr_new();
+    PadCStrAry *args = PadCStrAry_New();
 
     // DO NOT DELETE FOR DEBUG.
     //
@@ -157,9 +157,9 @@ Pad_ArgsByOptind(int argc, char *argv[], int optind) {
     // 	printf("%d %s\n", i, argv[i]);
     // }
 
-    cstrarr_push(args, argv[0]);
+    PadCStrAry_Push(args, argv[0]);
     for (int i = optind; i < argc; ++i) {
-        cstrarr_push(args, argv[i]);
+        PadCStrAry_Push(args, argv[i]);
     }
 
     return args;
@@ -321,19 +321,19 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     return path;
 }
 
-cstring_array_t *
+PadCStrAry *
 Pad_SplitToArray(const char *str, int ch) {
     if (!str) {
         return NULL;
     }
 
-    cstring_array_t *arr = cstrarr_new();
+    PadCStrAry *arr = PadCStrAry_New();
     string_t *s = str_new();
 
     for (const char *p = str; *p; ++p) {
         if (*p == ch) {
             if (str_len(s)) {
-                cstrarr_pushb(arr, str_getc(s));
+                PadCStrAry_PushBack(arr, str_getc(s));
                 str_clear(s);
             }
         } else {
@@ -342,26 +342,26 @@ Pad_SplitToArray(const char *str, int ch) {
     }
 
     if (str_len(s)) {
-        cstrarr_pushb(arr, str_getc(s));
+        PadCStrAry_PushBack(arr, str_getc(s));
     }
 
     str_del(s);
     return arr;
 }
 
-static cstring_array_t *
+static PadCStrAry *
 split_path_var(const char *path) {
     return Pad_SplitToArray(path, ':');
 }
 
-cstring_array_t *
+PadCStrAry *
 Pad_PushFrontArgv(int argc, char *argv[], const char *front) {
-    cstring_array_t *arr = cstrarr_new();
+    PadCStrAry *arr = PadCStrAry_New();
 
-    cstrarr_pushb(arr, front);
+    PadCStrAry_PushBack(arr, front);
 
     for (int32_t i = 0; i < argc; ++i) {
-        cstrarr_pushb(arr, argv[i]);
+        PadCStrAry_PushBack(arr, argv[i]);
     }
 
     return mem_move(arr);

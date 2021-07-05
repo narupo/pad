@@ -107,7 +107,7 @@ Pad_SafeSystem(const char *cmdline, int option);
  * @return success to pointer to array
  * @return failed to NULL
  */
-cstring_array_t *
+PadCStrAry *
 Pad_ArgsByOptind(int argc, char *argv[], int optind);
 
 /**
@@ -152,10 +152,10 @@ Pad_ClearScreen(void);
  * @param[in] *argv[]
  * @param[in] *front
  *
- * @return success to pointer to cstring_array_t
+ * @return success to pointer to PadCStrAry
  * @return failed to NULL
  */
-cstring_array_t *
+PadCStrAry *
 Pad_PushFrontArgv(int argc, char *argv[], const char *front);
 
 /**
@@ -189,10 +189,10 @@ Pad_IsDotFile(const char *path);
  * @param[in] *str
  * @param[in] ch
  *
- * @return success to pointer to cstring_array_t
+ * @return success to pointer to PadCStrAry
  * @return failed to NULL
  */
-cstring_array_t *
+PadCStrAry *
 Pad_SplitToArray(const char *str, int ch);
 
 /**

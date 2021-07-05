@@ -7,7 +7,7 @@
  */
 #include <pad/lib/cstring_array.h>
 
-struct cstring_array {
+struct PadCStrAry {
 	char **arr;
 	int32_t len;
 	int32_t capa;
@@ -18,7 +18,7 @@ enum {
 };
 
 void
-cstrarr_del(cstring_array_t *arr) {
+PadCStrAry_Del(PadCStrAry *arr) {
 	if (arr) {
 		for (int32_t i = 0; i < arr->len; ++i) {
 			free(arr->arr[i]);
@@ -28,15 +28,15 @@ cstrarr_del(cstring_array_t *arr) {
 	}
 }
 
-cstring_array_t *
-cstrarr_new(void) {
-	cstring_array_t *self = mem_calloc(1, sizeof(cstring_array_t));
+PadCStrAry *
+PadCStrAry_New(void) {
+	PadCStrAry *self = mem_calloc(1, sizeof(PadCStrAry));
 	if (!self) {
 		return NULL;
 	}
 
 	self->capa = CAP_ARRINITCAPA;
-	self->arr = mem_calloc(self->capa + 1, sizeof(cstring_array_t *));
+	self->arr = mem_calloc(self->capa + 1, sizeof(PadCStrAry *));
 	if (!self->arr) {
 		free(self);
 		return NULL;
@@ -45,28 +45,28 @@ cstrarr_new(void) {
 	return self;
 }
 
-cstring_array_t *
-cstrarr_deep_copy(const cstring_array_t *other) {
+PadCStrAry *
+PadCStrAry_DeepCopy(const PadCStrAry *other) {
 	if (!other) {
 		return NULL;
 	}	
 
-	cstring_array_t *self = mem_calloc(1, sizeof(cstring_array_t));
+	PadCStrAry *self = mem_calloc(1, sizeof(PadCStrAry));
 	if (!self) {
 		return NULL;
 	}
 
 	self->capa = other->capa;
-	self->arr = mem_calloc(other->capa + 1, sizeof(cstring_array_t *));
+	self->arr = mem_calloc(other->capa + 1, sizeof(PadCStrAry *));
 	if (!self->arr) {
-		cstrarr_del(self);
+		PadCStrAry_Del(self);
 		return NULL;
 	}
 
 	for (self->len = 0; self->len < other->len; ++self->len) {
 		self->arr[self->len] = PadCStr_Dup(other->arr[self->len]);
 		if (!self->arr[self->len]) {
-			cstrarr_del(self);
+			PadCStrAry_Del(self);
 			return NULL;
 		}
 	}
@@ -74,13 +74,13 @@ cstrarr_deep_copy(const cstring_array_t *other) {
 	return self;
 }
 
-cstring_array_t *
-cstrarr_shallow_copy(const cstring_array_t *other) {
-	return cstrarr_deep_copy(other);
+PadCStrAry *
+PadCStrAry_ShallowCopy(const PadCStrAry *other) {
+	return PadCStrAry_DeepCopy(other);
 }
 
 char **
-cstrarr_escdel(cstring_array_t *self) {
+PadCStrAry_EscDel(PadCStrAry *self) {
 	if (!self) {
 		return NULL;
 	}
@@ -92,8 +92,8 @@ cstrarr_escdel(cstring_array_t *self) {
 	return esc;
 }
 
-cstring_array_t *
-cstrarr_resize(cstring_array_t *self, int32_t capa) {
+PadCStrAry *
+PadCStrAry_Resize(PadCStrAry *self, int32_t capa) {
 	int32_t size = sizeof(self->arr[0]);
 	char **tmp = mem_realloc(self->arr, size*capa + size);
 	if (!tmp) {
@@ -105,19 +105,19 @@ cstrarr_resize(cstring_array_t *self, int32_t capa) {
 	return self;
 }
 
-cstring_array_t *
-cstrarr_push(cstring_array_t *self, const char *str) {
-	return cstrarr_pushb(self, str);
+PadCStrAry *
+PadCStrAry_Push(PadCStrAry *self, const char *str) {
+	return PadCStrAry_PushBack(self, str);
 }
 
-cstring_array_t *
-cstrarr_pushb(cstring_array_t *self, const char *str) {
+PadCStrAry *
+PadCStrAry_PushBack(PadCStrAry *self, const char *str) {
 	if (!self || !str) {
 		return NULL;
 	}
 
 	if (self->len >= self->capa) {
-		if (!cstrarr_resize(self, self->capa*2)) {
+		if (!PadCStrAry_Resize(self, self->capa*2)) {
 			return NULL;
 		}
 	}
@@ -134,7 +134,7 @@ cstrarr_pushb(cstring_array_t *self, const char *str) {
 }
 
 char *
-cstrarr_pop_move(cstring_array_t *self) {
+PadCStrAry_PopMove(PadCStrAry *self) {
 	if (!self || !self->len) {
 		return NULL;
 	}
@@ -147,14 +147,14 @@ cstrarr_pop_move(cstring_array_t *self) {
 	return el;
 }
 
-cstring_array_t *
-cstrarr_move(cstring_array_t *self, char *ptr) {
+PadCStrAry *
+PadCStrAry_Move(PadCStrAry *self, char *ptr) {
 	if (!self) {
 		return NULL;
 	}
 
 	if (self->len >= self->capa) {
-		if (!cstrarr_resize(self, self->capa*2)) {
+		if (!PadCStrAry_Resize(self, self->capa*2)) {
 			return NULL;
 		}
 	}
@@ -172,8 +172,8 @@ cstrarr_cmp(const void *lh, const void *rh) {
 	return strcmp(ls, rs);
 }
 
-cstring_array_t *
-cstrarr_sort(cstring_array_t *self) {
+PadCStrAry *
+PadCStrAry_Sort(PadCStrAry *self) {
 	if (!self) {
 		return NULL;
 	}
@@ -183,7 +183,7 @@ cstrarr_sort(cstring_array_t *self) {
 }
 
 const char *
-cstrarr_getc(const cstring_array_t *self, int idx) {
+PadCStrAry_Getc(const PadCStrAry *self, int idx) {
 	if (!self) {
 		return NULL;
 	}
@@ -196,7 +196,7 @@ cstrarr_getc(const cstring_array_t *self, int idx) {
 }
 
 int32_t
-cstrarr_len(const cstring_array_t *self) {
+PadCStrAry_Len(const PadCStrAry *self) {
 	if (!self) {
 		return 0;
 	}
@@ -204,8 +204,8 @@ cstrarr_len(const cstring_array_t *self) {
 	return self->len;
 }
 
-const cstring_array_t *
-cstrarr_show(const cstring_array_t *self, FILE *fout) {
+const PadCStrAry *
+PadCStrAry_Show(const PadCStrAry *self, FILE *fout) {
 	if (!self || !fout) {
 		return NULL;
 	}
@@ -219,7 +219,7 @@ cstrarr_show(const cstring_array_t *self, FILE *fout) {
 }
 
 void
-cstrarr_clear(cstring_array_t *self) {
+PadCStrAry_Clear(PadCStrAry *self) {
 	if (!self) {
 		return;
 	}

@@ -19,11 +19,11 @@
 #include <pad/lib/cstring.h>
 
 /******************
-* cstring_array_t *
+* PadCStrAry *
 ******************/
 
-struct cstring_array;
-typedef struct cstring_array cstring_array_t;
+struct PadCStrAry;
+typedef struct PadCStrAry PadCStrAry;
 
 /**
  * destruct array
@@ -31,7 +31,7 @@ typedef struct cstring_array cstring_array_t;
  * @param[in] *self
  */
 void
-cstrarr_del(cstring_array_t *self);
+PadCStrAry_Del(PadCStrAry *self);
 
 /**
  * destruct array with move semantics
@@ -42,7 +42,7 @@ cstrarr_del(cstring_array_t *self);
  * @return pointer to array like a argv
  */
 char **
-cstrarr_escdel(cstring_array_t *self);
+PadCStrAry_EscDel(PadCStrAry *self);
 
 /**
  * construct array
@@ -50,14 +50,14 @@ cstrarr_escdel(cstring_array_t *self);
  * @return success to pointer to dynamic allocate memory of array
  * @return failed to NULL
  */
-cstring_array_t *
-cstrarr_new(void);
+PadCStrAry *
+PadCStrAry_New(void);
 
-cstring_array_t *
-cstrarr_deep_copy(const cstring_array_t *other);
+PadCStrAry *
+PadCStrAry_DeepCopy(const PadCStrAry *other);
 
-cstring_array_t *
-cstrarr_shallow_copy(const cstring_array_t *other);
+PadCStrAry *
+PadCStrAry_ShallowCopy(const PadCStrAry *other);
 
 /**
  * @deprecated
@@ -70,8 +70,8 @@ cstrarr_shallow_copy(const cstring_array_t *other);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t *
-cstrarr_push(cstring_array_t *self, const char *str);
+PadCStrAry *
+PadCStrAry_Push(PadCStrAry *self, const char *str);
 
 /**
  * push back string at array with copy
@@ -82,8 +82,8 @@ cstrarr_push(cstring_array_t *self, const char *str);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t *
-cstrarr_pushb(cstring_array_t *self, const char *str);
+PadCStrAry *
+PadCStrAry_PushBack(PadCStrAry *self, const char *str);
 
 /**
  * pop tail element in array with move semantics
@@ -94,7 +94,7 @@ cstrarr_pushb(cstring_array_t *self, const char *str);
  * @return if array is empty to NULL
  */
 char *
-cstrarr_pop_move(cstring_array_t *self);
+PadCStrAry_PopMove(PadCStrAry *self);
 
 /**
  * move back pointer to dynamic allocate memory to array with move semantics
@@ -105,8 +105,8 @@ cstrarr_pop_move(cstring_array_t *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t *
-cstrarr_move(cstring_array_t *self, char *ptr);
+PadCStrAry *
+PadCStrAry_Move(PadCStrAry *self, char *ptr);
 
 /**
  * sort elements
@@ -116,8 +116,8 @@ cstrarr_move(cstring_array_t *self, char *ptr);
  * @return success to pointer to self
  * @return failed to NULL
  */
-cstring_array_t *
-cstrarr_sort(cstring_array_t *self);
+PadCStrAry *
+PadCStrAry_Sort(PadCStrAry *self);
 
 /**
  * get element in array by index
@@ -129,7 +129,7 @@ cstrarr_sort(cstring_array_t *self);
  * @return failed to NULL
  */
 const char *
-cstrarr_getc(const cstring_array_t *self, int idx);
+PadCStrAry_Getc(const PadCStrAry *self, int idx);
 
 /**
  * get number of length of array
@@ -139,7 +139,7 @@ cstrarr_getc(const cstring_array_t *self, int idx);
  * @return number of length of array
  */
 int32_t
-cstrarr_len(const cstring_array_t *self);
+PadCStrAry_Len(const PadCStrAry *self);
 
 /**
  * dump array to stream
@@ -150,8 +150,8 @@ cstrarr_len(const cstring_array_t *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-const cstring_array_t *
-cstrarr_show(const cstring_array_t *self, FILE *fout);
+const PadCStrAry *
+PadCStrAry_Show(const PadCStrAry *self, FILE *fout);
 
 /**
  * clear state
@@ -159,7 +159,7 @@ cstrarr_show(const cstring_array_t *self, FILE *fout);
  * @param[out] *self
  */
 void
-cstrarr_clear(cstring_array_t *self);
+PadCStrAry_Clear(PadCStrAry *self);
 
 /**
  * resize array
@@ -170,6 +170,6 @@ cstrarr_clear(cstring_array_t *self);
  * @return success to pointer to self
  * @return failed to pointer to NULL
  */
-cstring_array_t * 
-cstrarr_resize(cstring_array_t *self, int32_t capa);
+PadCStrAry * 
+PadCStrAry_Resize(PadCStrAry *self, int32_t capa);
 

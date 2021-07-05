@@ -283,21 +283,21 @@ _countescarr(char **arr) {
 }
 
 void
-test_cstrarr_new(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_New(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_escdel(void) {
+test_PadCStrAry_EscDel(void) {
     // test
-    cstring_array_t *arr = cstrarr_new();
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_escdel(NULL) == NULL);
+    assert(PadCStrAry_EscDel(NULL) == NULL);
 
-    char **escarr = cstrarr_escdel(arr);
+    char **escarr = PadCStrAry_EscDel(arr);
     assert(escarr != NULL);
 
     int i;
@@ -307,14 +307,14 @@ test_cstrarr_escdel(void) {
     _freeescarr(escarr);
 
     // test
-    arr = cstrarr_new();
+    arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_push(arr, "0") != NULL);
-    assert(cstrarr_push(arr, "1") != NULL);
-    assert(cstrarr_push(arr, "2") != NULL);
+    assert(PadCStrAry_Push(arr, "0") != NULL);
+    assert(PadCStrAry_Push(arr, "1") != NULL);
+    assert(PadCStrAry_Push(arr, "2") != NULL);
 
-    escarr = cstrarr_escdel(arr);
+    escarr = PadCStrAry_EscDel(arr);
     assert(_countescarr(escarr) == 3);
     assert(strcmp(escarr[0], "0") == 0);
     assert(strcmp(escarr[1], "1") == 0);
@@ -323,180 +323,180 @@ test_cstrarr_escdel(void) {
 }
 
 void
-test_cstrarr_push(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Push(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_push(NULL, "1") == NULL);
-    assert(cstrarr_push(arr, NULL) == NULL);
-    assert(cstrarr_push(arr, "") != NULL);
-    assert(cstrarr_push(arr, "1") != NULL);
+    assert(PadCStrAry_Push(NULL, "1") == NULL);
+    assert(PadCStrAry_Push(arr, NULL) == NULL);
+    assert(PadCStrAry_Push(arr, "") != NULL);
+    assert(PadCStrAry_Push(arr, "1") != NULL);
 
-    assert(cstrarr_len(arr) == 2);
+    assert(PadCStrAry_Len(arr) == 2);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_pushb(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_PushBack(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_pushb(NULL, "1") == NULL);
-    assert(cstrarr_pushb(arr, NULL) == NULL);
-    assert(cstrarr_pushb(arr, "") != NULL);
-    assert(cstrarr_pushb(arr, "1") != NULL);
+    assert(PadCStrAry_PushBack(NULL, "1") == NULL);
+    assert(PadCStrAry_PushBack(arr, NULL) == NULL);
+    assert(PadCStrAry_PushBack(arr, "") != NULL);
+    assert(PadCStrAry_PushBack(arr, "1") != NULL);
 
-    assert(cstrarr_len(arr) == 2);
+    assert(PadCStrAry_Len(arr) == 2);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_pop_move(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_PopMove(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr);
 
-    assert(cstrarr_pushb(arr, "1"));
-    assert(cstrarr_pushb(arr, "2"));
-    char *p = cstrarr_pop_move(arr);
+    assert(PadCStrAry_PushBack(arr, "1"));
+    assert(PadCStrAry_PushBack(arr, "2"));
+    char *p = PadCStrAry_PopMove(arr);
     assert(p);
     assert(!strcmp(p, "2"));
     free(p);
 
-    p = cstrarr_pop_move(arr);
+    p = PadCStrAry_PopMove(arr);
     assert(p);
     assert(!strcmp(p, "1"));
     free(p);
 
-    p = cstrarr_pop_move(arr);
+    p = PadCStrAry_PopMove(arr);
     assert(!p);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_move(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Move(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_move(arr, NULL) != NULL);
-    assert(cstrarr_getc(arr, 0) == NULL);
+    assert(PadCStrAry_Move(arr, NULL) != NULL);
+    assert(PadCStrAry_Getc(arr, 0) == NULL);
 
     char *ptr = PadCStr_EDup("string");
     assert(ptr != NULL);
 
-    assert(cstrarr_move(arr, ptr) != NULL);
-    assert(strcmp(cstrarr_getc(arr, 1), "string") == 0);
+    assert(PadCStrAry_Move(arr, ptr) != NULL);
+    assert(strcmp(PadCStrAry_Getc(arr, 1), "string") == 0);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_sort(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Sort(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_sort(NULL) == NULL);
+    assert(PadCStrAry_Sort(NULL) == NULL);
 
-    assert(cstrarr_push(arr, "1") != NULL);
-    assert(cstrarr_push(arr, "2") != NULL);
-    assert(cstrarr_push(arr, "0") != NULL);
+    assert(PadCStrAry_Push(arr, "1") != NULL);
+    assert(PadCStrAry_Push(arr, "2") != NULL);
+    assert(PadCStrAry_Push(arr, "0") != NULL);
 
-    assert(cstrarr_sort(arr) != NULL);
-    assert(strcmp(cstrarr_getc(arr, 0), "0") == 0);
-    assert(strcmp(cstrarr_getc(arr, 1), "1") == 0);
-    assert(strcmp(cstrarr_getc(arr, 2), "2") == 0);
+    assert(PadCStrAry_Sort(arr) != NULL);
+    assert(strcmp(PadCStrAry_Getc(arr, 0), "0") == 0);
+    assert(strcmp(PadCStrAry_Getc(arr, 1), "1") == 0);
+    assert(strcmp(PadCStrAry_Getc(arr, 2), "2") == 0);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_getc(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Getc(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_getc(NULL, 0) == NULL);
-    assert(cstrarr_getc(arr, 0) == NULL);
-    assert(cstrarr_getc(arr, -1) == NULL);
+    assert(PadCStrAry_Getc(NULL, 0) == NULL);
+    assert(PadCStrAry_Getc(arr, 0) == NULL);
+    assert(PadCStrAry_Getc(arr, -1) == NULL);
 
-    assert(cstrarr_push(arr, "0") != NULL);
-    assert(cstrarr_push(arr, "1") != NULL);
-    assert(cstrarr_push(arr, "2") != NULL);
+    assert(PadCStrAry_Push(arr, "0") != NULL);
+    assert(PadCStrAry_Push(arr, "1") != NULL);
+    assert(PadCStrAry_Push(arr, "2") != NULL);
 
-    assert(strcmp(cstrarr_getc(arr, 0), "0") == 0);
-    assert(strcmp(cstrarr_getc(arr, 1), "1") == 0);
-    assert(strcmp(cstrarr_getc(arr, 2), "2") == 0);
-    assert(cstrarr_getc(arr, 3) == NULL);
+    assert(strcmp(PadCStrAry_Getc(arr, 0), "0") == 0);
+    assert(strcmp(PadCStrAry_Getc(arr, 1), "1") == 0);
+    assert(strcmp(PadCStrAry_Getc(arr, 2), "2") == 0);
+    assert(PadCStrAry_Getc(arr, 3) == NULL);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_len(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Len(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_len(NULL) == 0);
-    assert(cstrarr_len(arr) == 0);
+    assert(PadCStrAry_Len(NULL) == 0);
+    assert(PadCStrAry_Len(arr) == 0);
 
-    assert(cstrarr_push(arr, "0") != NULL);
-    assert(cstrarr_push(arr, "1") != NULL);
-    assert(cstrarr_push(arr, "2") != NULL);
-    assert(cstrarr_len(arr) == 3);
+    assert(PadCStrAry_Push(arr, "0") != NULL);
+    assert(PadCStrAry_Push(arr, "1") != NULL);
+    assert(PadCStrAry_Push(arr, "2") != NULL);
+    assert(PadCStrAry_Len(arr) == 3);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_show(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Show(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr != NULL);
 
-    assert(cstrarr_show(NULL, stdout) == NULL);
-    assert(cstrarr_show(arr, NULL) == NULL);
-    assert(cstrarr_show(arr, stdout) != NULL);
+    assert(PadCStrAry_Show(NULL, stdout) == NULL);
+    assert(PadCStrAry_Show(arr, NULL) == NULL);
+    assert(PadCStrAry_Show(arr, stdout) != NULL);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_clear(void) {
-    cstring_array_t *arr = cstrarr_new();
+test_PadCStrAry_Clear(void) {
+    PadCStrAry *arr = PadCStrAry_New();
     assert(arr);
 
-    assert(cstrarr_pushb(arr, "1"));
-    assert(cstrarr_pushb(arr, "2"));
-    assert(cstrarr_len(arr) == 2);
-    cstrarr_clear(arr);
-    assert(cstrarr_len(arr) == 0);
+    assert(PadCStrAry_PushBack(arr, "1"));
+    assert(PadCStrAry_PushBack(arr, "2"));
+    assert(PadCStrAry_Len(arr) == 2);
+    PadCStrAry_Clear(arr);
+    assert(PadCStrAry_Len(arr) == 0);
 
-    cstrarr_del(arr);
+    PadCStrAry_Del(arr);
 }
 
 void
-test_cstrarr_resize(void) {
-    cstring_array_t *arr = cstrarr_new();
-    assert(cstrarr_resize(arr, 32));
-    assert(cstrarr_resize(arr, 8));
-    assert(cstrarr_resize(arr, 16));
-    cstrarr_del(arr);
+test_PadCStrAry_Resize(void) {
+    PadCStrAry *arr = PadCStrAry_New();
+    assert(PadCStrAry_Resize(arr, 32));
+    assert(PadCStrAry_Resize(arr, 8));
+    assert(PadCStrAry_Resize(arr, 16));
+    PadCStrAry_Del(arr);
 }
 
 static const struct testcase
 cstrarr_tests[] = {
-    {"cstrarr_new", test_cstrarr_new},
-    {"cstrarr_escdel", test_cstrarr_escdel},
-    {"cstrarr_push", test_cstrarr_push},
-    {"cstrarr_pushb", test_cstrarr_pushb},
-    {"cstrarr_pop_move", test_cstrarr_pop_move},
-    {"cstrarr_move", test_cstrarr_move},
-    {"cstrarr_sort", test_cstrarr_sort},
-    {"cstrarr_getc", test_cstrarr_getc},
-    {"cstrarr_len", test_cstrarr_len},
-    {"cstrarr_show", test_cstrarr_show},
-    {"cstrarr_clear", test_cstrarr_clear},
-    {"cstrarr_resize", test_cstrarr_resize},
+    {"PadCStrAry_New", test_PadCStrAry_New},
+    {"PadCStrAry_EscDel", test_PadCStrAry_EscDel},
+    {"PadCStrAry_Push", test_PadCStrAry_Push},
+    {"PadCStrAry_PushBack", test_PadCStrAry_PushBack},
+    {"PadCStrAry_PopMove", test_PadCStrAry_PopMove},
+    {"PadCStrAry_Move", test_PadCStrAry_Move},
+    {"PadCStrAry_Sort", test_PadCStrAry_Sort},
+    {"PadCStrAry_Getc", test_PadCStrAry_Getc},
+    {"PadCStrAry_Len", test_PadCStrAry_Len},
+    {"PadCStrAry_Show", test_PadCStrAry_Show},
+    {"PadCStrAry_Clear", test_PadCStrAry_Clear},
+    {"PadCStrAry_Resize", test_PadCStrAry_Resize},
     {0},
 };
 
@@ -3582,12 +3582,12 @@ test_util_Pad_ArgsByOptind(void) {
         }
     }
 
-    cstring_array_t *args = Pad_ArgsByOptind(argc, argv, optind);
-    // cstrarr_show(args, stdout);
-    assert(strcmp(cstrarr_getc(args, 0), "program") == 0);
-    assert(strcmp(cstrarr_getc(args, 1), "arg1") == 0);
-    assert(strcmp(cstrarr_getc(args, 2), "arg2") == 0);
-    cstrarr_del(args);
+    PadCStrAry *args = Pad_ArgsByOptind(argc, argv, optind);
+    // PadCStrAry_Show(args, stdout);
+    assert(strcmp(PadCStrAry_Getc(args, 0), "program") == 0);
+    assert(strcmp(PadCStrAry_Getc(args, 1), "arg1") == 0);
+    assert(strcmp(PadCStrAry_Getc(args, 2), "arg2") == 0);
+    PadCStrAry_Del(args);
 }
 
 static void
@@ -3666,32 +3666,32 @@ static void
 test_util_Pad_SplitToArray(void) {
     assert(Pad_SplitToArray(NULL, 0) == NULL);
 
-    cstring_array_t *arr = Pad_SplitToArray("abc:def:ghi", ':');
+    PadCStrAry *arr = Pad_SplitToArray("abc:def:ghi", ':');
     assert(arr);
-    assert(cstrarr_len(arr) == 3);
-    assert(!strcmp(cstrarr_getc(arr, 0), "abc"));
-    assert(!strcmp(cstrarr_getc(arr, 1), "def"));
-    assert(!strcmp(cstrarr_getc(arr, 2), "ghi"));
-    cstrarr_del(arr);
+    assert(PadCStrAry_Len(arr) == 3);
+    assert(!strcmp(PadCStrAry_Getc(arr, 0), "abc"));
+    assert(!strcmp(PadCStrAry_Getc(arr, 1), "def"));
+    assert(!strcmp(PadCStrAry_Getc(arr, 2), "ghi"));
+    PadCStrAry_Del(arr);
 
     arr = Pad_SplitToArray("abc:def:ghi:", ':');
     assert(arr);
-    assert(cstrarr_len(arr) == 3);
-    assert(!strcmp(cstrarr_getc(arr, 0), "abc"));
-    assert(!strcmp(cstrarr_getc(arr, 1), "def"));
-    assert(!strcmp(cstrarr_getc(arr, 2), "ghi"));
-    cstrarr_del(arr);
+    assert(PadCStrAry_Len(arr) == 3);
+    assert(!strcmp(PadCStrAry_Getc(arr, 0), "abc"));
+    assert(!strcmp(PadCStrAry_Getc(arr, 1), "def"));
+    assert(!strcmp(PadCStrAry_Getc(arr, 2), "ghi"));
+    PadCStrAry_Del(arr);
 }
 
 static void
 test_util_Pad_PushFrontArgv(void) {
     int argc = 2;
     char *argv[] = {"aaa", "bbb", NULL};
-    cstring_array_t *arr = Pad_PushFrontArgv(argc, argv, "ccc");
-    assert(cstrarr_len(arr) == 3);
-    assert(!strcmp(cstrarr_getc(arr, 0), "ccc"));
-    assert(!strcmp(cstrarr_getc(arr, 1), "aaa"));
-    assert(!strcmp(cstrarr_getc(arr, 2), "bbb"));
+    PadCStrAry *arr = Pad_PushFrontArgv(argc, argv, "ccc");
+    assert(PadCStrAry_Len(arr) == 3);
+    assert(!strcmp(PadCStrAry_Getc(arr, 0), "ccc"));
+    assert(!strcmp(PadCStrAry_Getc(arr, 1), "aaa"));
+    assert(!strcmp(PadCStrAry_Getc(arr, 2), "bbb"));
 }
 
 static void
