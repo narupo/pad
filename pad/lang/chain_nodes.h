@@ -5,36 +5,36 @@
 #include <pad/lang/chain_node.h>
 
 /**
- * destruct chain_nodes_t
+ * destruct PadChainNodes
  *
  * @param[in] *self
  */
 void
-chain_nodes_del(chain_nodes_t *self);
+PadChainNodes_Del(PadChainNodes *self);
 
 /**
- * construct chain_nodes_t
+ * construct PadChainNodes
  *
  * @param[in] void
  *
- * @return pointer to chain_nodes_t
+ * @return pointer to PadChainNodes
  */
-chain_nodes_t *
-chain_nodes_new(void);
+PadChainNodes *
+PadChainNodes_New(void);
 
 /**
  * deep copy
  *
  * @param[in] *other
  *
- * @return success to pointer to chain_nodes_t (copied)
+ * @return success to pointer to PadChainNodes (copied)
  * @return failed to NULL
  */
-chain_nodes_t *
-chain_nodes_deep_copy(const chain_nodes_t *other);
+PadChainNodes *
+PadChainNodes_DeepCopy(const PadChainNodes *other);
 
 /**
- * resize chain_nodes_t
+ * resize PadChainNodes
  *
  * @param[in] *self
  * @param[in] newcapa
@@ -42,11 +42,11 @@ chain_nodes_deep_copy(const chain_nodes_t *other);
  * @return success to pointer to self
  * @return failed to NULL
  */
-chain_nodes_t *
-chain_nodes_resize(chain_nodes_t *self, int32_t newcapa);
+PadChainNodes *
+PadChainNodes_Resize(PadChainNodes *self, int32_t newcapa);
 
 /**
- * move back pointer to chain_node_t
+ * move back pointer to PadChainNode
  *
  * @param[in] *self
  * @param[in] *move_chain_node
@@ -54,8 +54,8 @@ chain_nodes_resize(chain_nodes_t *self, int32_t newcapa);
  * @return success to pointer to self
  * @return failed to NULL
  */
-chain_nodes_t *
-chain_nodes_moveb(chain_nodes_t *self, chain_node_t *move_chain_node);
+PadChainNodes *
+PadChainNodes_MoveBack(PadChainNodes *self, PadChainNode *move_chain_node);
 
 /**
  * get length of array
@@ -65,16 +65,16 @@ chain_nodes_moveb(chain_nodes_t *self, chain_node_t *move_chain_node);
  * @return number of length
  */
 int32_t
-chain_nodes_len(const chain_nodes_t *self);
+PadChainNodes_Len(const PadChainNodes *self);
 
 /**
- * get chain_node_t from array
+ * get PadChainNode from array
  *
  * @param[in] *self
  * @param[in] idx
  *
- * @return success to pointer to chain_node_t
+ * @return success to pointer to PadChainNode
  * @return failed to NULL
  */
-chain_node_t *
-chain_nodes_get(chain_nodes_t *self, int32_t idx);
+PadChainNode *
+PadChainNodes_Get(PadChainNodes *self, int32_t idx);

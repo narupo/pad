@@ -18,4 +18,4 @@
 #include <pad/lang/types.h>
 
 ast_t *
-cc_compile(ast_t *ast, token_t *tokens[]);
+PadCc_Compile(ast_t *ast, token_t *tokens[]);

@@ -194,8 +194,8 @@ char *
 Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    gc_t *gc = PadGc_New();
+    PadCtx *ctx = PadCtx_New(gc);
     opts_t *opts = opts_new();
 
     if (!opts_parse(opts, argc, argv)) {
@@ -218,7 +218,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     PadAst_MoveOpts(ast, opts);
     opts = NULL;
 
-    cc_compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, tkr_get_tokens(tkr));
     if (PadAst_HasErrs(ast)) {
         if (errstack) {
             const PadErrStack *es = PadAst_GetcErrStack(ast);
@@ -240,11 +240,11 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     PadAst_Del(ast);
 
     string_t *buf = str_new();
-    str_app(buf, ctx_getc_stdout_buf(ctx));
-    str_app(buf, ctx_getc_stderr_buf(ctx));
+    str_app(buf, PadCtx_GetcStdoutBuf(ctx));
+    str_app(buf, PadCtx_GetcStderrBuf(ctx));
 
-    ctx_del(ctx);
-    gc_del(gc);
+    PadCtx_Del(ctx);
+    PadGc_Del(gc);
 
     return str_esc_del(buf);
 }
@@ -264,8 +264,8 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
 
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = gc_new();
-    context_t *ctx = ctx_new(gc);
+    gc_t *gc = PadGc_New();
+    PadCtx *ctx = PadCtx_New(gc);
     opts_t *opts = opts_new();
 
     tkr_parse(tkr, src);
@@ -280,7 +280,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     PadAst_MoveOpts(ast, opts);
     opts = NULL;
 
-    cc_compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, tkr_get_tokens(tkr));
     if (PadAst_HasErrs(ast)) {
         err_error("%s", PadAst_GetcFirstErrMsg(ast));
         return NULL;
@@ -295,28 +295,28 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     tkr_del(tkr);
     PadAst_Del(ast);
 
-    object_dict_t *varmap = ctx_get_varmap_at_global(ctx);
+    object_dict_t *varmap = PadCtx_GetVarmapAtGlobal(ctx);
     const object_dict_item_t *item = objdict_getc(varmap, "PATH");
     if (!item) {
-        ctx_del(ctx);
-        gc_del(gc);
+        PadCtx_Del(ctx);
+        PadGc_Del(gc);
         return NULL;
     }
 
-    ctx_pop_newline_of_stdout_buf(ctx);
-    printf("%s", ctx_getc_stdout_buf(ctx));
+    PadCtx_PopNewlineOfStdoutBuf(ctx);
+    printf("%s", PadCtx_GetcStdoutBuf(ctx));
     fflush(stdout);
 
     const char *s = uni_getc_mb(item->value->unicode);
     char *path = cstr_dup(s);
     if (!path) {
-        ctx_del(ctx);
-        gc_del(gc);
+        PadCtx_Del(ctx);
+        PadGc_Del(gc);
         return NULL;        
     }
 
-    ctx_del(ctx);
-    gc_del(gc);
+    PadCtx_Del(ctx);
+    PadGc_Del(gc);
 
     return path;
 }

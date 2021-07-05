@@ -18,7 +18,7 @@
 #include <pad/lang/builtin/modules/opts.h>
 
 void
-trv_traverse(ast_t *ast, context_t *context);
+trv_traverse(ast_t *ast, PadCtx *context);
 
 object_t *
 _trv_traverse(ast_t *ast, trv_args_t *targs);

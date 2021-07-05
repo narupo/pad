@@ -360,7 +360,7 @@ file_conv_line_encoding(const char *encoding, const char *text);
 ***************/
 
 struct file_dirnode;
-typedef struct file_dirnode file_dirnode_t;
+typedef struct file_dirnode file_dirPadNode;
 
 /**
  * Delete node of dynamic allocate memory
@@ -368,7 +368,7 @@ typedef struct file_dirnode file_dirnode_t;
  * @param self
  */
 void
-file_dirnodedel(file_dirnode_t *self);
+file_dirnodedel(file_dirPadNode *self);
 
 /**
  * Get name of node
@@ -379,7 +379,7 @@ file_dirnodedel(file_dirnode_t *self);
  * @return failed to NULL
  */
 const char *
-file_dirnodename(const file_dirnode_t* self);
+file_dirnodename(const file_dirPadNode* self);
 
 /***********
 * file_dir *
@@ -415,10 +415,10 @@ file_diropen(const char *path);
  *
  * @param self
  *
- * @return success to pointer to file_dirnode_t
+ * @return success to pointer to file_dirPadNode
  * @return failed or end of read to NULL
  */
-file_dirnode_t *
+file_dirPadNode *
 file_dirread(file_dir_t *self);
 
 /**

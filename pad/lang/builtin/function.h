@@ -2,7 +2,7 @@
 
 #include <pad/lang/types.h>
 
-struct builtin_func_info {
+struct PadBuiltFuncInfo {
     const char *name;
     builtin_func_t func;
 };

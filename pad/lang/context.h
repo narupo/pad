@@ -17,12 +17,12 @@
 /**
  * destruct object
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return
  */
 void
-ctx_del(context_t *self);
+PadCtx_Del(PadCtx *self);
 
 /**
  * destruct object and Pad_Escape global variable map from context
@@ -32,29 +32,29 @@ ctx_del(context_t *self);
  * @return pointer to object_dict_t
  */
 object_dict_t *
-ctx_escdel_global_varmap(context_t *self);
+PadCtx_EscDelGlobalVarmap(PadCtx *self);
 
 /**
  * construct object
  *
  * @param[in|out] *gc reference to gc_t (DO NOT DELETE)
- * @return pointer to context_t dynamic allocate memory (do ctx_del)
+ * @return pointer to PadCtx dynamic allocate memory (do PadCtx_Del)
  */
-context_t *
-ctx_new(gc_t *ref_gc);
+PadCtx *
+PadCtx_New(gc_t *ref_gc);
 
 /**
  * clear state of context
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  */
 void
-ctx_clear(context_t *self);
+PadCtx_Clear(PadCtx *self);
 
 /**
  * set alias value and description at element of key
  *
- * @param[in] *self  pointer to context_t
+ * @param[in] *self  pointer to PadCtx
  * @param[in] *key   key value strings
  * @param[in] *value value strings
  * @param[in] *desc  description strings
@@ -62,241 +62,241 @@ ctx_clear(context_t *self);
  * @return success to pointer to self
  * @return failed to pointer to NULL
  */
-context_t *
-ctx_set_alias(context_t *self, const char *key, const char *value, const char *desc);
+PadCtx *
+PadCtx_SetAlias(PadCtx *self, const char *key, const char *value, const char *desc);
 
 void
-ctx_set_default_global_vars(context_t *self);
+PadCtx_SetDefGlobalVars(PadCtx *self);
 
 /**
  * get alias value of key
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  * @param[in] *key  key of alias
  *
  * @return found to pointer to value strings
  * @return not found to pointer to NULL
  */
 const char *
-ctx_get_alias_value(context_t *self, const char *key);
+PadCtx_GetAliasValue(PadCtx *self, const char *key);
 
 /**
  * get alias description value of key
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  * @param[in] *key  key of alias
  *
  * @return found to pointer to description strings
  * @return not found to pointer to NULL
  */
 const char *
-ctx_get_alias_desc(context_t *self, const char *key);
+PadCtx_GetAliasDesc(PadCtx *self, const char *key);
 
 /**
  * push back strings at stdout buffer in context
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  * @param[in] *str  pointer to strings
  *
- * @return success to pointer to context_t
+ * @return success to pointer to PadCtx
  * @return failed to pointer to NULL
  */
-context_t *
-ctx_pushb_stdout_buf(context_t *self, const char *str);
+PadCtx *
+PadCtx_PushBackStdoutBuf(PadCtx *self, const char *str);
 
 /**
  * push back strings at stdout buffer in context
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  * @param[in] *str  pointer to strings
  *
- * @return success to pointer to context_t
+ * @return success to pointer to PadCtx
  * @return failed to pointer to NULL
  */
-context_t *
-ctx_pushb_stderr_buf(context_t *self, const char *str);
+PadCtx *
+PadCtx_PushBackStderrBuf(PadCtx *self, const char *str);
 
 /**
  * get stdout buffer read-only
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return pointer to buffer
  */
 const char *
-ctx_getc_stdout_buf(const context_t *self);
+PadCtx_GetcStdoutBuf(const PadCtx *self);
 
 /**
  * get stderr buffer read-only
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return pointer to buffer
  */
 const char *
-ctx_getc_stderr_buf(const context_t *self);
+PadCtx_GetcStderrBuf(const PadCtx *self);
 
 /**
  * get alinfo read-only
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return pointer to PadAliasInfo read-only
  */
 const PadAliasInfo *
-ctx_getc_alinfo(const context_t *self);
+PadCtx_GetcAliasInfo(const PadCtx *self);
 
 /**
  * get variables map as object_dict_t from current scope
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return pointer to object_dict_t
  */
 object_dict_t *
-ctx_get_varmap(context_t *self);
+PadCtx_GetVarmap(PadCtx *self);
 
 /**
  * get variables map as object_dict_t from global scope
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return pointer to object_dict_t
  */
 object_dict_t *
-ctx_get_varmap_at_global(context_t *self);
+PadCtx_GetVarmapAtGlobal(PadCtx *self);
 
 /**
  * get do-break flag
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return true or false
  */
 bool
-ctx_get_do_break(const context_t *self);
+PadCtx_GetDoBreak(const PadCtx *self);
 
 /**
  * set do-break flag
  *
- * @param[in] *self    pointer to context_t
+ * @param[in] *self    pointer to PadCtx
  * @param[in] do_break value of flag
  */
 void
-ctx_set_do_break(context_t *self, bool do_break);
+PadCtx_SetDoBreak(PadCtx *self, bool do_break);
 
 /**
  * get do-continue flag
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return true or false
  */
 bool
-ctx_get_do_continue(const context_t *self);
+PadCtx_GetDoContinue(const PadCtx *self);
 
 /**
  * set do-continue flag
  *
- * @param[in] *self       pointer to context_t
+ * @param[in] *self       pointer to PadCtx
  * @param[in] do_continue value of flag
  */
 void
-ctx_set_do_continue(context_t *self, bool do_continue);
+PadCtx_SetDoContinue(PadCtx *self, bool do_continue);
 
 /**
  * get do-return flag
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return true or false
  */
 bool
-ctx_get_do_return(const context_t *self);
+PadCtx_GetDoReturn(const PadCtx *self);
 
 /**
  * set do-return flag
  *
- * @param[in] *self     pointer to context_t
+ * @param[in] *self     pointer to PadCtx
  * @param[in] do_return value of flag
  */
 void
-ctx_set_do_return(context_t *self, bool do_return);
+PadCtx_SetDoReturn(PadCtx *self, bool do_return);
 
 /**
  * clear do-break, do-continue, do-return flag
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  */
 void
-ctx_clear_jump_flags(context_t *self);
+PadCtx_ClearJumpFlags(PadCtx *self);
 
 /**
  * push back scope at tail of scope chain
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  */
 void
-ctx_pushb_scope(context_t *self);
+PadCtx_PushBackScope(PadCtx *self);
 
 /**
  * pop back scope from tail of scope chain
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  */
 void
-ctx_popb_scope(context_t *self);
+PadCtx_PopBackScope(PadCtx *self);
 
 /**
  * find variable from varmap of scope at tail to head in scope chain
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  * @param[in] *key  key strings
  *
  * @return found to poitner to object_t
  * @return not found to pointer to NULL
  */
 object_t *
-ctx_find_var_ref(context_t *self, const char *key);
+PadCtx_FindVarRef(PadCtx *self, const char *key);
 
 /**
  * find variable from varmap of scope at tail to head in scope chain
  * traverse previous context on find
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  * @param[in] *key  key strings
  *
  * @return found to poitner to object_t
  * @return not found to pointer to NULL
  */
 object_t *
-ctx_find_var_ref_all(context_t *self, const char *key);
+PadCtx_FindVarRefAll(PadCtx *self, const char *key);
 
 /**
  * get reference of gc_t in context
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  *
  * @return reference to gc_t (this is reference, DO NOT DELETE)
  */
 gc_t *
-ctx_get_gc(context_t *self);
+PadCtx_GetGc(PadCtx *self);
 
 /**
  * clear stdout buffer
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  */
 void
-ctx_clear_stdout_buf(context_t *self);
+PadCtx_ClearStdoutBuf(PadCtx *self);
 
 /**
  * clear stderr buffer
  *
- * @param[in] *self pointer to context_t
+ * @param[in] *self pointer to PadCtx
  */
 void
-ctx_clear_stderr_buf(context_t *self);
+PadCtx_ClearStderrBuf(PadCtx *self);
 
 /**
  * swap stdout buffer
@@ -307,7 +307,7 @@ ctx_clear_stderr_buf(context_t *self);
  * @return pointer to stdout buffer of swapped
  */
 string_t *
-ctx_swap_stdout_buf(context_t *self, string_t *stdout_buf);
+PadCtx_SwapStdoutBuf(PadCtx *self, string_t *stdout_buf);
 
 /**
  * swap stderr buffer
@@ -318,16 +318,16 @@ ctx_swap_stdout_buf(context_t *self, string_t *stdout_buf);
  * @return pointer to stderr buffer of swapped
  */
 string_t *
-ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf);
+PadCtx_SwapStderrBuf(PadCtx *self, string_t *stderr_buf);
 
 /**
- * dump context_t at stream
+ * dump PadCtx at stream
  *
  * @param[in] *self
  * @param[in] *fout stream
  */
 void
-ctx_dump(const context_t *self, FILE *fout);
+PadCtx_Dump(const PadCtx *self, FILE *fout);
 
 /**
  * if idn in current scope then return true else return false
@@ -337,7 +337,7 @@ ctx_dump(const context_t *self, FILE *fout);
  * @return true or false
  */
 bool
-ctx_var_in_cur_scope(const context_t *self, const char *idn);
+PadCtx_VarInCurScope(const PadCtx *self, const char *idn);
 
 /**
  * get reference of varmap from current scope
@@ -347,7 +347,7 @@ ctx_var_in_cur_scope(const context_t *self, const char *idn);
  * @return reference to varmap
  */
 object_dict_t *
-ctx_get_ref_varmap_cur_scope(const context_t *self);
+PadCtx_GetRefVarmapCurScope(const PadCtx *self);
 
 /**
  * pop last newline of stdout buf
@@ -355,28 +355,28 @@ ctx_get_ref_varmap_cur_scope(const context_t *self);
  * @return 
  */
 void
-ctx_pop_newline_of_stdout_buf(context_t *self);
+PadCtx_PopNewlineOfStdoutBuf(PadCtx *self);
 
 void
-ctx_set_ref_prev(context_t *self, context_t *ref_prev);
+PadCtx_SetRefPrev(PadCtx *self, PadCtx *ref_prev);
 
-context_t *
-ctx_get_ref_prev(const context_t *self);
+PadCtx *
+PadCtx_GetRefPrev(const PadCtx *self);
 
-context_t *
-ctx_find_most_prev(context_t *self);
+PadCtx *
+PadCtx_FindMostPrev(PadCtx *self);
 
-context_t *
-ctx_deep_copy(const context_t *other);
+PadCtx *
+PadCtx_DeepCopy(const PadCtx *other);
 
-context_t *
-ctx_shallow_copy(const context_t *other);
+PadCtx *
+PadCtx_ShallowCopy(const PadCtx *other);
 
-context_t *
-ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr);
+PadCtx *
+PadCtx_UnpackObjAryToCurScope(PadCtx *self, object_array_t *arr);
 
 void
-ctx_set_use_buf(context_t *self, bool is_use_buf);
+PadCtx_SetUseBuf(PadCtx *self, bool is_use_buf);
 
 bool
-ctx_get_is_use_buf(const context_t *self);
+PadCtx_GetIsUseBuf(const PadCtx *self);

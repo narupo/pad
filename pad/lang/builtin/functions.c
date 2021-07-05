@@ -15,7 +15,7 @@
 static object_t *
 builtin_id(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -44,7 +44,7 @@ builtin_id(builtin_func_args_t *fargs) {
 static object_t *
 builtin_type(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -125,13 +125,13 @@ builtin_eputs(builtin_func_args_t *fargs) {
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
-    context_t *context = ctx_find_most_prev(ref_ast->ref_context);
+    PadCtx *context = PadCtx_FindMostPrev(ref_ast->ref_context);
     assert(context);
 
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stderr_buf(context, "\n");
+        PadCtx_PushBackStderrBuf(context, "\n");
         return obj_new_int(ref_ast->ref_gc, 0);
     }
 
@@ -146,7 +146,7 @@ builtin_eputs(builtin_func_args_t *fargs) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stderr_buf(context, str_getc(s));
+        PadCtx_PushBackStderrBuf(context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -157,31 +157,31 @@ builtin_eputs(builtin_func_args_t *fargs) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_stderr_buf(context, str_getc(s));
+        PadCtx_PushBackStderrBuf(context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stderr_buf(context, "\n");
+    PadCtx_PushBackStderrBuf(context, "\n");
     return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
 static object_t *
 builtin_puts(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == OBJ_TYPE_ARRAY);
 
-    context_t *context = ctx_find_most_prev(ref_ast->ref_context);
+    PadCtx *context = PadCtx_FindMostPrev(ref_ast->ref_context);
     assert(context);
 
     object_array_t *args = actual_args->objarr;
 
     if (!objarr_len(args)) {
-        ctx_pushb_stdout_buf(context, "\n");
+        PadCtx_PushBackStdoutBuf(context, "\n");
         return obj_new_int(ref_ast->ref_gc, 0);
     }
 
@@ -200,7 +200,7 @@ builtin_puts(builtin_func_args_t *fargs) {
             continue;
         }
         str_pushb(s, ' ');
-        ctx_pushb_stdout_buf(context, str_getc(s));
+        PadCtx_PushBackStdoutBuf(context, str_getc(s));
         str_del(s);
     }
     if (arrlen) {
@@ -215,19 +215,19 @@ builtin_puts(builtin_func_args_t *fargs) {
         if (!s) {
             goto done;
         }
-        ctx_pushb_stdout_buf(context, str_getc(s));
+        PadCtx_PushBackStdoutBuf(context, str_getc(s));
         str_del(s);
     }
 
 done:
-    ctx_pushb_stdout_buf(context, "\n");
+    PadCtx_PushBackStdoutBuf(context, "\n");
     return obj_new_int(ref_ast->ref_gc, arrlen);
 }
 
 static object_t *
 builtin_len(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -280,7 +280,7 @@ builtin_die(builtin_func_args_t *fargs) {
     obj_del(result);
 
     fflush(stdout);
-    fprintf(stderr, "%s", ctx_getc_stderr_buf(ref_ast->ref_context));
+    fprintf(stderr, "%s", PadCtx_GetcStderrBuf(ref_ast->ref_context));
     fflush(stderr);
 
     exit(1);
@@ -290,7 +290,7 @@ builtin_die(builtin_func_args_t *fargs) {
 static object_t *
 builtin_exit(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -308,10 +308,10 @@ builtin_exit(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    printf("%s", ctx_getc_stderr_buf(ref_ast->ref_context));
+    printf("%s", PadCtx_GetcStderrBuf(ref_ast->ref_context));
     fflush(stderr);
 
-    printf("%s", ctx_getc_stdout_buf(ref_ast->ref_context));
+    printf("%s", PadCtx_GetcStdoutBuf(ref_ast->ref_context));
     fflush(stdout);
 
     objint_t exit_code = codeobj->lvalue;
@@ -323,7 +323,7 @@ builtin_exit(builtin_func_args_t *fargs) {
 static object_t *
 builtin_copy(builtin_func_args_t *fargs, bool deep) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -358,7 +358,7 @@ builtin_shallowcopy(builtin_func_args_t *fargs) {
 static object_t *
 builtin_assert(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -399,16 +399,16 @@ extract_varmap(object_dict_t *dst, object_dict_t *src) {
 }
 
 static bool
-extract_context(context_t *dst, context_t *src) {
+extract_context(PadCtx *dst, PadCtx *src) {
     if (!dst || !src) {
         return false;
     }
 
-    return extract_varmap(ctx_get_varmap(dst), ctx_get_varmap(src));
+    return extract_varmap(PadCtx_GetVarmap(dst), PadCtx_GetVarmap(src));
 }
 
 static bool
-extract_arg(ast_t *ref_ast, const node_t *ref_node, const object_t *arg) {
+extract_arg(ast_t *ref_ast, const PadNode *ref_node, const object_t *arg) {
     if (!ref_ast || !arg) {
         return false;
     }
@@ -433,7 +433,7 @@ extract_arg(ast_t *ref_ast, const node_t *ref_node, const object_t *arg) {
 static object_t *
 builtin_extract(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -480,7 +480,7 @@ again:
 static object_t *
 builtin_setattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     PadErrStack *errstack = ref_ast->error_stack;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
@@ -497,7 +497,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
     const object_t *key_ = objarr_getc(args, 1);
     object_t *obj = objarr_get(args, 2);
     assert(dst && key_ && obj);
-    context_t *ref_context = NULL;
+    PadCtx *ref_context = NULL;
 
     switch (dst->type) {
     default: {
@@ -533,7 +533,7 @@ builtin_setattr(builtin_func_args_t *fargs) {
 static object_t *
 builtin_getattr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    const node_t *ref_node = fargs->ref_node;
+    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -548,7 +548,7 @@ builtin_getattr(builtin_func_args_t *fargs) {
     const object_t *dst = objarr_getc(args, 0);
     const object_t *key_ = objarr_getc(args, 1);
     assert(dst && key_);
-    context_t *ref_context = NULL;
+    PadCtx *ref_context = NULL;
 
     switch (dst->type) {
     default: {
@@ -572,7 +572,7 @@ builtin_getattr(builtin_func_args_t *fargs) {
         return NULL;
     }
 
-    object_t *ref = ctx_find_var_ref(ref_context, key);
+    object_t *ref = PadCtx_FindVarRef(ref_context, key);
     if (!ref) {
         return obj_new_nil(ref_ast->ref_gc);
     }
@@ -629,11 +629,11 @@ builtin_dance(builtin_func_args_t *fargs) {
     object_array_t *retarr = objarr_new();
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = PadAst_New(ref_ast->ref_config);
-    context_t *ctx = ctx_new(ref_ast->ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_ast->ref_gc);
     opts_t *opts = opts_new();
 
     if (codectx) {
-        object_dict_t *varmap = ctx_get_varmap(ctx);
+        object_dict_t *varmap = PadCtx_GetVarmap(ctx);
         for (int32_t i = 0; i < objdict_len(codectx->objdict); ++i) {
             const object_dict_item_t *item = objdict_getc_index(codectx->objdict, i);
             objdict_set(varmap, item->key, item->value);
@@ -650,7 +650,7 @@ builtin_dance(builtin_func_args_t *fargs) {
     PadAst_MoveOpts(ast, mem_move(opts));
     opts = NULL;
 
-    cc_compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, tkr_get_tokens(tkr));
     if (PadAst_HasErrs(ast)) {
         const PadErrStack *es = PadAst_GetcErrStack(ast);
         return_fail_es(es);
@@ -665,8 +665,8 @@ builtin_dance(builtin_func_args_t *fargs) {
     tkr_del(tkr);
     PadAst_Del(ast);
 
-    const char *out = ctx_getc_stdout_buf(ctx);
-    const char *err = ctx_getc_stderr_buf(ctx);
+    const char *out = PadCtx_GetcStdoutBuf(ctx);
+    const char *err = PadCtx_GetcStderrBuf(ctx);
     object_t *retout = obj_new_unicode_cstr(ref_ast->ref_gc, out);
     object_t *reterr = NULL;
     if (strlen(err)) {
@@ -679,7 +679,7 @@ builtin_dance(builtin_func_args_t *fargs) {
     objarr_moveb(retarr, reterr);
     object_t *ret = obj_new_array(ref_ast->ref_gc, mem_move(retarr));
 
-    ctx_del(ctx);
+    PadCtx_Del(ctx);
 
     return ret;
 }
@@ -779,10 +779,10 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
+Pad_NewBltMod(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(ref_config);
-    context_t *ctx = ctx_new(ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 
     return obj_new_module_by(

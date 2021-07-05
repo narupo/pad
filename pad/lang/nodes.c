@@ -5,7 +5,7 @@
 *******/
 
 void
-node_del(node_t *self) {
+node_del(PadNode *self) {
     if (!self) {
         return;
     }
@@ -14,14 +14,14 @@ node_del(node_t *self) {
     free(self);
 }
 
-node_t *
-node_new(node_type_t type, void *real, const token_t *ref_token) {
+PadNode *
+node_new(PadNodeype_t type, void *real, const token_t *ref_token) {
     assert(ref_token);
     if (!real || !ref_token) {
         return NULL;
     }
 
-    node_t *self = mem_calloc(1, sizeof(*self));
+    PadNode *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -33,8 +33,8 @@ node_new(node_type_t type, void *real, const token_t *ref_token) {
     return self;
 }
 
-node_t *
-node_deep_copy(const node_t *other) {
+PadNode *
+node_deep_copy(const PadNode *other) {
 #define declare_first(T, name) \
     T *name = mem_calloc(1, sizeof(*name)); \
     if (!name) { \
@@ -55,7 +55,7 @@ node_deep_copy(const node_t *other) {
         return NULL; \
     } \
     for (int32_t i = 0; i < nodearr_len(src->member); ++i) { \
-        node_t *node = nodearr_get(src->member, i); \
+        PadNode *node = nodearr_get(src->member, i); \
         node = node_deep_copy(node); \
         if (!node) { \
             node_del(self); \
@@ -69,7 +69,7 @@ node_deep_copy(const node_t *other) {
     for (int32_t i = 0; i < nodedict_len(src->member); ++i) { \
         const node_dict_item_t *item = nodedict_getc_index(src->member, i); \
         assert(item); \
-        node_t *node = node_deep_copy(item->value); \
+        PadNode *node = node_deep_copy(item->value); \
         if (!node) { \
             node_del(self); \
             return NULL; \
@@ -81,7 +81,7 @@ node_deep_copy(const node_t *other) {
         return NULL;
     }
 
-    declare_first(node_t, self);
+    declare_first(PadNode, self);
 
     self->type = other->type;
     self->ref_token = other->ref_token;
@@ -117,8 +117,8 @@ node_deep_copy(const node_t *other) {
         self->real = dst;
     } break;
     case NODE_TYPE_TEXT_BLOCK: {
-        declare(node_text_block_t, dst);
-        node_text_block_t *src = other->real;
+        declare(PadNodeext_block_t, dst);
+        PadNodeext_block_t *src = other->real;
         dst->text = cstr_dup(src->text);
         if (!dst->text) {
             node_del(self);
@@ -293,8 +293,8 @@ node_deep_copy(const node_t *other) {
         self->real = dst;
     } break;
     case NODE_TYPE_TEST_LIST: {
-        declare(node_test_list_t, dst);
-        node_test_list_t *src = other->real;
+        declare(PadNodeest_list_t, dst);
+        PadNodeest_list_t *src = other->real;
         copy_node_array(dst, src, nodearr);
         self->real = dst;
     } break;
@@ -305,8 +305,8 @@ node_deep_copy(const node_t *other) {
         self->real = dst;
     } break;
     case NODE_TYPE_TEST: {
-        declare(node_test_t, dst);
-        node_test_t *src = other->real;
+        declare(PadNodeest_t, dst);
+        PadNodeest_t *src = other->real;
         dst->or_test = node_deep_copy(src->or_test);
         self->real = dst;
     } break;
@@ -342,8 +342,8 @@ node_deep_copy(const node_t *other) {
         self->real = dst;
     } break;
     case NODE_TYPE_TERM: {
-        declare(node_term_t, dst);
-        node_term_t *src = other->real;
+        declare(PadNodeerm_t, dst);
+        PadNodeerm_t *src = other->real;
         copy_node_array(dst, src, nodearr);
         self->real = dst;
     } break;
@@ -358,7 +358,7 @@ node_deep_copy(const node_t *other) {
         declare(node_chain_t, dst);
         node_chain_t *src = other->real;
         dst->factor = node_deep_copy(src->factor);
-        dst->chain_nodes = chain_nodes_deep_copy(src->chain_nodes);
+        dst->chain_nodes = PadChainNodes_DeepCopy(src->chain_nodes);
         self->real = dst;
     } break;
     case NODE_TYPE_ASSCALC: {
@@ -535,8 +535,8 @@ node_deep_copy(const node_t *other) {
         self->real = dst;
     } break;
     case NODE_TYPE_TRUE: {
-        declare(node_true_t, dst);
-        node_true_t *src = other->real;
+        declare(PadNoderue_t, dst);
+        PadNoderue_t *src = other->real;
         dst->boolean = src->boolean;
         self->real = dst;
     } break;
@@ -545,14 +545,14 @@ node_deep_copy(const node_t *other) {
     return self;
 }
 
-node_t *
-node_shallow_copy(const node_t *other) {
+PadNode *
+node_shallow_copy(const PadNode *other) {
     return node_deep_copy(other);
 }
 
 
-node_type_t
-node_getc_type(const node_t *self) {
+PadNodeype_t
+node_getc_type(const PadNode *self) {
     if (self == NULL) {
         return NODE_TYPE_INVALID;
     }
@@ -561,7 +561,7 @@ node_getc_type(const node_t *self) {
 }
 
 void *
-node_get_real(node_t *self) {
+node_get_real(PadNode *self) {
     if (self == NULL) {
         err_warn("reference to null pointer in get real from node");
         return NULL;
@@ -570,12 +570,12 @@ node_get_real(node_t *self) {
 }
 
 const void *
-node_getc_real(const node_t *self) {
-    return node_get_real((node_t *) self);
+node_getc_real(const PadNode *self) {
+    return node_get_real((PadNode *) self);
 }
 
 string_t *
-node_to_str(const node_t *self) {
+PadNodeo_str(const PadNode *self) {
     string_t *s = str_new();
 
     switch (self->type) {
@@ -650,12 +650,12 @@ node_to_str(const node_t *self) {
 }
 
 void
-node_dump(const node_t *self, FILE *fout) {
+node_dump(const PadNode *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
 
-    fprintf(fout, "node_t\n");
+    fprintf(fout, "PadNode\n");
     fprintf(fout, "type[%d]\n", self->type);
     fprintf(fout, "real[%p]\n", self->real);
     if (self->ref_token) {
@@ -666,7 +666,7 @@ node_dump(const node_t *self, FILE *fout) {
 }
 
 const token_t *
-node_getc_ref_token(const node_t *self) {
+node_getc_ref_token(const PadNode *self) {
     if (!self) {
         return NULL;
     }

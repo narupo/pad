@@ -96,7 +96,7 @@ typedef enum {
  */
 struct object_func {
     ast_t *ref_ast;  // function object refer this reference of ast on execute
-    context_t *ref_context;  // reference of context
+    PadCtx *ref_context;  // reference of context
     object_t *name;  // type == OBJ_TYPE_IDENTIFIER
     object_t *args;  // type == OBJ_TYPE_ARRAY
     node_array_t *ref_suites;  // reference to suite (node tree) (DO NOT DELETE)
@@ -114,7 +114,7 @@ struct object_module {
     char *program_source;
     tokenizer_t *tokenizer;
     ast_t *ast;
-    context_t *context;
+    PadCtx *context;
     builtin_func_info_t *builtin_func_infos;  // builtin functions
 };
 
@@ -122,7 +122,7 @@ struct object_module {
  * A identifier object
  */
 struct object_identifier {
-    context_t *ref_context;
+    PadCtx *ref_context;
     string_t *name;
 };
 
@@ -131,7 +131,7 @@ struct object_identifier {
  */
 struct object_chain {
     object_t *operand;
-    chain_objects_t *chain_objs;
+    PadChainObjs *chain_objs;
 };
 
 /**
@@ -149,7 +149,7 @@ struct object_def_struct {
     ast_t *ref_ast;  // reference
     object_t *identifier;  // moved (type == OBJ_TYPE_UNICODE)
     ast_t *ast;  // moved (struct's ast (node tree))
-    context_t *context;  // moved (struct's context)
+    PadCtx *context;  // moved (struct's context)
 };
 
 /**
@@ -158,7 +158,7 @@ struct object_def_struct {
 struct object_object {
     ast_t *ref_ast;  // DO NOT DELETE
     ast_t *ref_struct_ast;  // DO NOT DELETE
-    context_t *struct_context;  // moved
+    PadCtx *struct_context;  // moved
     object_t *ref_def_obj;  // DO NOT DELETE
 };
 
@@ -290,7 +290,7 @@ obj_new_bool(gc_t *ref_gc, bool boolean);
  *
  * @param[in]      *ref_gc      reference to gc_t (do not delete)
  * @param[in|out]  *ref_ast     reference to ast_t current context (do not delete)
- * @param [in|out] *ref_context reference to context_t
+ * @param [in|out] *ref_context reference to PadCtx
  * @param[in]      *identifier  C strings of identifier
  *
  * @return success to pointer to object_t (new object)
@@ -299,7 +299,7 @@ obj_new_bool(gc_t *ref_gc, bool boolean);
 object_t *
 obj_new_cidentifier(
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     const char *identifier
 );
 
@@ -309,7 +309,7 @@ obj_new_cidentifier(
  *
  * @param[in]     *ref_gc          reference to gc_t (do not delete)
  * @param[in|out] *ref_ast         reference to ast_t current context (do not delete)
- * @param [in|out] *ref_context    reference to context_t
+ * @param [in|out] *ref_context    reference to PadCtx
  * @param[in]     *move_identifier pointer to string_t (with move semantics)
  *
  * @return success to pointer to object_t (new object)
@@ -318,7 +318,7 @@ obj_new_cidentifier(
 object_t *
 obj_new_identifier(
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     string_t *move_identifier
 );
 
@@ -419,7 +419,7 @@ object_t *
 obj_new_func(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_t *move_name,
     object_t *move_args,
     node_array_t *ref_suites,
@@ -434,13 +434,13 @@ obj_new_func(
  *
  * @param[in] *ref_gc          reference to gc_t (do not delete)
  * @param[in] *move_operand    pointer to object_t (move semantics)
- * @param[in] *move_chain_objs pointer to chain_objects_t (move semantics)
+ * @param[in] *move_chain_objs pointer to PadChainObjs (move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_chain(gc_t *ref_gc, object_t *move_operand, chain_objects_t *move_chain_objs);
+obj_new_chain(gc_t *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs);
 
 /**
  * construct module object (default constructor)
@@ -466,7 +466,7 @@ obj_new_def_struct(
     gc_t *ref_gc,
     object_t *move_idn,
     ast_t *move_ast,
-    context_t *move_context
+    PadCtx *move_context
 );
 
 /**
@@ -480,7 +480,7 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_context,
+    PadCtx *move_context,
     object_t *ref_def_obj
 );
 
@@ -507,7 +507,7 @@ obj_new_module_by(
     char *move_program_source,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
-    context_t *move_context,
+    PadCtx *move_context,
     builtin_func_info_t *func_infos
 );
 
@@ -618,7 +618,7 @@ obj_getc_idn_name(const object_t *self);
 const char *
 obj_getc_def_struct_idn_name(const object_t *self);
 
-context_t *
+PadCtx *
 obj_get_idn_ref_context(const object_t *self);
 
 /**
@@ -626,9 +626,9 @@ obj_get_idn_ref_context(const object_t *self);
  *
  * @param[in] *self
  *
- * @return pointer to chain_objects_t
+ * @return pointer to PadChainObjs
  */
-chain_objects_t *
+PadChainObjs *
 obj_get_chain_objs(object_t *self);
 
 /**
@@ -636,9 +636,9 @@ obj_get_chain_objs(object_t *self);
  *
  * @param[in] *self
  *
- * @return pointer to chain_objects_t
+ * @return pointer to PadChainObjs
  */
-const chain_objects_t *
+const PadChainObjs *
 obj_getc_chain_objs(const object_t *self);
 
 /**

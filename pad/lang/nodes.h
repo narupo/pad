@@ -101,7 +101,7 @@ typedef enum {
     // bool
     NODE_TYPE_FALSE,
     NODE_TYPE_TRUE,
-} node_type_t;
+} PadNodeype_t;
 
 typedef enum {
     OP_ADD,  // '+'
@@ -129,40 +129,40 @@ typedef enum {
 ******************/
 
 struct node {
-    node_type_t type;
+    PadNodeype_t type;
     void *real;
     const token_t *ref_token;
 };
 
 typedef struct {
-    node_t *blocks;
+    PadNode *blocks;
 } node_program_t;
 
 typedef struct {
-    node_t *code_block;
-    node_t *ref_block;
-    node_t *text_block;
-    node_t *blocks;
+    PadNode *code_block;
+    PadNode *ref_block;
+    PadNode *text_block;
+    PadNode *blocks;
 } node_blocks_t;
 
 typedef struct {
-    node_t *elems;
+    PadNode *elems;
 } node_code_block_t;
 
 typedef struct {
-    node_t *formula;
+    PadNode *formula;
 } node_ref_block_t;
 
 typedef struct {
     char *text;
-} node_text_block_t;
+} PadNodeext_block_t;
 
 typedef struct {
-    node_t *def;
-    node_t *stmt;
-    node_t *struct_;
-    node_t *formula;
-    node_t *elems;
+    PadNode *def;
+    PadNode *stmt;
+    PadNode *struct_;
+    PadNode *formula;
+    PadNode *elems;
 } node_elems_t;
 
 /*******
@@ -170,29 +170,29 @@ typedef struct {
 *******/
 
 typedef struct {
-    node_t *import_stmt;
-    node_t *if_stmt;
-    node_t *for_stmt;
-    node_t *break_stmt;
-    node_t *continue_stmt;
-    node_t *return_stmt;
-    node_t *block_stmt;
-    node_t *inject_stmt;
+    PadNode *import_stmt;
+    PadNode *if_stmt;
+    PadNode *for_stmt;
+    PadNode *break_stmt;
+    PadNode *continue_stmt;
+    PadNode *return_stmt;
+    PadNode *block_stmt;
+    PadNode *inject_stmt;
 } node_stmt_t;
 
 typedef struct {
-    node_t *import_as_stmt;
-    node_t *from_import_stmt;
+    PadNode *import_as_stmt;
+    PadNode *from_import_stmt;
 } node_import_stmt_t;
 
 typedef struct {
-    node_t *path; // node_string_t
-    node_t *alias; // node_identifier_t
+    PadNode *path; // node_string_t
+    PadNode *alias; // node_identifier_t
 } node_import_as_stmt_t;
 
 typedef struct {
-    node_t *path; // node_string_t
-    node_t *import_vars;
+    PadNode *path; // node_string_t
+    PadNode *import_vars;
 } node_from_import_stmt_t;
 
 typedef struct {
@@ -200,15 +200,15 @@ typedef struct {
 } node_import_vars_t;
 
 typedef struct {
-    node_t *identifier;
-    node_t *alias; // node_identifier_t
+    PadNode *identifier;
+    PadNode *alias; // node_identifier_t
 } node_import_var_t;
 
 typedef struct {
-    node_t *test;
+    PadNode *test;
     node_array_t *contents;
-    node_t *elif_stmt;
-    node_t *else_stmt;
+    PadNode *elif_stmt;
+    PadNode *else_stmt;
 } node_if_stmt_t;
 
 typedef node_if_stmt_t node_elif_stmt_t;
@@ -218,9 +218,9 @@ typedef struct {
 } node_else_stmt_t;
 
 typedef struct {
-    node_t *init_formula;
-    node_t *comp_formula;
-    node_t *update_formula;
+    PadNode *init_formula;
+    PadNode *comp_formula;
+    PadNode *update_formula;
     node_array_t *contents;
 } node_for_stmt_t;
 
@@ -233,17 +233,17 @@ typedef struct {
 } node_continue_stmt_t;
 
 typedef struct {
-    node_t *formula;
+    PadNode *formula;
 } node_return_stmt_t;
 
 typedef struct {
-    node_t *identifier;
+    PadNode *identifier;
     node_array_t *contents;
     object_dict_t *inject_varmap;
 } node_block_stmt_t;
 
 typedef struct {
-    node_t *identifier;
+    PadNode *identifier;
     node_array_t *contents;
 } node_inject_stmt_t;
 
@@ -252,8 +252,8 @@ typedef struct {
 *********/
 
 typedef struct {
-    node_t *identifier;
-    node_t *elems;
+    PadNode *identifier;
+    PadNode *elems;
 } node_struct_t;
 
 /**********
@@ -261,8 +261,8 @@ typedef struct {
 **********/
 
 typedef struct {
-    node_t *elems;
-    node_t *blocks;
+    PadNode *elems;
+    PadNode *blocks;
 } node_content_t;
 
 /******
@@ -270,20 +270,20 @@ typedef struct {
 ******/
 
 typedef struct {
-    node_t *func_def;
+    PadNode *func_def;
 } node_def_t;
 
 typedef struct {
-    node_t *identifier;
-    node_t *func_def_params;
-    node_t *func_extends;  // function of extended
+    PadNode *identifier;
+    PadNode *func_def_params;
+    PadNode *func_extends;  // function of extended
     node_array_t *contents;  // array of nodes
     node_dict_t *blocks;  // block nodes of block statement
     bool is_met;
 } node_func_def_t;
 
 typedef struct {
-    node_t *func_def_args;
+    PadNode *func_def_args;
 } node_func_def_params_t;
 
 typedef struct {
@@ -291,7 +291,7 @@ typedef struct {
 } node_func_def_args_t;
 
 typedef struct {
-    node_t *identifier;
+    PadNode *identifier;
 } node_func_extends_t;
 
 /**********
@@ -299,8 +299,8 @@ typedef struct {
 **********/
 
 typedef struct {
-    node_t *assign_list;
-    node_t *multi_assign;
+    PadNode *assign_list;
+    PadNode *multi_assign;
 } node_formula_t;
 
 typedef struct {
@@ -321,15 +321,15 @@ typedef struct {
 
 typedef struct {
     node_array_t *nodearr;
-} node_test_list_t;
+} PadNodeest_list_t;
 
 typedef struct {
     node_array_t *nodearr;
 } node_call_args_t;
 
 typedef struct {
-    node_t *or_test;
-} node_test_t;
+    PadNode *or_test;
+} PadNodeest_t;
 
 typedef struct {
     node_array_t *nodearr;
@@ -340,8 +340,8 @@ typedef struct {
 } node_and_test_t;
 
 typedef struct {
-    node_t *not_test;
-    node_t *comparison;
+    PadNode *not_test;
+    PadNode *comparison;
 } node_not_test_t;
 
 typedef struct {
@@ -354,16 +354,16 @@ typedef struct {
 
 typedef struct {
     node_array_t *nodearr;
-} node_term_t;
+} PadNodeerm_t;
 
 typedef struct {
     bool is_negative;
-    node_t *chain;
+    PadNode *chain;
 } node_negative_t;
 
 typedef struct {
-    node_t *factor;
-    chain_nodes_t *chain_nodes;
+    PadNode *factor;
+    PadChainNodes *chain_nodes;
 } node_chain_t;
 
 typedef struct {
@@ -371,24 +371,24 @@ typedef struct {
 } node_asscalc_t;
 
 typedef struct {
-    node_t *atom;
-    node_t *formula;
+    PadNode *atom;
+    PadNode *formula;
 } node_factor_t;
 
 typedef struct {
-    node_t *nil;
-    node_t *true_;
-    node_t *false_;
-    node_t *digit;
-    node_t *float_;
-    node_t *string;
-    node_t *array;
-    node_t *dict;
-    node_t *identifier;
+    PadNode *nil;
+    PadNode *true_;
+    PadNode *false_;
+    PadNode *digit;
+    PadNode *float_;
+    PadNode *string;
+    PadNode *array;
+    PadNode *dict;
+    PadNode *identifier;
 } node_atom_t;
 
 typedef struct {
-    node_t *array_elems;
+    PadNode *array_elems;
 } node_array_t_;
 
 typedef struct {
@@ -396,7 +396,7 @@ typedef struct {
 } node_array_elems_t;
 
 typedef struct {
-    node_t *dict_elems;
+    PadNode *dict_elems;
 } _node_dict_t;
 
 typedef struct {
@@ -404,8 +404,8 @@ typedef struct {
 } node_dict_elems_t;
 
 typedef struct {
-    node_t *key_simple_assign;
-    node_t *value_simple_assign;
+    PadNode *key_simple_assign;
+    PadNode *value_simple_assign;
 } node_dict_elem_t;
 
 typedef struct {
@@ -446,7 +446,7 @@ typedef struct {
 
 typedef struct {
     bool boolean;
-} node_true_t;
+} PadNoderue_t;
 
 typedef struct {
     char *string;
@@ -463,10 +463,10 @@ typedef struct {
 /**
  * Destruct node
  *
- * @param[in] self pointer to dynamic allocate memory of node_t
+ * @param[in] self pointer to dynamic allocate memory of PadNode
  */
 void
-node_del(node_t *self);
+node_del(PadNode *self);
 
 /**
  * Construct node
@@ -474,54 +474,54 @@ node_del(node_t *self);
  * @param[in] type number of node type
  * @param[in] real pointer to other nodes
  *
- * @return pointer to dynamic allocate memory of node_t
+ * @return pointer to dynamic allocate memory of PadNode
  */
-node_t *
-node_new(node_type_t type, void *real, const token_t *ref_token);
+PadNode *
+node_new(PadNodeype_t type, void *real, const token_t *ref_token);
 
 /**
  * Deep copy
  *
  * @param[in] *other
  *
- * @return success to pointer to node_t
+ * @return success to pointer to PadNode
  * @return failed to NULL
  */
-node_t *
-node_deep_copy(const node_t *other);
+PadNode *
+node_deep_copy(const PadNode *other);
 
-node_t *
-node_shallow_copy(const node_t *other);
+PadNode *
+node_shallow_copy(const PadNode *other);
 
 /**
  * Get node type
  *
- * @param[in] self pointer to dynamic allocate memory of node_t
+ * @param[in] self pointer to dynamic allocate memory of PadNode
  *
  * return number of type of node
  */
-node_type_t
-node_getc_type(const node_t *self);
+PadNodeype_t
+node_getc_type(const PadNode *self);
 
 /**
  * Get real node
  *
- * @param[in] self pointer to dynamic allocate memory of node_t
+ * @param[in] self pointer to dynamic allocate memory of PadNode
  *
  * return pointer to other nodes
  */
 void *
-node_get_real(node_t *self);
+node_get_real(PadNode *self);
 
 /**
  * Get real node
  *
- * @param[in] self pointer to dynamic allocate memory of node_t
+ * @param[in] self pointer to dynamic allocate memory of PadNode
  *
  * return pointer to other nodes
  */
 const void *
-node_getc_real(const node_t *self);
+node_getc_real(const PadNode *self);
 
 /**
  * node to string
@@ -531,7 +531,7 @@ node_getc_real(const node_t *self);
  * @return pointer to string
  */
 string_t *
-node_to_str(const node_t *self);
+PadNodeo_str(const PadNode *self);
 
 /**
  * dump node data
@@ -540,7 +540,7 @@ node_to_str(const node_t *self);
  * @param[in] *fout
  */
 void
-node_dump(const node_t *self, FILE *fout);
+node_dump(const PadNode *self, FILE *fout);
 
 const token_t *
-node_getc_ref_token(const node_t *self);
+node_getc_ref_token(const PadNode *self);

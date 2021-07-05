@@ -15,7 +15,7 @@ struct kit {
     tokenizer_t *tkr;
     ast_t *ast;
     gc_t *gc;
-    context_t *ctx;
+    PadCtx *ctx;
     PadErrStack *errstack;
     bool gc_is_reference;
 };
@@ -29,9 +29,9 @@ kit_del(kit_t *self) {
     free(self->program_source);
     tkr_del(self->tkr);
     PadAst_Del(self->ast);
-    ctx_del(self->ctx);
+    PadCtx_Del(self->ctx);
     if (!self->gc_is_reference) {
-        gc_del(self->gc);
+        PadGc_Del(self->gc);
     }
     free(self);
 }
@@ -56,13 +56,13 @@ kit_new(const PadConfig *config) {
         return NULL;
     }
 
-    self->gc = gc_new();
+    self->gc = PadGc_New();
     if (!self->gc) {
         kit_del(self);
         return NULL;
     }
 
-    self->ctx = ctx_new(self->gc);
+    self->ctx = PadCtx_New(self->gc);
     if (!self->ctx) {
         kit_del(self);
         return NULL;
@@ -101,7 +101,7 @@ kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc) {
     self->gc = ref_gc;
     self->gc_is_reference = true;
 
-    self->ctx = ctx_new(self->gc);
+    self->ctx = PadCtx_New(self->gc);
     if (!self->ctx) {
         kit_del(self);
         return NULL;
@@ -188,7 +188,7 @@ kit_compile_from_string_args(
         opts = NULL;
     }
 
-    cc_compile(self->ast, tkr_get_tokens(self->tkr));
+    PadCc_Compile(self->ast, tkr_get_tokens(self->tkr));
     if (PadAst_HasErrs(self->ast)) {
         const PadErrStack *err = PadAst_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);
@@ -212,22 +212,22 @@ kit_compile_from_string(kit_t *self, const char *str) {
 
 void
 kit_clear_context(kit_t *self) {
-    ctx_clear(self->ctx);
+    PadCtx_Clear(self->ctx);
 }
 
 void
 kit_clear_context_buffer(kit_t *self) {
-    ctx_clear_stdout_buf(self->ctx);
+    PadCtx_ClearStdoutBuf(self->ctx);
 }
 
 const char *
 kit_getc_stdout_buf(const kit_t *self) {
-    return ctx_getc_stdout_buf(self->ctx);
+    return PadCtx_GetcStdoutBuf(self->ctx);
 }
 
 const char *
 kit_getc_stderr_buf(const kit_t *self) {
-    return ctx_getc_stderr_buf(self->ctx);
+    return PadCtx_GetcStderrBuf(self->ctx);
 }
 
 bool
@@ -240,7 +240,7 @@ kit_getc_error_stack(const kit_t *self) {
     return self->errstack;
 }
 
-context_t *
+PadCtx *
 kit_get_context(kit_t *self) {
     return self->ctx;
 }

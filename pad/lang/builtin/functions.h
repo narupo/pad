@@ -20,4 +20,4 @@
  * @return
  */
 object_t *
-builtin_module_new(const PadConfig *ref_config, gc_t *ref_gc);
+Pad_NewBltMod(const PadConfig *ref_config, gc_t *ref_gc);

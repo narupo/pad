@@ -18,7 +18,7 @@
  * rec_counts is reference count for garbage collection
  * user do not update this value manually
  */
-struct gc_item {
+struct PadGcItem {
     int32_t id;
     void *ptr;
     int32_t ref_counts;
@@ -30,7 +30,7 @@ struct gc_item {
  * @param[in] *self
  */
 void
-gc_item_dump(const gc_item_t *self, FILE *fout);
+PadGcItem_Dump(const gc_item_t *self, FILE *fout);
 
 /**
  * destruct gc
@@ -38,7 +38,7 @@ gc_item_dump(const gc_item_t *self, FILE *fout);
  * @param[in] *self pointer to gc_t
  */
 void
-gc_del(gc_t *self);
+PadGc_Del(gc_t *self);
 
 /**
  * construct gc
@@ -46,7 +46,7 @@ gc_del(gc_t *self);
  * @return success to pointer to gc_t (dynamic allocate memory)
  */
 gc_t *
-gc_new(void);
+PadGc_New(void);
 
 /**
  * allocate memory by gc_item_t and size
@@ -61,7 +61,7 @@ gc_new(void);
  * @return
  */
 gc_item_t *
-gc_alloc(gc_t *self, gc_item_t *item, int32_t size);
+PadGc_Alloc(gc_t *self, gc_item_t *item, int32_t size);
 
 /**
  * free allocated memory in gc_item_t
@@ -71,4 +71,4 @@ gc_alloc(gc_t *self, gc_item_t *item, int32_t size);
  * @param[in] *item pointer to gc_item_t
  */
 void
-gc_free(gc_t *self, gc_item_t *item);
+PadGc_Free(gc_t *self, gc_item_t *item);

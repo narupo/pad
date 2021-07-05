@@ -25,7 +25,7 @@ again:
         goto again;
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        owner = ctx_find_var_ref(ref_ast->ref_context, obj_getc_idn_name(owner));
+        owner = PadCtx_FindVarRef(ref_ast->ref_context, obj_getc_idn_name(owner));
         if (!owner) {
             PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "not found \"%s\" in %s method", owner->identifier, method_name);
             return NULL;
@@ -287,10 +287,10 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_unicode_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
+Pad_NewBltUnicodeMod(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(ref_config);
-    context_t *ctx = ctx_new(ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 
     return obj_new_module_by(

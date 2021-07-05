@@ -23,8 +23,8 @@ invoke_func_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,  // TODO const
     object_t *func_obj,
     object_t *drtargs
@@ -33,7 +33,7 @@ invoke_func_obj(
 static object_t *
 invoke_builtin_module_func(
     ast_t *ref_ast,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_array_t *owns,
     const object_t *mod,
     const char *funcname,
@@ -44,8 +44,8 @@ invoke_builtin_module_func(
 * functions *
 ************/
 
-context_t *
-get_context_by_owners(object_array_t *owns, context_t *def_context) {
+PadCtx *
+get_context_by_owners(object_array_t *owns, PadCtx *def_context) {
     if (!def_context) {
         return NULL;
     }
@@ -92,14 +92,14 @@ _pull_ref(const object_t *idn_obj, bool all) {
     assert(idn_obj->type == OBJ_TYPE_IDENTIFIER);
 
     const char *idn = obj_getc_idn_name(idn_obj);
-    context_t *ref_context = obj_get_idn_ref_context(idn_obj);
+    PadCtx *ref_context = obj_get_idn_ref_context(idn_obj);
     assert(idn && ref_context);
 
     object_t *ref_obj = NULL;
     if (all) {
-        ref_obj = ctx_find_var_ref_all(ref_context, idn);
+        ref_obj = PadCtx_FindVarRefAll(ref_context, idn);
     } else {
-        ref_obj = ctx_find_var_ref(ref_context, idn);
+        ref_obj = PadCtx_FindVarRef(ref_context, idn);
     }
 
     if (!ref_obj) {
@@ -122,7 +122,7 @@ pull_ref_all(const object_t *idn_obj) {
 }
 
 string_t *
-obj_to_string(PadErrStack *err, const node_t *ref_node, const object_t *obj) {
+obj_to_string(PadErrStack *err, const PadNode *ref_node, const object_t *obj) {
     if (!err || !obj) {
         return NULL;
     }
@@ -149,8 +149,8 @@ again:
 bool
 move_obj_at_cur_varmap(
     PadErrStack *err,
-    const node_t *ref_node,
-    context_t *ctx,
+    const PadNode *ref_node,
+    PadCtx *ctx,
     object_array_t *owns,
     const char *identifier,
     object_t *move_obj
@@ -167,7 +167,7 @@ move_obj_at_cur_varmap(
         return false;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(ctx);
+    object_dict_t *varmap = PadCtx_GetVarmap(ctx);
     object_t *popped = objdict_pop(varmap, identifier);
     if (popped == move_obj) {
         objdict_move(varmap, identifier, mem_move(move_obj));        
@@ -184,8 +184,8 @@ move_obj_at_cur_varmap(
 bool
 set_ref_at_cur_varmap(
     PadErrStack *err,
-    const node_t *ref_node,
-    context_t *ctx,
+    const PadNode *ref_node,
+    PadCtx *ctx,
     object_array_t *owns,
     const char *identifier,
     object_t *ref_obj
@@ -202,7 +202,7 @@ set_ref_at_cur_varmap(
         return false;
     }
 
-    object_dict_t *varmap = ctx_get_varmap(ctx);
+    object_dict_t *varmap = PadCtx_GetVarmap(ctx);
     return set_ref(varmap, identifier, ref_obj);
 }
 
@@ -232,18 +232,18 @@ set_ref(object_dict_t *varmap, const char *identifier, object_t *ref_obj) {
 static object_t *
 refer_chain_dot(
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_array_t *owns,
-    chain_object_t *co
+    PadChainObj *co
 ) {
     if (!err || !ref_node || !ref_gc || !ref_context || !owns || !co) {
         return NULL;
     }
     object_t *own = objarr_get_last(owns);
     assert(own);
-    object_t *rhs_obj = chain_obj_get_obj(co);
+    object_t *rhs_obj = PadChainObj_GetObj(co);
 
 again1:
     switch (own->type) {
@@ -295,9 +295,9 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        context_t *ref_ctx = own->def_struct.context;
+        PadCtx *ref_ctx = own->def_struct.context;
         assert(ref_ctx);
-        object_t *valobj = ctx_find_var_ref_all(ref_ctx, idn);
+        object_t *valobj = PadCtx_FindVarRefAll(ref_ctx, idn);
         if (!valobj) {
             pushb_error("not found \"%s\"", idn);
             return NULL;
@@ -312,7 +312,7 @@ again1:
         }
 
         const char *idn = obj_getc_idn_name(rhs_obj);
-        object_t *valobj = ctx_find_var_ref_all(own->object.struct_context, idn);
+        object_t *valobj = PadCtx_FindVarRefAll(own->object.struct_context, idn);
         if (!valobj) {
             pushb_error("not found \"%s\"", idn);
             return NULL;
@@ -330,8 +330,8 @@ again2:
         break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(rhs_obj);
-        context_t *ref_ctx = get_context_by_owners(owns, ref_context);
-        object_t *ref = ctx_find_var_ref(ref_ctx, idn);
+        PadCtx *ref_ctx = get_context_by_owners(owns, ref_context);
+        object_t *ref = PadCtx_FindVarRef(ref_ctx, idn);
         if (!ref) {
             pushb_error("\"%s\" is not defined", idn);
             return NULL;
@@ -351,9 +351,9 @@ static object_t *
 refer_and_set_ref_chain_dot(
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_array_t *owns,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *ref
 ) {
 #define error(fmt, ...) \
@@ -364,7 +364,7 @@ refer_and_set_ref_chain_dot(
     }
     object_t *own = objarr_get_last(owns);
     assert(own);
-    object_t *rhs = chain_obj_get_obj(co);
+    object_t *rhs = PadChainObj_GetObj(co);
 
 again:
     switch (own->type) {
@@ -387,7 +387,7 @@ again:
         }
 
         const char *idn = obj_getc_idn_name(rhs);
-        object_dict_t *varmap = ctx_get_varmap(own->module.context);
+        object_dict_t *varmap = PadCtx_GetVarmap(own->module.context);
         set_ref(varmap, idn, ref);
         return ref;
     }
@@ -404,7 +404,7 @@ again:
         }
 
         const char *idn = obj_getc_idn_name(rhs);
-        object_dict_t *varmap = ctx_get_varmap(own->def_struct.context);
+        object_dict_t *varmap = PadCtx_GetVarmap(own->def_struct.context);
         set_ref(varmap, idn, ref);
         return ref;
     } break;
@@ -415,7 +415,7 @@ again:
         }
 
         const char *idn = obj_getc_idn_name(rhs);
-        object_dict_t *varmap = ctx_get_varmap(own->object.struct_context);
+        object_dict_t *varmap = PadCtx_GetVarmap(own->object.struct_context);
         set_ref(varmap, idn, ref);
         return ref;
     } break;
@@ -452,8 +452,8 @@ again:
 static object_t *
 invoke_owner_func_obj(
     ast_t *ref_ast,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,  // TODO const
     object_t *drtargs
 ) {
@@ -485,13 +485,13 @@ invoke_owner_func_obj(
         return NULL;
         break;
     case OBJ_TYPE_UNICODE:
-        mod = ctx_find_var_ref_all(ref_context, "__unicode__");
+        mod = PadCtx_FindVarRefAll(ref_context, "__unicode__");
         break;
     case OBJ_TYPE_ARRAY:
-        mod = ctx_find_var_ref_all(ref_context, "__array__");
+        mod = PadCtx_FindVarRefAll(ref_context, "__array__");
         break;
     case OBJ_TYPE_DICT:
-        mod = ctx_find_var_ref_all(ref_context, "__dict__");
+        mod = PadCtx_FindVarRefAll(ref_context, "__dict__");
         break;
     case OBJ_TYPE_MODULE: {
         mod = own;
@@ -509,7 +509,7 @@ invoke_owner_func_obj(
 static object_t *
 invoke_builtin_module_func(
     ast_t *ref_ast,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_array_t *owns,
     const object_t *mod,
     const char *funcname,
@@ -545,8 +545,8 @@ copy_func_args(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *drtargs
 ) {
     assert(drtargs->type == OBJ_TYPE_ARRAY);
@@ -610,8 +610,8 @@ copy_array_args(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *drtargs
 ) {
     assert(drtargs->type == OBJ_TYPE_ARRAY);
@@ -675,8 +675,8 @@ extract_func_args(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,  // TODO const
     object_t *func_obj,
     object_t *args
@@ -698,7 +698,7 @@ extract_func_args(
     if (objarr_len(formal_args) != objarr_len(actual_args)) {
         pushb_error("arguments not same length");
         obj_del(args);
-        ctx_popb_scope(func->ref_ast->ref_context);
+        PadCtx_PopBackScope(func->ref_ast->ref_context);
         return;
     }
 
@@ -743,7 +743,7 @@ exec_func_suites(PadErrStack *err, object_t *func_obj) {
     object_t *result = NULL;
 
     for (int32_t i = 0; i < nodearr_len(func->ref_suites); ++i) {
-        node_t *ref_suite = nodearr_get(func->ref_suites, i);
+        PadNode *ref_suite = nodearr_get(func->ref_suites, i);
         // ref_suite is content
         result = _trv_traverse(func->ref_ast, &(trv_args_t) {
             .ref_node = ref_suite,
@@ -754,7 +754,7 @@ exec_func_suites(PadErrStack *err, object_t *func_obj) {
             PadErrStack_ExtendBackOther(err, func->ref_ast->error_stack);
             return NULL;
         }
-        if (ctx_get_do_return(func->ref_ast->ref_context)) {
+        if (PadCtx_GetDoReturn(func->ref_ast->ref_context)) {
             break;
         }
     }
@@ -767,8 +767,8 @@ invoke_func_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,  // TODO const
     object_t *func_obj,
     object_t *drtargs
@@ -798,7 +798,7 @@ invoke_func_obj(
     assert(func->ref_context);
 
     // push scope
-    ctx_pushb_scope(func->ref_context);
+    PadCtx_PushBackScope(func->ref_context);
 
     // this function has extends-function ? does set super ?
     if (func->extends_func) {
@@ -828,10 +828,10 @@ invoke_func_obj(
     }
 
     // reset status
-    ctx_set_do_return(func->ref_context, false);
+    PadCtx_SetDoReturn(func->ref_context, false);
 
     // pop scope
-    ctx_popb_scope(func->ref_context);
+    PadCtx_PopBackScope(func->ref_context);
 
     // done
     if (!result) {
@@ -862,8 +862,8 @@ invoke_builtin_modules(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,  // TODO const
     object_t *args
 ) {
@@ -924,7 +924,7 @@ invoke_builtin_modules(
     }
 
     if (!module) {
-        module = ctx_find_var_ref_all(ref_context, bltin_mod_name);
+        module = PadCtx_FindVarRefAll(ref_context, bltin_mod_name);
         if (!module) {
             return NULL;
         }
@@ -950,8 +950,8 @@ invoke_builtin_modules(
     return NULL;
 }
 
-static context_t *
-unpack_args(context_t *ctx, object_t *args) {
+static PadCtx *
+unpack_args(PadCtx *ctx, object_t *args) {
     if (!ctx || !args) {
         return NULL;
     }
@@ -960,7 +960,7 @@ unpack_args(context_t *ctx, object_t *args) {
     }
 
     object_array_t *arr = args->objarr;
-    return ctx_unpack_objarr_to_cur_scope(ctx, arr);
+    return PadCtx_UnpackObjAryToCurScope(ctx, arr);
 }
 
 static object_t *
@@ -968,7 +968,7 @@ gen_struct(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_array_t *owns,
     object_t *drtargs
 ) {
@@ -985,7 +985,7 @@ gen_struct(
         return NULL;
     }
 
-    context_t *context = ctx_deep_copy(own->def_struct.context);
+    PadCtx *context = PadCtx_DeepCopy(own->def_struct.context);
     if (!unpack_args(context, drtargs)) {
         pushb_error("failed to unpack arguments for struct");
         return NULL;
@@ -1005,8 +1005,8 @@ invoke_type_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,
     object_t *drtargs
 ) {
@@ -1165,11 +1165,11 @@ object_t *
 refer_chain_call(
     ast_t *ref_ast,
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_array_t *owns,  // TODO: const
-    chain_object_t *co
+    PadChainObj *co
 ) {
 #define _invoke_func_obj(func_obj, actual_args) \
     invoke_func_obj(ref_ast, err, ref_gc, ref_context, ref_node, owns, func_obj, actual_args)
@@ -1189,7 +1189,7 @@ refer_chain_call(
         return NULL;
     }
 
-    object_t *actual_args = chain_obj_get_obj(co);
+    object_t *actual_args = PadChainObj_GetObj(co);
     if (actual_args->type != OBJ_TYPE_ARRAY) {
         pushb_error("arguments isn't array");
         return NULL;
@@ -1251,7 +1251,7 @@ static object_t *
 refer_unicode_index(
     PadErrStack *err,
     gc_t *ref_gc,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_t *owner,
     object_t *indexobj
 ) {
@@ -1294,7 +1294,7 @@ again:
 static object_t *
 refer_array_index(
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_t *owner,
     object_t *indexobj
 ) {
@@ -1336,7 +1336,7 @@ again:
 static object_t *
 refer_and_set_ref_array_index(
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_t *owner,
     object_t *indexobj,
     object_t *ref
@@ -1381,7 +1381,7 @@ again:
 static object_t *
 refer_dict_index(
     PadErrStack *err, 
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_t *owner,
     object_t *indexobj
 ) {
@@ -1423,7 +1423,7 @@ again:
 static object_t *
 refer_and_set_ref_dict_index(
     PadErrStack *err, 
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_t *owner,
     object_t *indexobj,
     object_t *ref
@@ -1465,10 +1465,10 @@ again:
 static object_t *
 refer_chain_index(
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     gc_t *ref_gc,
     object_array_t *owns,
-    chain_object_t *co
+    PadChainObj *co
 ) {
     object_t *owner = objarr_get_last(owns);
     if (!owner) {
@@ -1476,7 +1476,7 @@ refer_chain_index(
         return NULL;
     }
 
-    object_t *indexobj = chain_obj_get_obj(co);
+    object_t *indexobj = PadChainObj_GetObj(co);
 
 again:
     switch (owner->type) {
@@ -1512,9 +1512,9 @@ static object_t *
 refer_and_set_ref_chain_index(
     PadErrStack *err,
     gc_t *ref_gc,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     object_array_t *owns,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *ref
 ) {
     object_t *owner = objarr_get_last(owns);
@@ -1523,7 +1523,7 @@ refer_and_set_ref_chain_index(
         return NULL;
     }
 
-    object_t *indexobj = chain_obj_get_obj(co);
+    object_t *indexobj = PadChainObj_GetObj(co);
 
 again:
     switch (owner->type) {
@@ -1561,29 +1561,29 @@ refer_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,
-    chain_object_t *co
+    PadChainObj *co
 ) {
     object_t *operand = NULL;
 
-    switch (chain_obj_getc_type(co)) {
-    case CHAIN_OBJ_TYPE_DOT: {
+    switch (PadChainObj_GetcType(co)) {
+    case PAD_CHAIN_OBJ_TYPE__DOT: {
         operand = refer_chain_dot(err, ref_node, ref_gc, ref_context, owns, co);
         if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain dot");
             return NULL;
         }
     } break;
-    case CHAIN_OBJ_TYPE_CALL: {
+    case PAD_CHAIN_OBJ_TYPE__CALL: {
         operand = refer_chain_call(ref_ast, err, ref_node, ref_gc, ref_context, owns, co);
         if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain call");
             return NULL;
         }
     } break;
-    case CHAIN_OBJ_TYPE_INDEX: {
+    case PAD_CHAIN_OBJ_TYPE__INDEX: {
         operand = refer_chain_index(err, ref_node, ref_gc, owns, co);
         if (PadErrStack_Len(err)) {
             pushb_error("failed to refer chain index");
@@ -1599,17 +1599,17 @@ object_t *
 refer_and_set_ref_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_array_t *owns,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *ref
 ) {
     object_t *operand = NULL;
 
-    switch (chain_obj_getc_type(co)) {
-    case CHAIN_OBJ_TYPE_DOT: {
+    switch (PadChainObj_GetcType(co)) {
+    case PAD_CHAIN_OBJ_TYPE__DOT: {
         operand = refer_and_set_ref_chain_dot(
             err, ref_gc, ref_context,
             owns, co, ref
@@ -1619,11 +1619,11 @@ refer_and_set_ref_chain_three_objs(
             return NULL;
         }
     } break;
-    case CHAIN_OBJ_TYPE_CALL: {
+    case PAD_CHAIN_OBJ_TYPE__CALL: {
         pushb_error("can't set at call object");
         return NULL;
     } break;
-    case CHAIN_OBJ_TYPE_INDEX: {
+    case PAD_CHAIN_OBJ_TYPE__INDEX: {
         operand = refer_and_set_ref_chain_index(
             err, ref_gc, ref_node,
             owns, co, ref
@@ -1643,8 +1643,8 @@ refer_chain_obj_with_ref(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *chain_obj
 ) {
     if (!chain_obj) {
@@ -1655,9 +1655,9 @@ refer_chain_obj_with_ref(
     object_t *operand = obj_get_chain_operand(chain_obj);
     assert(operand);
 
-    chain_objects_t *cos = obj_get_chain_objs(chain_obj);
+    PadChainObjs *cos = obj_get_chain_objs(chain_obj);
     assert(cos);
-    if (!chain_objs_len(cos)) {
+    if (!PadChainObjs_Len(cos)) {
         return operand;
     }
 
@@ -1665,8 +1665,8 @@ refer_chain_obj_with_ref(
     obj_inc_ref(operand);
     objarr_pushb(owns, operand);
 
-    for (int32_t i = 0; i < chain_objs_len(cos); ++i) {
-        chain_object_t *co = chain_objs_get(cos, i);
+    for (int32_t i = 0; i < PadChainObjs_Len(cos); ++i) {
+        PadChainObj *co = PadChainObjs_Get(cos, i);
         assert(co);
 
         operand = refer_chain_three_objs(
@@ -1695,8 +1695,8 @@ refer_and_set_ref(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *chain_obj,
     object_t *ref
 ) {
@@ -1708,9 +1708,9 @@ refer_and_set_ref(
     object_t *operand = obj_get_chain_operand(chain_obj);
     assert(operand);
 
-    chain_objects_t *cos = obj_get_chain_objs(chain_obj);
+    PadChainObjs *cos = obj_get_chain_objs(chain_obj);
     assert(cos);
-    if (!chain_objs_len(cos)) {
+    if (!PadChainObjs_Len(cos)) {
         return operand;
     }
 
@@ -1718,8 +1718,8 @@ refer_and_set_ref(
     obj_inc_ref(operand);
     objarr_pushb(owns, operand);
 
-    for (int32_t i = 0; i < chain_objs_len(cos) - 1; ++i) {
-        chain_object_t *co = chain_objs_get(cos, i);
+    for (int32_t i = 0; i < PadChainObjs_Len(cos) - 1; ++i) {
+        PadChainObj *co = PadChainObjs_Get(cos, i);
         assert(co);
 
         operand = refer_chain_three_objs(
@@ -1734,8 +1734,8 @@ refer_and_set_ref(
         obj_inc_ref(operand);
         objarr_pushb(owns, operand);
     }
-    if (chain_objs_len(cos)) {
-        chain_object_t *co = chain_objs_get_last(cos);
+    if (PadChainObjs_Len(cos)) {
+        PadChainObj *co = PadChainObjs_GetLast(cos);
         assert(co);
         refer_and_set_ref_chain_three_objs(
             ref_ast, err, ref_node, ref_gc, ref_context,
@@ -1752,7 +1752,7 @@ fail:
 }
 
 // const char *idn = str_getc(lastown->identifier.name);
-// object_dict_t *varmap = ctx_get_varmap(lastown->identifier.ref_context);
+// object_dict_t *varmap = PadCtx_GetVarmap(lastown->identifier.ref_context);
 // set_ref(varmap, idn, ref);
 
 object_t *
@@ -1760,8 +1760,8 @@ extract_copy_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 ) {
     assert(obj);
@@ -1823,8 +1823,8 @@ _extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj,
     bool all
 ) {
@@ -1890,8 +1890,8 @@ extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 ) {
     return _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, obj, false);
@@ -1902,8 +1902,8 @@ extract_ref_of_obj_all(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 ) {
     return _extract_ref_of_obj(ref_ast, err, ref_gc, ref_context, ref_node, obj, true);
@@ -1928,8 +1928,8 @@ parse_bool(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 ) {
     if (!err || !ref_gc || !ref_context) {
@@ -1949,7 +1949,7 @@ parse_bool(
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        object_t *obj = ctx_find_var_ref_all(ref_context, idn);
+        object_t *obj = PadCtx_FindVarRefAll(ref_context, idn);
         if (!obj) {
             pushb_error("\"%s\" is not defined in if statement", idn);
             return false;
@@ -1983,8 +1983,8 @@ parse_int(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 ) {
     if (!err || !ref_gc || !ref_context) {
@@ -2004,7 +2004,7 @@ parse_int(
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        object_t *obj = ctx_find_var_ref_all(ref_context, idn);
+        object_t *obj = PadCtx_FindVarRefAll(ref_context, idn);
         if (!obj) {
             pushb_error("\"%s\" is not defined in if statement", idn);
             return -1;
@@ -2041,8 +2041,8 @@ parse_float(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 ) {
     if (!err || !ref_gc || !ref_context) {
@@ -2062,7 +2062,7 @@ parse_float(
     case OBJ_TYPE_BOOL: return obj->boolean; break;
     case OBJ_TYPE_IDENTIFIER: {
         const char *idn = obj_getc_idn_name(obj);
-        object_t *obj = ctx_find_var_ref_all(ref_context, idn);
+        object_t *obj = PadCtx_FindVarRefAll(ref_context, idn);
         if (!obj) {
             pushb_error("\"%s\" is not defined in if statement", idn);
             return -1.0;
@@ -2098,6 +2098,6 @@ bool
 is_var_in_cur_scope(const object_t *idnobj) {
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
     const char *idn = obj_getc_idn_name(idnobj);
-    context_t *ref_ctx = obj_get_idn_ref_context(idnobj);
-    return ctx_var_in_cur_scope(ref_ctx, idn);
+    PadCtx *ref_ctx = obj_get_idn_ref_context(idnobj);
+    return PadCtx_VarInCurScope(ref_ctx, idn);
 }

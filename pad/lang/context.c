@@ -10,7 +10,7 @@ struct context {
     // ref_prevにはコンテキストをつなげたい時に、親のコンテキストを設定する
     // contextはこのref_prevを使い親のコンテキストを辿れるようになっている
     // これによってルートのコンテキストや1つ前のコンテキストを辿れる
-    context_t *ref_prev;  // reference to previous context
+    PadCtx *ref_prev;  // reference to previous context
 
     gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
     PadAliasInfo *alinfo;  // alias info for builtin alias module
@@ -34,7 +34,7 @@ struct context {
 };
 
 void
-ctx_del(context_t *self) {
+PadCtx_Del(PadCtx *self) {
     if (!self) {
         return;
     }
@@ -48,7 +48,7 @@ ctx_del(context_t *self) {
 }
 
 object_dict_t *
-ctx_escdel_global_varmap(context_t *self) {
+PadCtx_EscDelGlobalVarmap(PadCtx *self) {
     if (!self) {
         return NULL;
     }
@@ -62,9 +62,9 @@ ctx_escdel_global_varmap(context_t *self) {
     return varmap;
 }
 
-context_t *
-ctx_new(gc_t *ref_gc) {
-    context_t *self = mem_calloc(1, sizeof(*self));
+PadCtx *
+PadCtx_New(gc_t *ref_gc) {
+    PadCtx *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -72,25 +72,25 @@ ctx_new(gc_t *ref_gc) {
     self->ref_gc = ref_gc;
     self->alinfo = PadAliasInfo_New();
     if (!self->alinfo) {
-        ctx_del(self);
+        PadCtx_Del(self);
         return NULL;
     }
 
     self->stdout_buf = str_new();
     if (!self->stdout_buf) {
-        ctx_del(self);
+        PadCtx_Del(self);
         return NULL;
     }
 
     self->stderr_buf = str_new();
     if (!self->stderr_buf) {
-        ctx_del(self);
+        PadCtx_Del(self);
         return NULL;
     }
 
     self->scope = scope_new(ref_gc);
     if (!self->scope) {
-        ctx_del(self);
+        PadCtx_Del(self);
         return NULL;
     }
     
@@ -100,7 +100,7 @@ ctx_new(gc_t *ref_gc) {
 }
 
 void
-ctx_clear(context_t *self) {
+PadCtx_Clear(PadCtx *self) {
     PadAliasInfo_Clear(self->alinfo);
     str_clear(self->stdout_buf);
     str_clear(self->stderr_buf);
@@ -108,8 +108,8 @@ ctx_clear(context_t *self) {
     self->is_use_buf = true;
 }
 
-context_t *
-ctx_set_alias(context_t *self, const char *key, const char *value, const char *desc) {
+PadCtx *
+PadCtx_SetAlias(PadCtx *self, const char *key, const char *value, const char *desc) {
     if (!key || !value) {
         return NULL;
     }
@@ -124,17 +124,17 @@ ctx_set_alias(context_t *self, const char *key, const char *value, const char *d
 }
 
 const char *
-ctx_get_alias_value(context_t *self, const char *key) {
+PadCtx_GetAliasValue(PadCtx *self, const char *key) {
     return PadAliasInfo_GetcValue(self->alinfo, key);
 }
 
 const char *
-ctx_get_alias_desc(context_t *self, const char *key) {
+PadCtx_GetAliasDesc(PadCtx *self, const char *key) {
     return PadAliasInfo_GetcDesc(self->alinfo, key);
 }
 
-context_t *
-ctx_pushb_stdout_buf(context_t *self, const char *str) {
+PadCtx *
+PadCtx_PushBackStdoutBuf(PadCtx *self, const char *str) {
     if (self->is_use_buf) {
         str_app(self->stdout_buf, str);
     } else {
@@ -143,8 +143,8 @@ ctx_pushb_stdout_buf(context_t *self, const char *str) {
     return self;
 }
 
-context_t *
-ctx_pushb_stderr_buf(context_t *self, const char *str) {
+PadCtx *
+PadCtx_PushBackStderrBuf(PadCtx *self, const char *str) {
     if (self->is_use_buf) {
         str_app(self->stderr_buf, str);
     } else {
@@ -154,82 +154,82 @@ ctx_pushb_stderr_buf(context_t *self, const char *str) {
 }
 
 const char *
-ctx_getc_stdout_buf(const context_t *self) {
+PadCtx_GetcStdoutBuf(const PadCtx *self) {
     return str_getc(self->stdout_buf);
 }
 
 const char *
-ctx_getc_stderr_buf(const context_t *self) {
+PadCtx_GetcStderrBuf(const PadCtx *self) {
     return str_getc(self->stderr_buf);
 }
 
 const PadAliasInfo *
-ctx_getc_alinfo(const context_t *self) {
+PadCtx_GetcAliasInfo(const PadCtx *self) {
     return self->alinfo;
 }
 
 object_dict_t *
-ctx_get_varmap(context_t *self) {
+PadCtx_GetVarmap(PadCtx *self) {
     scope_t *current_scope = scope_get_last(self->scope);
     return scope_get_varmap(current_scope);
 }
 
 object_dict_t *
-ctx_get_varmap_at_global(context_t *self) {
+PadCtx_GetVarmapAtGlobal(PadCtx *self) {
     return scope_get_varmap(self->scope);
 }
 
 bool
-ctx_get_do_break(const context_t *self) {
+PadCtx_GetDoBreak(const PadCtx *self) {
     return self->do_break;
 }
 
 void
-ctx_set_do_break(context_t *self, bool do_break) {
+PadCtx_SetDoBreak(PadCtx *self, bool do_break) {
     self->do_break = do_break;
 }
 
 bool
-ctx_get_do_continue(const context_t *self) {
+PadCtx_GetDoContinue(const PadCtx *self) {
     return self->do_continue;
 }
 
 void
-ctx_set_do_continue(context_t *self, bool do_continue) {
+PadCtx_SetDoContinue(PadCtx *self, bool do_continue) {
     self->do_continue = do_continue;
 }
 
 bool
-ctx_get_do_return(const context_t *self) {
+PadCtx_GetDoReturn(const PadCtx *self) {
     return self->do_return;
 }
 
 void
-ctx_set_do_return(context_t *self, bool do_return) {
+PadCtx_SetDoReturn(PadCtx *self, bool do_return) {
     self->do_return = do_return;
 }
 
 void
-ctx_clear_jump_flags(context_t *self) {
+PadCtx_ClearJumpFlags(PadCtx *self) {
     self->do_break = false;
     self->do_continue = false;
     self->do_return = false;
 }
 
 void
-ctx_pushb_scope(context_t *self) {
+PadCtx_PushBackScope(PadCtx *self) {
     scope_t *scope = scope_new(self->ref_gc);
     scope_moveb(self->scope, scope);
 }
 
 void
-ctx_popb_scope(context_t *self) {
+PadCtx_PopBackScope(PadCtx *self) {
     scope_t *scope = scope_popb(self->scope);
     scope_del(scope);
 }
 
 object_t *
-ctx_find_var_ref(context_t *self, const char *key) {
+PadCtx_FindVarRef(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
@@ -238,12 +238,12 @@ ctx_find_var_ref(context_t *self, const char *key) {
 }
 
 object_t *
-ctx_find_var_ref_all(context_t *self, const char *key) {
+PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
     
-    for (context_t *cur = self; cur; cur = cur->ref_prev) {
+    for (PadCtx *cur = self; cur; cur = cur->ref_prev) {
         object_t *ref = scope_find_var_ref_all(cur->scope, key);
         if (ref) {
             return ref;
@@ -254,36 +254,36 @@ ctx_find_var_ref_all(context_t *self, const char *key) {
 }
 
 gc_t *
-ctx_get_gc(context_t *self) {
+PadCtx_GetGc(PadCtx *self) {
     return self->ref_gc;
 }
 
 void
-ctx_clear_stdout_buf(context_t *self) {
+PadCtx_ClearStdoutBuf(PadCtx *self) {
     str_clear(self->stdout_buf);
 }
 
 void
-ctx_clear_stderr_buf(context_t *self) {
+PadCtx_ClearStderrBuf(PadCtx *self) {
     str_clear(self->stderr_buf);
 }
 
 string_t *
-ctx_swap_stdout_buf(context_t *self, string_t *stdout_buf) {
+PadCtx_SwapStdoutBuf(PadCtx *self, string_t *stdout_buf) {
     string_t *Pad_Escape = self->stdout_buf;
     self->stdout_buf = stdout_buf;
     return Pad_Escape;
 }
 
 string_t *
-ctx_swap_stderr_buf(context_t *self, string_t *stderr_buf) {
+PadCtx_SwapStderrBuf(PadCtx *self, string_t *stderr_buf) {
     string_t *Pad_Escape = self->stderr_buf;
     self->stderr_buf = stderr_buf;
     return Pad_Escape;
 }
 
 void
-ctx_dump(const context_t *self, FILE *fout) {
+PadCtx_Dump(const PadCtx *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
@@ -294,7 +294,7 @@ ctx_dump(const context_t *self, FILE *fout) {
 }
 
 bool
-ctx_var_in_cur_scope(const context_t *self, const char *idn) {
+PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
     scope_t *current_scope = scope_get_last(self->scope);
     object_dict_t *varmap = scope_get_varmap(current_scope);
 
@@ -310,13 +310,13 @@ ctx_var_in_cur_scope(const context_t *self, const char *idn) {
 }
 
 object_dict_t *
-ctx_get_ref_varmap_cur_scope(const context_t *self) {
+PadCtx_GetRefVarmapCurScope(const PadCtx *self) {
     scope_t *current_scope = scope_get_last(self->scope);
     return scope_get_varmap(current_scope);
 }
 
 void
-ctx_pop_newline_of_stdout_buf(context_t *self) {
+PadCtx_PopNewlineOfStdoutBuf(PadCtx *self) {
     if (!self) {
         return;
     }
@@ -344,7 +344,7 @@ ctx_pop_newline_of_stdout_buf(context_t *self) {
 }
 
 void
-ctx_set_ref_prev(context_t *self, context_t *ref_prev) {
+PadCtx_SetRefPrev(PadCtx *self, PadCtx *ref_prev) {
     if (!self) {
         return;
     }
@@ -352,8 +352,8 @@ ctx_set_ref_prev(context_t *self, context_t *ref_prev) {
     self->ref_prev = ref_prev;
 }
 
-context_t *
-ctx_get_ref_prev(const context_t *self) {
+PadCtx *
+PadCtx_GetRefPrev(const PadCtx *self) {
     if (!self) {
         return NULL;
     }
@@ -361,27 +361,27 @@ ctx_get_ref_prev(const context_t *self) {
     return self->ref_prev;
 }
 
-context_t *
-ctx_find_most_prev(context_t *self) {
+PadCtx *
+PadCtx_FindMostPrev(PadCtx *self) {
     if (!self) {
         return NULL;
     }
 
-    context_t *most_prev = self;
-    for (context_t *cur = self; cur; cur = cur->ref_prev) {
+    PadCtx *most_prev = self;
+    for (PadCtx *cur = self; cur; cur = cur->ref_prev) {
         most_prev = cur;
     }
 
     return most_prev;
 }
 
-context_t *
-ctx_deep_copy(const context_t *other) {
+PadCtx *
+PadCtx_DeepCopy(const PadCtx *other) {
     if (!other) {
         return NULL;
     }
     
-    context_t *self = ctx_new(other->ref_gc);
+    PadCtx *self = PadCtx_New(other->ref_gc);
 
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
@@ -397,13 +397,13 @@ ctx_deep_copy(const context_t *other) {
     return self;
 }
 
-context_t *
-ctx_shallow_copy(const context_t *other) {
+PadCtx *
+PadCtx_ShallowCopy(const PadCtx *other) {
     if (!other) {
         return NULL;
     }
     
-    context_t *self = ctx_new(other->ref_gc);
+    PadCtx *self = PadCtx_New(other->ref_gc);
 
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
@@ -419,8 +419,8 @@ ctx_shallow_copy(const context_t *other) {
     return self;
 }
 
-context_t *
-ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr) {
+PadCtx *
+PadCtx_UnpackObjAryToCurScope(PadCtx *self, object_array_t *arr) {
     if (!self || !arr) {
         return NULL;
     }
@@ -445,7 +445,7 @@ ctx_unpack_objarr_to_cur_scope(context_t *self, object_array_t *arr) {
 }
 
 void
-ctx_set_use_buf(context_t *self, bool is_use_buf) {
+PadCtx_SetUseBuf(PadCtx *self, bool is_use_buf) {
     if (!self) {
         return;
     }
@@ -454,6 +454,6 @@ ctx_set_use_buf(context_t *self, bool is_use_buf) {
 }
 
 bool
-ctx_get_is_use_buf(const context_t *self) {
+PadCtx_GetIsUseBuf(const PadCtx *self) {
     return self->is_use_buf;
 }

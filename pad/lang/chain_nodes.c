@@ -5,7 +5,7 @@
 *************/
 
 void
-chain_node_del(chain_node_t *self);
+PadChainNode_Del(PadChainNode *self);
 
 /**********
 * numbers *
@@ -22,7 +22,7 @@ enum {
 struct chain_nodes {
     int32_t len;
     int32_t capa;
-    chain_node_t **chain_nodes;
+    PadChainNode **chain_nodes;
 };
 
 /************
@@ -30,29 +30,29 @@ struct chain_nodes {
 ************/
 
 void
-chain_nodes_del(chain_nodes_t *self) {
+PadChainNodes_Del(PadChainNodes *self) {
     if (!self) {
         return;
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        chain_node_t *n = self->chain_nodes[i];
-        chain_node_del(n);
+        PadChainNode *n = self->chain_nodes[i];
+        PadChainNode_Del(n);
     }
 
     free(self);
 }
 
-chain_nodes_t *
-chain_nodes_new(void) {
-    chain_nodes_t *self = mem_calloc(1, sizeof(*self));
+PadChainNodes *
+PadChainNodes_New(void) {
+    PadChainNodes *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->chain_nodes = mem_calloc(CHAIN_NODES_INIT_CAPA+1, sizeof(chain_node_t *));  // +1 for final null
+    self->chain_nodes = mem_calloc(CHAIN_NODES_INIT_CAPA+1, sizeof(PadChainNode *));  // +1 for final null
     if (!self->chain_nodes) {
-        chain_nodes_del(self);
+        PadChainNodes_Del(self);
         return NULL;
     }
 
@@ -61,25 +61,25 @@ chain_nodes_new(void) {
     return self;
 }
 
-chain_nodes_t *
-chain_nodes_deep_copy(const chain_nodes_t *other) {
-    chain_nodes_t *self = mem_calloc(1, sizeof(*self));
+PadChainNodes *
+PadChainNodes_DeepCopy(const PadChainNodes *other) {
+    PadChainNodes *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
-    self->chain_nodes = mem_calloc(other->capa + 1, sizeof(chain_node_t *));
+    self->chain_nodes = mem_calloc(other->capa + 1, sizeof(PadChainNode *));
     if (!self->chain_nodes) {
-        chain_nodes_del(self);
+        PadChainNodes_Del(self);
         return NULL;
     }
 
     for (int32_t i = 0; i < other->len; ++i) {
-        chain_node_t *n = other->chain_nodes[i];
-        n = chain_node_deep_copy(n);
+        PadChainNode *n = other->chain_nodes[i];
+        n = PadChainNode_DeepCopy(n);
         if (!n) {
-            chain_nodes_del(self);
+            PadChainNodes_Del(self);
             return NULL;
         }
         self->chain_nodes[self->len++] = n;
@@ -88,11 +88,11 @@ chain_nodes_deep_copy(const chain_nodes_t *other) {
     return self;
 }
 
-chain_nodes_t *
-chain_nodes_resize(chain_nodes_t *self, int32_t newcapa) {
-    int32_t nbyte = sizeof(chain_node_t *);
+PadChainNodes *
+PadChainNodes_Resize(PadChainNodes *self, int32_t newcapa) {
+    int32_t nbyte = sizeof(PadChainNode *);
 
-    chain_node_t **tmp = mem_realloc(self->chain_nodes, nbyte * newcapa + nbyte);  // +nbyte is final null
+    PadChainNode **tmp = mem_realloc(self->chain_nodes, nbyte * newcapa + nbyte);  // +nbyte is final null
     if (!tmp) {
         return NULL;
     }
@@ -102,17 +102,17 @@ chain_nodes_resize(chain_nodes_t *self, int32_t newcapa) {
     return self;
 }
 
-chain_nodes_t *
-chain_nodes_moveb(
-    chain_nodes_t *self,
-    chain_node_t *move_chain_node
+PadChainNodes *
+PadChainNodes_MoveBack(
+    PadChainNodes *self,
+    PadChainNode *move_chain_node
 ) {
     if (!self || !move_chain_node) {
         return NULL;
     }
 
     if (self->len >= self->capa) {
-        if (!chain_nodes_resize(self, self->capa * 2)) {
+        if (!PadChainNodes_Resize(self, self->capa * 2)) {
             return NULL;
         }
     }
@@ -124,12 +124,12 @@ chain_nodes_moveb(
 }
 
 int32_t
-chain_nodes_len(const chain_nodes_t *self) {
+PadChainNodes_Len(const PadChainNodes *self) {
     return self->len;
 }
 
-chain_node_t *
-chain_nodes_get(chain_nodes_t *self, int32_t idx) {
+PadChainNode *
+PadChainNodes_Get(PadChainNodes *self, int32_t idx) {
     if (idx < 0 || idx >= self->len) {
         return NULL;
     }

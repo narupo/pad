@@ -92,64 +92,64 @@
 * prototypes *
 *************/
 
-static node_t *
+static PadNode *
 cc_program(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_elems(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_blocks(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_def(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_func_def(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_test(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_test_list(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_identifier(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_mul_div_op(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_dot(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_negative(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_call(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_dot_op(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_multi_assign(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_expr(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_chain(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_content(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_inject_stmt(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_block_stmt(ast_t *ast, cc_args_t *cargs);
 
-static node_t *
+static PadNode *
 cc_struct(ast_t *ast, cc_args_t *cargs);
 
 /************
@@ -193,7 +193,7 @@ is_end(ast_t *ast) {
 }
 
 ast_t *
-cc_compile(ast_t *ast, token_t *ref_tokens[]) {
+PadCc_Compile(ast_t *ast, token_t *ref_tokens[]) {
     ast->ref_tokens = ref_tokens;
     ast->ref_ptr = ref_tokens;
     ast->root = cc_program(ast, &(cc_args_t) {
@@ -214,7 +214,7 @@ cc_skip_newlines(ast_t *ast) {
     }
 }
 
-static node_t *
+static PadNode *
 cc_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_assign_t, cur);
@@ -226,7 +226,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -241,7 +241,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
     check("call lhs cc_test");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_test(ast, cargs);
+    PadNode *lhs = cc_test(ast, cargs);
     if (!lhs) {
         return_cleanup("");
     }
@@ -260,7 +260,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
     check("call rhs cc_test");
     cargs->depth = depth + 1;
-    node_t *rhs = cc_test(ast, cargs);
+    PadNode *rhs = cc_test(ast, cargs);
     if (!rhs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -272,14 +272,14 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
 
     for (;;) {
         if (is_end(ast)) {
-            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, back_tok(ast));
+            PadNode *node = node_new(NODE_TYPE_ASSIGN, cur, back_tok(ast));
             return_parse(node);
         }
 
         t = next_tok(ast);
         if (t->type != TOKEN_TYPE_OP_ASS) {
             prev_tok(ast);
-            node_t *node = node_new(NODE_TYPE_ASSIGN, cur, *ast->ref_ptr);
+            PadNode *node = node_new(NODE_TYPE_ASSIGN, cur, *ast->ref_ptr);
             return_parse(node);
         }
         check("read =");
@@ -300,7 +300,7 @@ cc_assign(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible");
 }
 
-static node_t *
+static PadNode *
 cc_assign_list(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_assign_list_t, cur);
@@ -312,7 +312,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -327,7 +327,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 
     check("call first cc_assign");
     cargs->depth = depth + 1;
-    node_t *first = cc_assign(ast, cargs);
+    PadNode *first = cc_assign(ast, cargs);
     if (!first) {
         return_cleanup("");
     }
@@ -337,7 +337,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
     token_t *t = cur_tok(ast);
     for (;;) {
         if (is_end(ast)) {
-            node_t *node = node_new(NODE_TYPE_ASSIGN_LIST, cur, back_tok(ast));
+            PadNode *node = node_new(NODE_TYPE_ASSIGN_LIST, cur, back_tok(ast));
             return_parse(node);
         }
 
@@ -350,7 +350,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_assign");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_assign(ast, cargs);
+        PadNode *rhs = cc_assign(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -364,7 +364,7 @@ cc_assign_list(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible");
 }
 
-static node_t *
+static PadNode *
 cc_formula(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_formula_t, cur);
@@ -410,7 +410,7 @@ cc_formula(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FORMULA, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_multi_assign_t, cur);
@@ -422,7 +422,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -437,7 +437,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
 
     check("call first cc_test_list");
     cargs->depth = depth + 1;
-    node_t *node = cc_test_list(ast, cargs);
+    PadNode *node = cc_test_list(ast, cargs);
     if (!node) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -450,7 +450,7 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
     token_t *t = cur_tok(ast);
     for (;;) {
         if (is_end(ast)) {
-            node_t *node = node_new(NODE_TYPE_MULTI_ASSIGN, cur, back_tok(ast));
+            PadNode *node = node_new(NODE_TYPE_MULTI_ASSIGN, cur, back_tok(ast));
             return_parse(node);
         }
 
@@ -476,10 +476,10 @@ cc_multi_assign(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible");
 }
 
-static node_t *
+static PadNode *
 cc_test_list(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_test_list_t, cur);
+    declare(PadNodeest_list_t, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -488,7 +488,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -502,7 +502,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
     depth_t depth = cargs->depth;
 
     cargs->depth = depth + 1;
-    node_t *lhs = cc_test(ast, cargs);
+    PadNode *lhs = cc_test(ast, cargs);
     if (!lhs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -525,7 +525,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
         check("read ,");
 
         cargs->depth = depth + 1;
-        node_t *rhs = cc_test(ast, cargs);
+        PadNode *rhs = cc_test(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -539,7 +539,7 @@ cc_test_list(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible");
 }
 
-static node_t *
+static PadNode *
 cc_call_args(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_call_args_t, cur);
@@ -551,7 +551,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -566,7 +566,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
 
     const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
-    node_t *lhs = cc_test(ast, cargs);
+    PadNode *lhs = cc_test(ast, cargs);
     if (!lhs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -589,7 +589,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
         check("read ,");
 
         cargs->depth = depth + 1;
-        node_t *rhs = cc_test(ast, cargs);
+        PadNode *rhs = cc_test(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -603,7 +603,7 @@ cc_call_args(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible");
 }
 
-static node_t *
+static PadNode *
 cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_for_stmt_t, cur);
@@ -681,7 +681,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
-                node_t *blocks = cc_blocks(ast, cargs);
+                PadNode *blocks = cc_blocks(ast, cargs);
                 if (PadAst_HasErrs(ast)) {
                     return_cleanup("");
                 }
@@ -707,7 +707,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
                 prev_tok(ast);
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
-                node_t *elems = cc_elems(ast, cargs);
+                PadNode *elems = cc_elems(ast, cargs);
                 if (PadAst_HasErrs(ast)) {
                     return_cleanup("");
                 }
@@ -846,7 +846,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
-                node_t *blocks = cc_blocks(ast, cargs);
+                PadNode *blocks = cc_blocks(ast, cargs);
                 if (PadAst_HasErrs(ast)) {
                     return_cleanup("");
                 }
@@ -873,7 +873,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
 
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
-                node_t *elems = cc_elems(ast, cargs);
+                PadNode *elems = cc_elems(ast, cargs);
                 if (PadAst_HasErrs(ast)) {
                     return_cleanup("");
                 }
@@ -889,7 +889,7 @@ cc_for_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FOR_STMT, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_break_stmt_t, cur);
@@ -918,7 +918,7 @@ cc_break_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_BREAK_STMT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_continue_stmt_t, cur);
@@ -947,7 +947,7 @@ cc_continue_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_CONTINUE_STMT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_return_stmt_t, cur);
@@ -988,7 +988,7 @@ cc_return_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_RETURN_STMT, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_augassign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_augassign_t, cur);
@@ -1021,7 +1021,7 @@ cc_augassign(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_AUGASSIGN, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_identifier(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_identifier_t, cur);
@@ -1053,7 +1053,7 @@ cc_identifier(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_IDENTIFIER, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_string(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_string_t, cur);
@@ -1085,7 +1085,7 @@ cc_string(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_STRING, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_simple_assign_t, cur);
@@ -1097,7 +1097,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -1112,7 +1112,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 
     check("call cc_test");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_test(ast, cargs);
+    PadNode *lhs = cc_test(ast, cargs);
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     }
@@ -1136,7 +1136,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_test");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_test(ast, cargs);
+        PadNode *rhs = cc_test(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -1151,7 +1151,7 @@ cc_simple_assign(ast_t *ast, cc_args_t *cargs) {
     return NULL;
 }
 
-static node_t *
+static PadNode *
 cc_array_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_array_elems_t, cur);
@@ -1163,7 +1163,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -1179,7 +1179,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
     check("call cc_simple_assign");
     token_t *t = cur_tok(ast);
     cargs->depth = depth + 1;
-    node_t *lhs = cc_simple_assign(ast, cargs);
+    PadNode *lhs = cc_simple_assign(ast, cargs);
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     }
@@ -1217,7 +1217,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
         check("call cc_simple_assign");
         t = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *rhs = cc_simple_assign(ast, cargs);
+        PadNode *rhs = cc_simple_assign(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -1232,7 +1232,7 @@ cc_array_elems(ast_t *ast, cc_args_t *cargs) {
     return NULL;
 }
 
-static node_t *
+static PadNode *
 cc_array(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_array_t_, cur);
@@ -1288,7 +1288,7 @@ cc_array(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_ARRAY, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dict_elem_t, cur);
@@ -1349,7 +1349,7 @@ cc_dict_elem(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_DICT_ELEM, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_dict_elems_t, cur);
@@ -1361,7 +1361,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -1377,7 +1377,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
     check("call cc_dict_elem");
     token_t *t = cur_tok(ast);
     cargs->depth = depth + 1;
-    node_t *lhs = cc_dict_elem(ast, cargs);
+    PadNode *lhs = cc_dict_elem(ast, cargs);
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     }
@@ -1414,7 +1414,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
         check("call cc_dict_elem");
         t = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *rhs = cc_dict_elem(ast, cargs);
+        PadNode *rhs = cc_dict_elem(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -1430,7 +1430,7 @@ cc_dict_elems(ast_t *ast, cc_args_t *cargs) {
     return NULL;
 }
 
-static node_t *
+static PadNode *
 cc_dict(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(_node_dict_t, cur);
@@ -1490,7 +1490,7 @@ cc_dict(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_DICT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_nil(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_nil_t, cur);
@@ -1516,7 +1516,7 @@ cc_nil(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_NIL, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_digit(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_digit_t, cur);
@@ -1544,7 +1544,7 @@ cc_digit(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_DIGIT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_float(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_float_t, cur);
@@ -1572,7 +1572,7 @@ cc_float(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FLOAT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_false_(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_false_t, cur);
@@ -1599,10 +1599,10 @@ cc_false_(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FALSE, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_true_(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_true_t, cur);
+    declare(PadNoderue_t, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -1626,7 +1626,7 @@ cc_true_(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_TRUE, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_atom(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_atom_t, cur);
@@ -1756,7 +1756,7 @@ cc_atom(ast_t *ast, cc_args_t *cargs) {
     return_cleanup("");
 }
 
-static node_t *
+static PadNode *
 cc_factor(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_factor_t, cur);
@@ -1816,11 +1816,11 @@ cc_factor(ast_t *ast, cc_args_t *cargs) {
         check("read )")
     }
 
-    node_t *node = node_new(NODE_TYPE_FACTOR, mem_move(cur), back_tok(ast));
+    PadNode *node = node_new(NODE_TYPE_FACTOR, mem_move(cur), back_tok(ast));
     return_parse(node);
 }
 
-static node_t *
+static PadNode *
 cc_asscalc(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_asscalc_t, cur);
@@ -1832,7 +1832,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -1847,7 +1847,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 
     check("call cc_expr");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_expr(ast, cargs);
+    PadNode *lhs = cc_expr(ast, cargs);
     if (!lhs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -1862,7 +1862,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
         check("call cc_augassign");
         const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *op = cc_augassign(ast, cargs);
+        PadNode *op = cc_augassign(ast, cargs);
         if (!op) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -1875,7 +1875,7 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_expr");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_expr(ast, cargs);
+        PadNode *rhs = cc_expr(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -1890,10 +1890,10 @@ cc_asscalc(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible. failed to ast asscalc");
 }
 
-static node_t *
+static PadNode *
 cc_term(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_term_t, cur);
+    declare(PadNodeerm_t, cur);
     token_t **save_ptr = ast->ref_ptr;
     cur->nodearr = nodearr_new();
 
@@ -1902,7 +1902,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -1917,7 +1917,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 
     check("call left cc_dot");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_negative(ast, cargs);
+    PadNode *lhs = cc_negative(ast, cargs);
     if (PadAst_HasErrs(ast)) {
         return_cleanup("");
     }
@@ -1932,7 +1932,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
         check("call mul_div_op");
         const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *op = cc_mul_div_op(ast, cargs);
+        PadNode *op = cc_mul_div_op(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -1945,7 +1945,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
 
         check("call right cc_dot");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_negative(ast, cargs);
+        PadNode *rhs = cc_negative(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -1960,7 +1960,7 @@ cc_term(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible. failed to ast term");
 }
 
-static node_t *
+static PadNode *
 cc_negative(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_negative_t, cur);
@@ -2002,20 +2002,20 @@ cc_negative(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_NEGATIVE, mem_move(cur), savetok));
 }
 
-static node_t *
+static PadNode *
 cc_chain(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_chain_t, cur);
-    cur->chain_nodes = chain_nodes_new();
+    cur->chain_nodes = PadChainNodes_New();
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        for (int32_t i = 0; i < chain_nodes_len(cur->chain_nodes); ++i) { \
-            chain_node_t *cn = chain_nodes_get(cur->chain_nodes, i); \
-            node_t *factor = chain_node_get_node(cn); \
+        for (int32_t i = 0; i < PadChainNodes_Len(cur->chain_nodes); ++i) { \
+            PadChainNode *cn = PadChainNodes_Get(cur->chain_nodes, i); \
+            PadNode *factor = PadChainNode_GetNode(cn); \
             PadAst_DelNodes(ast, factor); \
         } \
         free(cur); \
@@ -2066,14 +2066,14 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
 
             check("call cc_factor");
             cargs->depth = depth + 1;
-            node_t *factor = cc_factor(ast, cargs);
+            PadNode *factor = cc_factor(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile factor");
             }
             assert(factor);
 
-            chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_DOT, mem_move(factor));
-            chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE__DOT, mem_move(factor));
+            PadChainNodes_MoveBack(cur->chain_nodes, mem_move(nchain));
             m = 0;
         } break;
         case 100: {  // found '['
@@ -2084,7 +2084,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
             check("call cc_simple_assign");
             token_t **saveptr = ast->ref_ptr;
             cargs->depth = depth + 1;
-            node_t *simple_assign = cc_simple_assign(ast, cargs);
+            PadNode *simple_assign = cc_simple_assign(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile simple assign");
             }
@@ -2093,8 +2093,8 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
                 return_cleanup("not found expression");
             }
 
-            chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_INDEX, mem_move(simple_assign));
-            chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE__INDEX, mem_move(simple_assign));
+            PadChainNodes_MoveBack(cur->chain_nodes, mem_move(nchain));
 
             if (is_end(ast)) {
                 return_cleanup("reached EOF");
@@ -2116,14 +2116,14 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
 
             check("call cc_call_args");
             cargs->depth = depth + 1;
-            node_t *call_args = cc_call_args(ast, cargs);
+            PadNode *call_args = cc_call_args(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile simple assign");
             }
             assert(call_args);
 
-            chain_node_t *nchain = chain_node_new(CHAIN_NODE_TYPE_CALL, mem_move(call_args));
-            chain_nodes_moveb(cur->chain_nodes, mem_move(nchain));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE__CALL, mem_move(call_args));
+            PadChainNodes_MoveBack(cur->chain_nodes, mem_move(nchain));
 
             if (is_end(ast)) {
                 return_cleanup("reached EOF");
@@ -2144,7 +2144,7 @@ cc_chain(ast_t *ast, cc_args_t *cargs) {
     return_parse(NULL);
 }
 
-static node_t *
+static PadNode *
 cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_mul_div_op_t, cur);
@@ -2179,7 +2179,7 @@ cc_mul_div_op(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_MUL_DIV_OP, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_add_sub_op_t, cur);
@@ -2213,7 +2213,7 @@ cc_add_sub_op(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_ADD_SUB_OP, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_expr(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_expr_t, cur);
@@ -2225,7 +2225,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -2240,7 +2240,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 
     check("call left cc_term");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_term(ast, cargs);
+    PadNode *lhs = cc_term(ast, cargs);
     if (!lhs) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -2255,7 +2255,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
         check("call add_sub_op");
         const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *op = cc_add_sub_op(ast, cargs);
+        PadNode *op = cc_add_sub_op(ast, cargs);
         if (!op) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -2268,7 +2268,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_term");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_term(ast, cargs);
+        PadNode *rhs = cc_term(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -2283,7 +2283,7 @@ cc_expr(ast_t *ast, cc_args_t *cargs) {
     assert(0 && "impossible. failed to ast expr");
 }
 
-static node_t *
+static PadNode *
 cc_comp_op(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_comp_op_t, cur);
@@ -2339,7 +2339,7 @@ cc_comp_op(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_COMP_OP, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_comparison(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_comparison_t, cur);
@@ -2351,7 +2351,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -2366,7 +2366,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
 
     check("call left cc_asscalc");
     cargs->depth = depth + 1;
-    node_t *lexpr = cc_asscalc(ast, cargs);
+    PadNode *lexpr = cc_asscalc(ast, cargs);
     if (!lexpr) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -2381,7 +2381,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
         check("call cc_comp_op");
         const token_t *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *comp_op = cc_comp_op(ast, cargs);
+        PadNode *comp_op = cc_comp_op(ast, cargs);
         if (!comp_op) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -2393,7 +2393,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
         cc_skip_newlines(ast);
 
         cargs->depth = depth + 1;
-        node_t *rexpr = cc_asscalc(ast, cargs);
+        PadNode *rexpr = cc_asscalc(ast, cargs);
         if (!rexpr) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -2411,7 +2411,7 @@ cc_comparison(ast_t *ast, cc_args_t *cargs) {
     return NULL;
 }
 
-static node_t *
+static PadNode *
 cc_not_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_not_test_t, cur);
@@ -2462,7 +2462,7 @@ cc_not_test(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_NOT_TEST, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_and_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_and_test_t, cur);
@@ -2474,7 +2474,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -2489,7 +2489,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 
     check("call cc_not_test");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_not_test(ast, cargs);
+    PadNode *lhs = cc_not_test(ast, cargs);
     if (!lhs) {
         return_cleanup("");
     }
@@ -2512,7 +2512,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_not_test");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_not_test(ast, cargs);
+        PadNode *rhs = cc_not_test(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -2528,7 +2528,7 @@ cc_and_test(ast_t *ast, cc_args_t *cargs) {
     return_parse(NULL);
 }
 
-static node_t *
+static PadNode *
 cc_or_test(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_or_test_t, cur);
@@ -2540,7 +2540,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->nodearr); ) { \
-            node_t *node = nodearr_popb(cur->nodearr); \
+            PadNode *node = nodearr_popb(cur->nodearr); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -2555,7 +2555,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 
     check("call cc_and_test");
     cargs->depth = depth + 1;
-    node_t *lhs = cc_and_test(ast, cargs);
+    PadNode *lhs = cc_and_test(ast, cargs);
     if (!lhs) {
         return_cleanup("");
     }
@@ -2578,7 +2578,7 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
 
         check("call cc_or_test");
         cargs->depth = depth + 1;
-        node_t *rhs = cc_and_test(ast, cargs);
+        PadNode *rhs = cc_and_test(ast, cargs);
         if (!rhs) {
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("");
@@ -2594,10 +2594,10 @@ cc_or_test(ast_t *ast, cc_args_t *cargs) {
     return NULL;
 }
 
-static node_t *
+static PadNode *
 cc_test(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_test_t, cur);
+    declare(PadNodeest_t, cur);
     token_t **save_ptr = ast->ref_ptr;
 
 #undef return_cleanup
@@ -2625,7 +2625,7 @@ cc_test(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_TEST, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_else_stmt_t, cur);
@@ -2689,7 +2689,7 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("call cc_blocks");
             cargs->depth = depth + 1;
-            node_t *blocks = cc_blocks(ast, cargs);
+            PadNode *blocks = cc_blocks(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile blocks");
             }
@@ -2717,7 +2717,7 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("call cc_elems");
             cargs->depth = depth + 1;
-            node_t *elems = cc_elems(ast, cargs);
+            PadNode *elems = cc_elems(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile elems");
             }
@@ -2731,13 +2731,13 @@ cc_else_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_ELSE_STMT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_if_stmt_t, cur);
     cur->contents = nodearr_new();
     token_t **save_ptr = ast->ref_ptr;
-    node_type_t node_type = NODE_TYPE_IF_STMT;
+    PadNodeype_t PadNodeype = NODE_TYPE_IF_STMT;
 
 #undef return_cleanup
 #define return_cleanup(msg) { \
@@ -2761,13 +2761,13 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
         if (t->type != TOKEN_TYPE_STMT_IF) {
             return_cleanup("");  // not error
         }
-        node_type = NODE_TYPE_IF_STMT;
+        PadNodeype = NODE_TYPE_IF_STMT;
         check("read if");
     } else if (cargs->if_stmt_type == 1) {
         if (t->type != TOKEN_TYPE_STMT_ELIF) {
             return_cleanup("");  // not error
         }
-        node_type = NODE_TYPE_ELIF_STMT;
+        PadNodeype = NODE_TYPE_ELIF_STMT;
         check("read elif");
     } else {
         err_die("invalid type in if stmt");
@@ -2813,7 +2813,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
         t = next_tok(ast);
         if (t->type == TOKEN_TYPE_STMT_END) {
-            if (node_type == NODE_TYPE_ELIF_STMT) {
+            if (PadNodeype == NODE_TYPE_ELIF_STMT) {
                 // do not read 'end' token because this token will read in if statement
                 prev_tok(ast);
                 check("found 'end'")
@@ -2826,7 +2826,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
             cargs->depth = depth + 1;
             cargs->if_stmt_type = 1;
-            node_t *elif = cc_if_stmt(ast, cargs);
+            PadNode *elif = cc_if_stmt(ast, cargs);
             if (!elif || PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile elif statement");
             }
@@ -2837,7 +2837,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
             prev_tok(ast);
 
             cargs->depth = depth + 1;
-            node_t *else_ = cc_else_stmt(ast, cargs);
+            PadNode *else_ = cc_else_stmt(ast, cargs);
             if (!else_ || PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile else statement");
             }
@@ -2861,7 +2861,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("call cc_blocks");
             cargs->depth = depth + 1;
-            node_t *blocks = cc_blocks(ast, cargs);
+            PadNode *blocks = cc_blocks(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile blocks");
             }
@@ -2886,7 +2886,7 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
 
             check("call cc_elems");
             cargs->depth = depth + 1;
-            node_t *elems = cc_elems(ast, cargs);
+            PadNode *elems = cc_elems(ast, cargs);
             if (PadAst_HasErrs(ast)) {
                 return_cleanup("failed to compile elems");
             }
@@ -2906,10 +2906,10 @@ cc_if_stmt(ast_t *ast, cc_args_t *cargs) {
         }
     }
 
-    return_parse(node_new(node_type, cur, t));
+    return_parse(node_new(PadNodeype, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_as_stmt_t, cur);
@@ -2963,7 +2963,7 @@ cc_import_as_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_IMPORT_AS_STMT, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_import_var(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_var_t, cur);
@@ -3018,7 +3018,7 @@ cc_import_var(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_IMPORT_VAR, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_import_vars(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_vars_t, cur);
@@ -3030,7 +3030,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < nodearr_len(cur->nodearr); ++i) { \
-            node_t *node = nodearr_get(cur->nodearr, i); \
+            PadNode *node = nodearr_get(cur->nodearr, i); \
             PadAst_DelNodes(ast, node); \
         } \
         nodearr_del_without_nodes(cur->nodearr); \
@@ -3057,7 +3057,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         prev_tok(ast);
 
         cargs->depth = depth + 1;
-        node_t *import_var = cc_import_var(ast, cargs);
+        PadNode *import_var = cc_import_var(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -3081,7 +3081,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
         cc_skip_newlines(ast);
 
         cargs->depth = depth + 1;
-        node_t *import_var = cc_import_var(ast, cargs);
+        PadNode *import_var = cc_import_var(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -3128,7 +3128,7 @@ cc_import_vars(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_IMPORT_VARS, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_from_import_stmt_t, cur);
@@ -3184,7 +3184,7 @@ cc_from_import_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FROM_IMPORT_STMT, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_import_stmt_t, cur);
@@ -3243,7 +3243,7 @@ cc_import_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_IMPORT_STMT, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_stmt_t, cur);
@@ -3353,7 +3353,7 @@ cc_stmt(ast_t *ast, cc_args_t *cargs) {
     return_cleanup("");
 }
 
-static node_t *
+static PadNode *
 cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_block_stmt_t, cur);
@@ -3366,7 +3366,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         ast->ref_ptr = save_ptr; \
         PadAst_DelNodes(ast, cur->identifier); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
-            node_t *n = nodearr_get(cur->contents, i); \
+            PadNode *n = nodearr_get(cur->contents, i); \
             PadAst_DelNodes(ast, n); \
         } \
         nodearr_del_without_nodes(cur->contents); \
@@ -3414,7 +3414,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         }
 
         cargs->depth = depth + 1;
-        node_t *content = cc_content(ast, cargs);
+        PadNode *content = cc_content(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
         } else if (!content) {
@@ -3424,7 +3424,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
         nodearr_moveb(cur->contents, mem_move(content));
     }
 
-    node_t *node = node_new(NODE_TYPE_BLOCK_STMT, cur, cur_tok(ast));
+    PadNode *node = node_new(NODE_TYPE_BLOCK_STMT, cur, cur_tok(ast));
     node_identifier_t *idnnode = cur->identifier->real;
     assert(cargs->func_def->blocks);
     nodedict_move(cargs->func_def->blocks, idnnode->identifier, node);
@@ -3433,7 +3433,7 @@ cc_block_stmt(ast_t *ast, cc_args_t *cargs) {
     return_parse(node);
 }
 
-static node_t *
+static PadNode *
 cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_inject_stmt_t, cur);
@@ -3446,7 +3446,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
         ast->ref_ptr = save_ptr; \
         PadAst_DelNodes(ast, cur->identifier); \
         for (int32_t i = 0; i < nodearr_len(cur->contents); ++i) { \
-            node_t *n = nodearr_get(cur->contents, i); \
+            PadNode *n = nodearr_get(cur->contents, i); \
             PadAst_DelNodes(ast, n); \
         } \
         nodearr_del(cur->contents); \
@@ -3492,7 +3492,7 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
 
         savetok = cur_tok(ast);
         cargs->depth = depth + 1;
-        node_t *content = cc_content(ast, cargs);
+        PadNode *content = cc_content(ast, cargs);
         if (!content || PadAst_HasErrs(ast)) {
             return_cleanup("");
         }
@@ -3505,11 +3505,11 @@ cc_inject_stmt(ast_t *ast, cc_args_t *cargs) {
     }
 
     // done
-    node_t *node = node_new(NODE_TYPE_INJECT_STMT, cur, savetok);
+    PadNode *node = node_new(NODE_TYPE_INJECT_STMT, cur, savetok);
     return_parse(node);
 }
 
-static node_t *
+static PadNode *
 cc_struct(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_struct_t, cur);
@@ -3575,11 +3575,11 @@ cc_struct(ast_t *ast, cc_args_t *cargs) {
     }
 
     // done
-    node_t *node = node_new(NODE_TYPE_STRUCT, cur, t);
+    PadNode *node = node_new(NODE_TYPE_STRUCT, cur, t);
     return_parse(node);
 }
 
-static node_t *
+static PadNode *
 cc_content(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_content_t, cur);
@@ -3631,7 +3631,7 @@ cc_content(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_CONTENT, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_elems(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_elems_t, cur);
@@ -3717,10 +3717,10 @@ elem_readed:
     return_parse(node_new(NODE_TYPE_ELEMS, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_text_block(ast_t *ast, cc_args_t *cargs) {
     ready();
-    declare(node_text_block_t, cur);
+    declare(PadNodeext_block_t, cur);
     token_t **save_ptr = ast->ref_ptr;
 
     token_t *t = next_tok(ast);
@@ -3741,7 +3741,7 @@ cc_text_block(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_TEXT_BLOCK, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_ref_block_t, cur);
@@ -3790,7 +3790,7 @@ cc_ref_block(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_REF_BLOCK, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_code_block(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_code_block_t, cur);
@@ -3845,7 +3845,7 @@ cc_code_block(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_CODE_BLOCK, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_blocks(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_blocks_t, cur);
@@ -3897,7 +3897,7 @@ cc_blocks(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_BLOCKS, cur, back_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_program(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_program_t, cur);
@@ -3928,7 +3928,7 @@ cc_program(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_PROGRAM, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_def(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_def_t, cur);
@@ -3962,7 +3962,7 @@ cc_def(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_DEF, cur, savetok));
 }
 
-static node_t *
+static PadNode *
 cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_args_t, cur);
@@ -3974,7 +3974,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
         token_t *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         for (; nodearr_len(cur->identifiers); ) { \
-            node_t *node = nodearr_popb(cur->identifiers); \
+            PadNode *node = nodearr_popb(cur->identifiers); \
             PadAst_DelNodes(ast, node); \
         } \
         free(cur); \
@@ -3989,7 +3989,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
     check("call cc_identifier");
     const token_t *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
-    node_t *identifier = cc_identifier(ast, cargs);
+    PadNode *identifier = cc_identifier(ast, cargs);
     if (!identifier) {
         if (PadAst_HasErrs(ast)) {
             return_cleanup("");
@@ -4028,7 +4028,7 @@ cc_func_def_args(ast_t *ast, cc_args_t *cargs) {
 }
 
 
-static node_t *
+static PadNode *
 cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_params_t, cur);
@@ -4077,7 +4077,7 @@ cc_func_def_params(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FUNC_DEF_PARAMS, cur, t));
 }
 
-static node_t *
+static PadNode *
 cc_func_extends(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_t, cur);
@@ -4112,7 +4112,7 @@ cc_func_extends(ast_t *ast, cc_args_t *cargs) {
     return_parse(node_new(NODE_TYPE_FUNC_EXTENDS, cur, cur_tok(ast)));
 }
 
-static node_t *
+static PadNode *
 cc_func_def(ast_t *ast, cc_args_t *cargs) {
     ready();
     declare(node_func_def_t, cur);
@@ -4208,7 +4208,7 @@ cc_func_def(ast_t *ast, cc_args_t *cargs) {
     cargs->is_in_loop = false;
     cargs->func_def = cur;
     for (;;) {
-        node_t *content = cc_content(ast, cargs);
+        PadNode *content = cc_content(ast, cargs);
         if (PadAst_HasErrs(ast)) {
             return_cleanup("failed to compile content")
         } else if (!content) {

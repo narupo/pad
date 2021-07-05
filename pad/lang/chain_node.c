@@ -5,7 +5,7 @@
 *************/
 
 void
-node_del(node_t *self);
+node_del(PadNode *self);
 
 void
 nodearr_del(node_array_t *self);
@@ -16,13 +16,13 @@ nodearr_del(node_array_t *self);
 
 struct chain_node {
     // number of type of chain node element
-    chain_node_type_t type;
+    PadChainNodeType type;
 
     // node
-    // if type == CHAIN_NODE_TYPE_DOT then node is factor
-    // if type == CHAIN_NODE_TYPE_CALL then node is call_args
-    // if type == CHAIN_NODE_TYPE_INDEX then node is simple_assign
-    node_t *node;
+    // if type == PAD_CHAIN_NODE_TYPE__DOT then node is factor
+    // if type == PAD_CHAIN_NODE_TYPE__CALL then node is call_args
+    // if type == PAD_CHAIN_NODE_TYPE__INDEX then node is simple_assign
+    PadNode *node;
 };
 
 /************
@@ -30,7 +30,7 @@ struct chain_node {
 ************/
 
 void
-chain_node_del(chain_node_t *self) {
+PadChainNode_Del(PadChainNode *self) {
     if (!self) {
         return;
     }
@@ -39,13 +39,13 @@ chain_node_del(chain_node_t *self) {
     free(self);
 }
 
-chain_node_t *
-chain_node_new(chain_node_type_t type, node_t *move_node) {
+PadChainNode *
+PadChainNode_New(PadChainNodeType type, PadNode *move_node) {
     if (!move_node) {
         return NULL;
     }
 
-    chain_node_t *self = mem_calloc(1, sizeof(*self));
+    PadChainNode *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -56,13 +56,13 @@ chain_node_new(chain_node_type_t type, node_t *move_node) {
     return self;
 }
 
-chain_node_t *
-chain_node_deep_copy(const chain_node_t *other) {
+PadChainNode *
+PadChainNode_DeepCopy(const PadChainNode *other) {
     if (!other) {
         return NULL;
     }
 
-    chain_node_t *self = mem_calloc(1, sizeof(*self));
+    PadChainNode *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -70,24 +70,24 @@ chain_node_deep_copy(const chain_node_t *other) {
     self->type = other->type;
     self->node = node_deep_copy(other->node);
     if (!self->node) {
-        chain_node_del(self);
+        PadChainNode_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-chain_node_type_t
-chain_node_getc_type(const chain_node_t *self) {
+PadChainNodeType
+PadChainNode_GetcType(const PadChainNode *self) {
     return self->type;
 }
 
-node_t *
-chain_node_get_node(chain_node_t *self) {
+PadNode *
+PadChainNode_GetNode(PadChainNode *self) {
     return self->node;
 }
 
-const node_t *
-chain_node_getc_node(const chain_node_t *self) {
+const PadNode *
+PadChainNode_GetcNode(const PadChainNode *self) {
     return self->node;
 }

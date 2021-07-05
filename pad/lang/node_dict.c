@@ -11,10 +11,10 @@ struct node_dict {
 };
 
 void
-node_del(node_t *self);
+node_del(PadNode *self);
 
 typedef struct string string_t;
-string_t * node_to_str(const node_t *self);
+string_t * PadNodeo_str(const PadNode *self);
 
 void
 nodedict_del(node_dict_t *self) {
@@ -23,7 +23,7 @@ nodedict_del(node_dict_t *self) {
     }
 
     for (int32_t i = 0; i < self->len; ++i) {
-        node_t *node = self->map[i].value;
+        PadNode *node = self->map[i].value;
         node_del(node);
     }
 
@@ -187,7 +187,7 @@ nodedict_move(node_dict_t *self, const char *key, struct node *move_value) {
 }
 
 node_dict_t *
-nodedict_set(node_dict_t *self, const char *key, node_t *ref_value) {
+nodedict_set(node_dict_t *self, const char *key, PadNode *ref_value) {
     return nodedict_move(self, key, ref_value);
 }
 
@@ -254,7 +254,7 @@ nodedict_getc_index(const node_dict_t *self, int32_t index) {
     return &self->map[index];
 }
 
-node_t *
+PadNode *
 nodedict_pop(node_dict_t *self, const char *key) {
     if (!self || !key) {
         return NULL;
@@ -276,7 +276,7 @@ nodedict_pop(node_dict_t *self, const char *key) {
 
     // save item
     node_dict_item_t *cur = &self->map[found_index];
-    node_t *found = cur->value;
+    PadNode *found = cur->value;
 
     // shrink map
     for (int32_t i = found_index; i < self->len - 1; ++i) {
@@ -304,7 +304,7 @@ nodedict_dump(const node_dict_t *self, FILE *fout) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         const node_dict_item_t *item = &self->map[i];
-        string_t *s = node_to_str(item->value);
+        string_t *s = PadNodeo_str(item->value);
         fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
         str_del(s);
         node_dump(item->value, fout);

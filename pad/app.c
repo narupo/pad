@@ -249,8 +249,8 @@ _app_run(app_t *self) {
     }
 
     kit_t *kit = kit_new(self->config);
-    context_t *ctx = kit_get_context(kit);
-    ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
+    PadCtx *ctx = kit_get_context(kit);
+    PadCtx_SetUseBuf(ctx, false);  // no use stdout/stderr buffer
 
     if (!kit_compile_from_string(kit, content)) {
         trace_kit(self, kit, stderr);
@@ -282,8 +282,8 @@ app_run_args(app_t *self) {
     }
 
     kit_t *kit = kit_new(self->config);
-    context_t *ctx = kit_get_context(kit);
-    ctx_set_use_buf(ctx, false);  // no use stdout/stderr buffer
+    PadCtx *ctx = kit_get_context(kit);
+    PadCtx_SetUseBuf(ctx, false);  // no use stdout/stderr buffer
     
     if (!kit_compile_from_path_args(kit, path, argc, argv)) {
         trace_kit(self, kit, stderr);

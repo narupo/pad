@@ -4,24 +4,24 @@
 #include <pad/lang/types.h>
 
 /**
- * number of type of chain_object_t
+ * number of type of PadChainObj
  */
 typedef enum {
-    CHAIN_OBJ_TYPE_DOT,
-    CHAIN_OBJ_TYPE_CALL,
-    CHAIN_OBJ_TYPE_INDEX,
-} chain_object_type_t;
+    PAD_CHAIN_OBJ_TYPE__DOT,
+    PAD_CHAIN_OBJ_TYPE__CALL,
+    PAD_CHAIN_OBJ_TYPE__INDEX,
+} PadChainObjType;
 
 /**
- * destruct chain_object_t
+ * destruct PadChainObj
  *
  * @param[in] *self
  */
 void
-chain_obj_del(chain_object_t *self);
+PadChainObj_Del(PadChainObj *self);
 
 /**
- * construct chain_object_t
+ * construct PadChainObj
  *
  * @param[in] type
  * @param[in] *move_factor
@@ -29,8 +29,8 @@ chain_obj_del(chain_object_t *self);
  *
  * @return
  */
-chain_object_t *
-chain_obj_new(chain_object_type_t type, object_t *move_obj);
+PadChainObj *
+PadChainObj_New(PadChainObjType type, object_t *move_obj);
 
 /**
  * TODO: test
@@ -41,14 +41,14 @@ chain_obj_new(chain_object_type_t type, object_t *move_obj);
  *
  * @return
  */
-chain_object_t *
-chain_obj_deep_copy(const chain_object_t *other);
+PadChainObj *
+PadChainObj_DeepCopy(const PadChainObj *other);
 
 /**
  * TODO: test
  */
-chain_object_t *
-chain_obj_shallow_copy(const chain_object_t *other);
+PadChainObj *
+PadChainObj_ShallowCopy(const PadChainObj *other);
 
 /**
  * get type
@@ -57,8 +57,8 @@ chain_obj_shallow_copy(const chain_object_t *other);
  *
  * @return number of type
  */
-chain_object_type_t
-chain_obj_getc_type(const chain_object_t *self);
+PadChainObjType
+PadChainObj_GetcType(const PadChainObj *self);
 
 /**
  * get factor obj
@@ -68,7 +68,7 @@ chain_obj_getc_type(const chain_object_t *self);
  * @return pointer to object_t
  */
 object_t *
-chain_obj_get_obj(chain_object_t *self);
+PadChainObj_GetObj(PadChainObj *self);
 
 /**
  * get factor obj read-only
@@ -78,13 +78,13 @@ chain_obj_get_obj(chain_object_t *self);
  * @return pointer to object_t
  */
 const object_t *
-chain_obj_getc_obj(const chain_object_t *self);
+PadChainObj_GetcObj(const PadChainObj *self);
 
 /**
- * dump chain_object_t
+ * dump PadChainObj
  *
  * @param[in] *self
  * @param[in] *fout output stream
  */
 void
-chain_obj_dump(const chain_object_t *self, FILE *fout);
+PadChainObj_Dump(const PadChainObj *self, FILE *fout);

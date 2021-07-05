@@ -50,7 +50,7 @@ struct tokenizer;
 typedef struct tokenizer tokenizer_t;
 
 struct context;
-typedef struct context context_t;
+typedef struct context PadCtx;
 
 struct scope;
 typedef struct scope scope_t;
@@ -69,13 +69,13 @@ typedef struct PadBuiltFuncArgs builtin_func_args_t;
 
 typedef object_t *(*builtin_func_t)(builtin_func_args_t *args);
 
-typedef struct builtin_func_info builtin_func_info_t;
+typedef struct PadBuiltFuncInfo builtin_func_info_t;
 
 struct gc;
 typedef struct gc gc_t;
 
-struct gc_item;
-typedef struct gc_item gc_item_t;
+struct PadGcItem;
+typedef struct PadGcItem gc_item_t;
 
 typedef long objint_t;
 typedef double objfloat_t;
@@ -84,19 +84,19 @@ typedef double objfloat_t;
 typedef int32_t depth_t;
 
 struct chain_node;
-typedef struct chain_node chain_node_t;
+typedef struct chain_node PadChainNode;
 
 struct chain_nodes;
-typedef struct chain_nodes chain_nodes_t;
+typedef struct chain_nodes PadChainNodes;
 
 struct chain_object;
-typedef struct chain_object chain_object_t;
+typedef struct chain_object PadChainObj;
 
 struct chain_objects;
-typedef struct chain_objects chain_objects_t;
+typedef struct chain_objects PadChainObjs;
 
 struct node;
-typedef struct node node_t;
+typedef struct node PadNode;
 
 struct kit;
 typedef struct kit kit_t;

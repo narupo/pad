@@ -38,10 +38,10 @@ struct PadAst {
     token_t **ref_ptr;
 
     // root node. compiler parsed
-    node_t *root;
+    PadNode *root;
 
     // reference of context. update when traverse tree (do not delete)
-    context_t *ref_context;
+    PadCtx *ref_context;
 
     // options for builtin opts module
     opts_t *opts;
@@ -74,7 +74,7 @@ struct PadAst {
  * @param[in] *node start node
  */
 void
-PadAst_DelNodes(const ast_t *self, node_t *node);
+PadAst_DelNodes(const ast_t *self, PadNode *node);
 
 /**
  * destruct object
@@ -110,7 +110,7 @@ void
 PadAst_MoveOpts(ast_t *self, opts_t *move_opts);
 
 void
-PadAst_SetRefCtx(ast_t *ast, context_t *ref_context);
+PadAst_SetRefCtx(ast_t *ast, PadCtx *ref_context);
 
 void
 PadAst_SetRefGc(ast_t *ast, gc_t *ref_gc);
@@ -120,9 +120,9 @@ PadAst_SetRefGc(ast_t *ast, gc_t *ref_gc);
  *
  * @param[in] *self pointer to ast_t
  *
- * @return pointer to node_t root
+ * @return pointer to PadNode root
  */
-const node_t *
+const PadNode *
 PadAst_GetcRoot(const ast_t *self);
 
 /**
@@ -233,7 +233,7 @@ PadAst_Dump(const ast_t *self, FILE *fout);
  *
  * @return reference to ast_t (do not delete)
  */
-context_t *
+PadCtx *
 PadAst_GetRefCtx(ast_t *self);
 
 /**

@@ -1,7 +1,7 @@
 #include <pad/lang/ast.h>
 
 void
-PadAst_DelNodes(const ast_t *self, node_t *node) {
+PadAst_DelNodes(const ast_t *self, PadNode *node) {
     if (!node) {
         return;
     }
@@ -36,7 +36,7 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
         PadAst_DelNodes(self, ref_block->formula);
     } break;
     case NODE_TYPE_TEXT_BLOCK: {
-        node_text_block_t *text_block = node->real;
+        PadNodeext_block_t *text_block = node->real;
         free(text_block->text);
     } break;
     case NODE_TYPE_ELEMS: {
@@ -73,7 +73,7 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_IMPORT_VARS: {
         node_import_vars_t *import_vars = node->real;
         for (int32_t i = 0; i < nodearr_len(import_vars->nodearr); ++i) {
-            node_t *node = nodearr_get(import_vars->nodearr, i);
+            PadNode *node = nodearr_get(import_vars->nodearr, i);
             PadAst_DelNodes(self, node);
         }
     } break;
@@ -121,7 +121,7 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
         node_block_stmt_t *block_stmt = node->real;
         PadAst_DelNodes(self, block_stmt->identifier);
         for (int32_t i = 0; i < nodearr_len(block_stmt->contents); ++i) {
-            node_t *node = nodearr_get(block_stmt->contents, i);
+            PadNode *node = nodearr_get(block_stmt->contents, i);
             PadAst_DelNodes(self, node);
         }
         nodearr_del_without_nodes(block_stmt->contents);
@@ -130,7 +130,7 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
         node_inject_stmt_t *inject_stmt = node->real;
         PadAst_DelNodes(self, inject_stmt->identifier);
         for (int32_t i = 0; i < nodearr_len(inject_stmt->contents); ++i) {
-            node_t *node = nodearr_get(inject_stmt->contents, i);
+            PadNode *node = nodearr_get(inject_stmt->contents, i);
             PadAst_DelNodes(self, node);
         }
         nodearr_del_without_nodes(inject_stmt->contents);
@@ -173,21 +173,21 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
         nodearr_del_without_nodes(simple_assign->nodearr);
     } break;
     case NODE_TYPE_TEST_LIST: {
-        node_test_list_t *test_list = node->real;
+        PadNodeest_list_t *test_list = node->real;
         for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
             PadAst_DelNodes(self, nodearr_get(test_list->nodearr, i));
         }
         nodearr_del_without_nodes(test_list->nodearr);
     } break;
     case NODE_TYPE_CALL_ARGS: {
-        node_test_list_t *call_args = node->real;
+        PadNodeest_list_t *call_args = node->real;
         for (int32_t i = 0; i < nodearr_len(call_args->nodearr); ++i) {
             PadAst_DelNodes(self, nodearr_get(call_args->nodearr, i));
         }
         nodearr_del_without_nodes(call_args->nodearr);
     } break;
     case NODE_TYPE_TEST: {
-        node_test_t *test = node->real;
+        PadNodeest_t *test = node->real;
         PadAst_DelNodes(self, test->or_test);
     } break;
     case NODE_TYPE_OR_TEST: {
@@ -243,9 +243,9 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
     } break;
     case NODE_TYPE_CHAIN: {
         node_chain_t *chain = node->real;
-        for (int32_t i = 0; i < chain_nodes_len(chain->chain_nodes); ++i) {
-            chain_node_t *cn = chain_nodes_get(chain->chain_nodes, i);
-            node_t *node = chain_node_get_node(cn);
+        for (int32_t i = 0; i < PadChainNodes_Len(chain->chain_nodes); ++i) {
+            PadChainNode *cn = PadChainNodes_Get(chain->chain_nodes, i);
+            PadNode *node = PadChainNode_GetNode(cn);
             PadAst_DelNodes(self, node);
         }
     } break;
@@ -340,7 +340,7 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
         PadAst_DelNodes(self, func_def->identifier);
         PadAst_DelNodes(self, func_def->func_def_params);
         for (int32_t i = 0; i < nodearr_len(func_def->contents); ++i) {
-            node_t *content = nodearr_get(func_def->contents, i);
+            PadNode *content = nodearr_get(func_def->contents, i);
             PadAst_DelNodes(self, content);
         }
         nodearr_del_without_nodes(func_def->contents);
@@ -358,7 +358,7 @@ PadAst_DelNodes(const ast_t *self, node_t *node) {
     case NODE_TYPE_FUNC_DEF_ARGS: {
         node_func_def_args_t *func_def_args = node->real;
         for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
-            node_t *identifier = nodearr_get(func_def_args->identifiers, i);
+            PadNode *identifier = nodearr_get(func_def_args->identifiers, i);
             PadAst_DelNodes(self, identifier);
         }
         nodearr_del_without_nodes(func_def_args->identifiers);
@@ -504,7 +504,7 @@ PadAst_MoveOpts(ast_t *self, opts_t *move_opts) {
     self->opts = mem_move(move_opts);
 }
 
-const node_t *
+const PadNode *
 PadAst_GetcRoot(const ast_t *self) {
     return self->root;
 }
@@ -619,16 +619,16 @@ PadAst_Dump(const ast_t *self, FILE *fout) {
 
     fprintf(fout, "ast[%p]\n", self);
     fprintf(fout, "ref_context[%p]\n", self->ref_context);
-    ctx_dump(self->ref_context, fout);
+    PadCtx_Dump(self->ref_context, fout);
 }
 
-context_t *
+PadCtx *
 PadAst_GetRefCtx(ast_t *self) {
     return self->ref_context;
 }
 
 void
-PadAst_SetRefCtx(ast_t *ast, context_t *ref_context) {
+PadAst_SetRefCtx(ast_t *ast, PadCtx *ref_context) {
     ast->ref_context = ref_context;
 }
 

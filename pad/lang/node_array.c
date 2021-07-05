@@ -7,7 +7,7 @@ enum {
 struct node_array {
     int32_t len;
     int32_t capa;
-    node_t **parray;
+    PadNode **parray;
 };
 
 /*****************
@@ -21,7 +21,7 @@ nodearr_del(node_array_t* self) {
     }
 
     for (int i = 0; i < self->len; ++i) {
-        node_t *node = self->parray[i];
+        PadNode *node = self->parray[i];
         node_del(node);
     }
 
@@ -48,7 +48,7 @@ nodearr_new(void) {
         return NULL;
     }
 
-    self->parray = mem_calloc(NODEARR_INIT_CAPA + 1, sizeof(node_t *));
+    self->parray = mem_calloc(NODEARR_INIT_CAPA + 1, sizeof(PadNode *));
     if (!self->parray) {
         nodearr_del(self);
         return NULL;
@@ -59,8 +59,8 @@ nodearr_new(void) {
     return self;
 }
 
-node_t *
-node_deep_copy(const node_t *other);
+PadNode *
+node_deep_copy(const PadNode *other);
 
 node_array_t *
 nodearr_deep_copy(const node_array_t *other) {
@@ -74,15 +74,15 @@ nodearr_deep_copy(const node_array_t *other) {
     }
 
     self->capa = other->capa;
-    self->parray = mem_calloc(other->capa + 1, sizeof(node_t *));
+    self->parray = mem_calloc(other->capa + 1, sizeof(PadNode *));
     if (!self->parray) {
         nodearr_del(self);
         return NULL;
     }
 
     for (int32_t i = 0; i < other->len; ++i) {
-        node_t *node = other->parray[i];
-        node_t *copied = node_deep_copy(node);
+        PadNode *node = other->parray[i];
+        PadNode *copied = node_deep_copy(node);
         if (!copied) {
             nodearr_del(self);
             return NULL;
@@ -121,7 +121,7 @@ nodearry_capa(const node_array_t *self) {
     return self->capa;
 }
 
-node_t *
+PadNode *
 nodearr_get(const node_array_t *self, int32_t index) {
     if (!self || index < 0 || index >= self->capa) {
         return NULL;
@@ -129,7 +129,7 @@ nodearr_get(const node_array_t *self, int32_t index) {
     return self->parray[index];
 }
 
-const node_t *
+const PadNode *
 nodearr_getc(const node_array_t *self, int32_t index) {
     if (!self || index < 0 || index >= self->capa) {
         return NULL;
@@ -137,7 +137,7 @@ nodearr_getc(const node_array_t *self, int32_t index) {
     return self->parray[index];
 }
 
-node_t *
+PadNode *
 nodearr_get_last(const node_array_t *self) {
     if (!self || !self->len) {
         return NULL;
@@ -156,8 +156,8 @@ nodearr_resize(node_array_t* self, int32_t capa) {
         return NULL;
     }
 
-    int byte = sizeof(node_t *);
-    node_t **tmparr = mem_realloc(self->parray, capa * byte + byte);
+    int byte = sizeof(PadNode *);
+    PadNode **tmparr = mem_realloc(self->parray, capa * byte + byte);
     if (!tmparr) {
         return NULL;
     }
@@ -169,7 +169,7 @@ nodearr_resize(node_array_t* self, int32_t capa) {
 }
 
 node_array_t *
-nodearr_moveb(node_array_t* self, node_t *node) {
+nodearr_moveb(node_array_t* self, PadNode *node) {
     if (!self) {
         return NULL;
     }
@@ -188,7 +188,7 @@ nodearr_moveb(node_array_t* self, node_t *node) {
 }
 
 node_array_t *
-nodearr_movef(node_array_t* self, node_t *node) {
+nodearr_movef(node_array_t* self, PadNode *node) {
     if (!self) {
         return NULL;
     }
@@ -210,14 +210,14 @@ nodearr_movef(node_array_t* self, node_t *node) {
     return self;
 }
 
-node_t *
+PadNode *
 nodearr_popb(node_array_t *self) {
     if (!self || self->len <= 0) {
         return NULL;
     }
 
     self->len--;
-    node_t *node = self->parray[self->len];
+    PadNode *node = self->parray[self->len];
     self->parray[self->len] = NULL;
 
     return node;

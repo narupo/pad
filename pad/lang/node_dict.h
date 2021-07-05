@@ -22,7 +22,7 @@ enum {
  */
 typedef struct node_dict_item {
     char key[NODE_DICT_ITEM_KEY_SIZE];  // key of item
-    node_t *value;  // value of item
+    PadNode *value;  // value of item
 } node_dict_item_t;
 
 /**
@@ -89,26 +89,26 @@ nodedict_resize(node_dict_t *self, int32_t newcapa);
  *
  * @param[in] *self
  * @param[in] *key        key of strings
- * @param[in] *move_value pointer to node_t (move semantics)
+ * @param[in] *move_value pointer to PadNode (move semantics)
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 node_dict_t *
-nodedict_move(node_dict_t *self, const char *key, node_t *move_value);
+nodedict_move(node_dict_t *self, const char *key, PadNode *move_value);
 
 /**
  * set reference of node at key
  *
  * @param[in] *self
  * @param[in] *key       key of strings
- * @param[in] *ref_value reference to node_t
+ * @param[in] *ref_value reference to PadNode
  *
  * @return success to pointer to self
  * @return failed to NULL
  */
 node_dict_t *
-nodedict_set(node_dict_t *self, const char *key, node_t *ref_value);
+nodedict_set(node_dict_t *self, const char *key, PadNode *ref_value);
 
 node_dict_item_t *
 nodedict_get(node_dict_t *self, const char *key);
@@ -131,10 +131,10 @@ nodedict_getc_index(const node_dict_t *self, int32_t index);
  * @param[in] *self
  * @param[in] *key  key of strings
  *
- * @return found to return pointer to node_t
+ * @return found to return pointer to PadNode
  * @return not found to return NULL
  */
-node_t *
+PadNode *
 nodedict_pop(node_dict_t *self, const char *key);
 
 /**

@@ -88,8 +88,8 @@ create_modobj(
     // compile source
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(self->ref_config);
-    context_t *ctx = ctx_new(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
-    ctx_set_ref_prev(ctx, ref_ast->ref_context);
+    PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
+    PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
 
     ast->import_level = ref_ast->import_level + 1;
     ast->debug = ref_ast->debug;
@@ -103,7 +103,7 @@ create_modobj(
     }
 
     PadAst_Clear(ast);
-    cc_compile(ast, tkr_get_tokens(tkr));
+    PadCc_Compile(ast, tkr_get_tokens(tkr));
     if (PadAst_HasErrs(ast)) {
         importer_set_error(self, PadAst_GetcFirstErrMsg(ast));
         free(src);
@@ -136,7 +136,7 @@ importer_import_as(
     importer_t *self,
     gc_t *ref_gc,
     const ast_t *ref_ast,
-    context_t *dstctx,
+    PadCtx *dstctx,
     const char *path,
     const char *alias
 ) {
@@ -152,7 +152,7 @@ importer_import_as(
         return NULL;
     }
 
-    object_dict_t *dst_varmap = ctx_get_varmap(dstctx);
+    object_dict_t *dst_varmap = PadCtx_GetVarmap(dstctx);
     obj_inc_ref(modobj);
     objdict_move(dst_varmap, alias, mem_move(modobj));
 
@@ -164,7 +164,7 @@ importer_from_import(
     importer_t *self,
     gc_t *ref_gc,
     const ast_t *ref_ast,
-    context_t *dstctx,
+    PadCtx *dstctx,
     const char *path,
     object_array_t *vars   // import_vars
 ) {
@@ -190,7 +190,7 @@ importer_from_import(
     object_array_t *v = varobj->objarr; \
     assert(objarr_len(v) == 1 || objarr_len(v) == 2); \
 
-    object_dict_t *dst_varmap = ctx_get_varmap(dstctx);
+    object_dict_t *dst_varmap = PadCtx_GetVarmap(dstctx);
 
     // assign objects at global varmap of current context from module context
     // increment a reference count of objects
@@ -212,7 +212,7 @@ importer_from_import(
         }
 
         // get object from imported module
-        object_t *objinmod = ctx_find_var_ref(modobj->module.ast->ref_context, objname);
+        object_t *objinmod = PadCtx_FindVarRef(modobj->module.ast->ref_context, objname);
         if (!objinmod) {
             importer_set_error(self,
                 "\"%s\" is can't import from module \"%s\"",

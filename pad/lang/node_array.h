@@ -36,13 +36,13 @@ nodearr_len(const node_array_t *self);
 int32_t
 nodearry_capa(const node_array_t *self);
 
-node_t *
+PadNode *
 nodearr_get(const node_array_t *self, int32_t index);
 
-const node_t *
+const PadNode *
 nodearr_getc(const node_array_t *self, int32_t index);
 
-node_t *
+PadNode *
 nodearr_get_last(const node_array_t *self);
 
 /*********
@@ -53,10 +53,10 @@ node_array_t *
 nodearr_resize(node_array_t *self, int32_t capa);
 
 node_array_t *
-nodearr_moveb(node_array_t *self, node_t *node);
+nodearr_moveb(node_array_t *self, PadNode *node);
 
 node_array_t *
-nodearr_movef(node_array_t *self, node_t *node);
+nodearr_movef(node_array_t *self, PadNode *node);
 
-node_t *
+PadNode *
 nodearr_popb(node_array_t *self);

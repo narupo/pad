@@ -16,16 +16,16 @@ extern ast_t *
 PadAst_ShallowCopy(const ast_t *other);
 
 extern void
-ctx_del(context_t *self);
+PadCtx_Del(PadCtx *self);
 
-extern context_t *
-ctx_deep_copy(const context_t *other);
+extern PadCtx *
+PadCtx_DeepCopy(const PadCtx *other);
 
-extern context_t *
-ctx_shallow_copy(const context_t *other);
+extern PadCtx *
+PadCtx_ShallowCopy(const PadCtx *other);
 
 extern void
-ctx_dump(const context_t *self, FILE *fout);
+PadCtx_Dump(const PadCtx *self, FILE *fout);
 
 tokenizer_t *
 tkr_deep_copy(const tokenizer_t *self);
@@ -87,7 +87,7 @@ obj_del(object_t *self) {
     case OBJ_TYPE_CHAIN:
         obj_dec_ref(self->chain.operand);
         obj_del(self->chain.operand);
-        chain_objs_del(self->chain.chain_objs);
+        PadChainObjs_Del(self->chain.chain_objs);
         break;
     case OBJ_TYPE_MODULE:
         free(self->module.name);
@@ -100,18 +100,18 @@ obj_del(object_t *self) {
         self->module.tokenizer = NULL;
         PadAst_Del(self->module.ast);
         self->module.ast = NULL;
-        ctx_del(self->module.context);
+        PadCtx_Del(self->module.context);
         self->module.context = NULL;
         break;
     case OBJ_TYPE_DEF_STRUCT:
         obj_del(self->def_struct.identifier);
         self->def_struct.identifier = NULL;
-        ctx_del(self->def_struct.context);
+        PadCtx_Del(self->def_struct.context);
         self->def_struct.context = NULL;
         break;
     case OBJ_TYPE_OBJECT:
         self->object.ref_ast = NULL;
-        ctx_del(self->object.struct_context);
+        PadCtx_Del(self->object.struct_context);
         obj_dec_ref(self->object.ref_def_obj);
         obj_del(self->object.ref_def_obj);
         self->object.ref_def_obj = NULL;
@@ -131,7 +131,7 @@ obj_del(object_t *self) {
         break;
     }
 
-    gc_free(self->ref_gc, &self->gc_item);
+    PadGc_Free(self->ref_gc, &self->gc_item);
 }
 
 gc_t *
@@ -166,7 +166,7 @@ obj_deep_copy(const object_t *other) {
 
     // allocate memory by gc
     gc_item_t gc_item = {0};
-    if (!gc_alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
         return NULL;
     }
 
@@ -244,19 +244,19 @@ obj_deep_copy(const object_t *other) {
         }
         self->module.tokenizer = tkr_deep_copy(other->module.tokenizer);
         self->module.ast = PadAst_DeepCopy(other->module.ast);
-        self->module.context = ctx_deep_copy(other->module.context);
+        self->module.context = PadCtx_DeepCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case OBJ_TYPE_DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
         self->def_struct.identifier = obj_deep_copy(other->def_struct.identifier); 
         self->def_struct.ast = PadAst_DeepCopy(other->def_struct.ast);
-        self->def_struct.context = ctx_deep_copy(other->def_struct.context);
+        self->def_struct.context = PadCtx_DeepCopy(other->def_struct.context);
         break;
     case OBJ_TYPE_OBJECT:
         self->object.ref_ast = other->object.ref_ast;
         self->object.ref_struct_ast = other->object.ref_struct_ast;
-        self->object.struct_context = ctx_deep_copy(other->object.struct_context);
+        self->object.struct_context = PadCtx_DeepCopy(other->object.struct_context);
         obj_inc_ref(other->object.ref_def_obj);
         self->object.ref_def_obj = other->object.ref_def_obj;
         break;
@@ -267,7 +267,7 @@ obj_deep_copy(const object_t *other) {
         break;
     case OBJ_TYPE_CHAIN:
         self->chain.operand = obj_deep_copy(other->chain.operand);
-        self->chain.chain_objs = chain_objs_deep_copy(other->chain.chain_objs);
+        self->chain.chain_objs = PadChainObjs_DeepCopy(other->chain.chain_objs);
         break;
     case OBJ_TYPE_TYPE:
         self->type_obj.type = other->type_obj.type;
@@ -285,7 +285,7 @@ obj_shallow_copy(const object_t *other) {
 
     // allocate memory by gc
     gc_item_t gc_item = {0};
-    if (!gc_alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
+    if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
         return NULL;
     }
 
@@ -360,19 +360,19 @@ obj_shallow_copy(const object_t *other) {
         }
         self->module.tokenizer = tkr_shallow_copy(other->module.tokenizer);
         self->module.ast = PadAst_ShallowCopy(other->module.ast);
-        self->module.context = ctx_shallow_copy(other->module.context);
+        self->module.context = PadCtx_ShallowCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case OBJ_TYPE_DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
         self->def_struct.identifier = obj_shallow_copy(other->def_struct.identifier); 
         self->def_struct.ast = PadAst_ShallowCopy(other->def_struct.ast);
-        self->def_struct.context = ctx_shallow_copy(other->def_struct.context);
+        self->def_struct.context = PadCtx_ShallowCopy(other->def_struct.context);
         break;
     case OBJ_TYPE_OBJECT:
         self->object.ref_ast = other->object.ref_ast;
         self->object.ref_struct_ast = other->object.ref_struct_ast;
-        self->object.struct_context = ctx_shallow_copy(other->object.struct_context);
+        self->object.struct_context = PadCtx_ShallowCopy(other->object.struct_context);
         obj_inc_ref(other->object.ref_def_obj);
         self->object.ref_def_obj = other->object.ref_def_obj;
         break;
@@ -383,7 +383,7 @@ obj_shallow_copy(const object_t *other) {
         break;
     case OBJ_TYPE_CHAIN:
         self->chain.operand = obj_shallow_copy(other->chain.operand);
-        self->chain.chain_objs = chain_objs_shallow_copy(other->chain.chain_objs);
+        self->chain.chain_objs = PadChainObjs_ShallowCopy(other->chain.chain_objs);
         break;
     }
 
@@ -397,7 +397,7 @@ obj_new(gc_t *ref_gc, obj_type_t type) {
     }
 
     gc_item_t gc_item = {0};
-    if (!gc_alloc(ref_gc, &gc_item, sizeof(object_t))) {
+    if (!PadGc_Alloc(ref_gc, &gc_item, sizeof(object_t))) {
         return NULL;
     }
 
@@ -458,7 +458,7 @@ obj_new_true(gc_t *ref_gc) {
 object_t *
 obj_new_cidentifier(
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     const char *identifier
 ) {
     if (!ref_gc || !ref_context || !identifier) {
@@ -480,7 +480,7 @@ obj_new_cidentifier(
 object_t *
 obj_new_identifier(
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     string_t *move_identifier
 ) {
     if (!ref_gc || !ref_context || !move_identifier) {
@@ -615,7 +615,7 @@ object_t *
 obj_new_func(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_t *move_name,
     object_t *move_args,
     node_array_t *ref_suites,
@@ -647,7 +647,7 @@ obj_new_func(
 }
 
 object_t *
-obj_new_chain(gc_t *ref_gc, object_t *move_operand, chain_objects_t *move_chain_objs) {
+obj_new_chain(gc_t *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs) {
     if (!ref_gc || !move_operand || !move_chain_objs) {
         return NULL;
     }
@@ -682,7 +682,7 @@ obj_new_def_struct(
     gc_t *ref_gc,
     object_t *move_idn,
     ast_t *move_ast,
-    context_t *move_context
+    PadCtx *move_context
 ) {
     if (!ref_gc || !move_idn || !move_ast || !move_context) {
         return NULL;
@@ -705,7 +705,7 @@ object_t *
 obj_new_object(
     gc_t *ref_gc,
     ast_t *ref_ast,
-    context_t *move_struct_context,
+    PadCtx *move_struct_context,
     object_t *ref_def_obj
 ) {
     if (!ref_gc || !ref_ast || !move_struct_context || !ref_def_obj) {
@@ -753,7 +753,7 @@ obj_new_module_by(
     char *move_program_source,
     tokenizer_t *move_tkr,
     ast_t *move_ast,
-    context_t *move_context,
+    PadCtx *move_context,
     builtin_func_info_t *infos  // allow null
 ) {
     if (!ref_gc || !name || !move_tkr || !move_ast || !move_context) {
@@ -1058,7 +1058,7 @@ obj_dump(const object_t *self, FILE *fout) {
     fprintf(fout, "object[%p]\n", self);
     fprintf(fout, "object.type[%s]\n", str_getc(typ));
     fprintf(fout, "object.to_str[%s]\n", str_getc(s));
-    gc_item_dump(&self->gc_item, fout);
+    PadGcItem_Dump(&self->gc_item, fout);
 
     str_del(s);
     str_del(typ);
@@ -1078,14 +1078,14 @@ obj_dump(const object_t *self, FILE *fout) {
         fprintf(fout, "object.chain.operand[%p]\n", self->chain.operand);
         obj_dump(self->chain.operand, fout);
         fprintf(fout, "object.chain.chain_objs[%p]\n", self->chain.chain_objs);
-        chain_objs_dump(self->chain.chain_objs, fout);
+        PadChainObjs_Dump(self->chain.chain_objs, fout);
         break;
     case OBJ_TYPE_DEF_STRUCT:
         fprintf(fout, "def-struct.ref_ast[%p]\n", self->def_struct.ref_ast);
         fprintf(fout, "def-struct.identifier[%s]\n", obj_getc_idn_name(self->def_struct.identifier));
         fprintf(fout, "def-struct.ast[%p]\n", self->def_struct.ast);
         fprintf(fout, "def-struct.context\n");
-        ctx_dump(self->def_struct.context, fout);
+        PadCtx_Dump(self->def_struct.context, fout);
         break;
     }
 }
@@ -1168,17 +1168,17 @@ obj_getc_def_struct_idn_name(const object_t *self) {
     return obj_getc_idn_name(self->def_struct.identifier);
 }
 
-context_t *
+PadCtx *
 obj_get_idn_ref_context(const object_t *self) {
     return self->identifier.ref_context;
 }
 
-chain_objects_t *
+PadChainObjs *
 obj_get_chain_objs(object_t *self) {
     return self->chain.chain_objs;
 }
 
-const chain_objects_t *
+const PadChainObjs *
 obj_getc_chain_objs(const object_t *self) {
     return self->chain.chain_objs;
 }

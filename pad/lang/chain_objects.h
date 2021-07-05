@@ -4,22 +4,22 @@
 #include <pad/lang/types.h>
 
 /**
- * destruct chain_objects_t
+ * destruct PadChainObjs
  *
  * @param[in] *self
  */
 void
-chain_objs_del(chain_objects_t *self);
+PadChainObjs_Del(PadChainObjs *self);
 
 /**
- * construct chain_objects_t
+ * construct PadChainObjs
  *
  * @param[in] void
  *
- * @return pointer to chain_objects_t
+ * @return pointer to PadChainObjs
  */
-chain_objects_t *
-chain_objs_new(void);
+PadChainObjs *
+PadChainObjs_New(void);
 
 /**
  * TODO: test
@@ -30,17 +30,17 @@ chain_objs_new(void);
  *
  * @return
  */
-chain_objects_t *
-chain_objs_deep_copy(const chain_objects_t *other);
+PadChainObjs *
+PadChainObjs_DeepCopy(const PadChainObjs *other);
 
 /**
  * TODO: test
  */
-chain_objects_t *
-chain_objs_shallow_copy(const chain_objects_t *other);
+PadChainObjs *
+PadChainObjs_ShallowCopy(const PadChainObjs *other);
 
 /**
- * resize chain_objects_t
+ * resize PadChainObjs
  *
  * @param[in] *self
  * @param[in] newcapa
@@ -48,11 +48,11 @@ chain_objs_shallow_copy(const chain_objects_t *other);
  * @return success to pointer to self
  * @return failed to NULL
  */
-chain_objects_t *
-chain_objs_resize(chain_objects_t *self, int32_t newcapa);
+PadChainObjs *
+PadChainObjs_Resize(PadChainObjs *self, int32_t newcapa);
 
 /**
- * move back pointer to chain_object_t
+ * move back pointer to PadChainObj
  *
  * @param[in] *self
  * @param[in] *move_chain_obj
@@ -60,8 +60,8 @@ chain_objs_resize(chain_objects_t *self, int32_t newcapa);
  * @return success to pointer to self
  * @return failed to NULL
  */
-chain_objects_t *
-chain_objs_moveb(chain_objects_t *self, chain_object_t *move_chain_obj);
+PadChainObjs *
+PadChainObjs_MoveBack(PadChainObjs *self, PadChainObj *move_chain_obj);
 
 /**
  * get length of array
@@ -71,31 +71,31 @@ chain_objs_moveb(chain_objects_t *self, chain_object_t *move_chain_obj);
  * @return number of length
  */
 int32_t
-chain_objs_len(const chain_objects_t *self);
+PadChainObjs_Len(const PadChainObjs *self);
 
 /**
- * get chain_object_t from array
+ * get PadChainObj from array
  *
  * @param[in] *self
  * @param[in] idx
  *
- * @return success to pointer to chain_object_t
+ * @return success to pointer to PadChainObj
  * @return failed to NULL
  */
-chain_object_t *
-chain_objs_get(chain_objects_t *self, int32_t idx);
+PadChainObj *
+PadChainObjs_Get(PadChainObjs *self, int32_t idx);
 
-chain_object_t *
-chain_objs_get_last(chain_objects_t *self);
+PadChainObj *
+PadChainObjs_GetLast(PadChainObjs *self);
 
-chain_object_t *
-chain_objs_get_last_2(chain_objects_t *self);
+PadChainObj *
+PadChainObjs_GetLast2(PadChainObjs *self);
 
 /**
- * dump chain_objects_t
+ * dump PadChainObjs
  *
  * @param[in] *self
  * @param[in] *fout output stream
  */
 void
-chain_objs_dump(const chain_objects_t *self, FILE *fout);
+PadChainObjs_Dump(const PadChainObjs *self, FILE *fout);

@@ -31,7 +31,7 @@
 
 #undef pushb_error_node
 #define pushb_error_node(errstack, node, fmt, ...) { \
-        const node_t *n = node; \
+        const PadNode *n = node; \
         const char *fname = NULL; \
         int32_t lineno = 0; \
         const char *src = NULL; \
@@ -52,8 +52,8 @@
 * functions *
 ************/
 
-context_t *
-get_context_by_owners(object_array_t *ref_owners, context_t *def_context);
+PadCtx *
+get_context_by_owners(object_array_t *ref_owners, PadCtx *def_context);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
@@ -82,7 +82,7 @@ pull_ref_all(const object_t *idn_obj);
  * @return success to pointer to string_t copied (can delete)
  */
 string_t *
-obj_to_string(PadErrStack *err, const node_t *ref_node, const object_t *obj);
+obj_to_string(PadErrStack *err, const PadNode *ref_node, const object_t *obj);
 
 /**
  * move object at varmap of current scope of context by identifier
@@ -91,8 +91,8 @@ obj_to_string(PadErrStack *err, const node_t *ref_node, const object_t *obj);
 bool
 move_obj_at_cur_varmap(
     PadErrStack *err,
-    const node_t *ref_node,
-    context_t *ctx,
+    const PadNode *ref_node,
+    PadCtx *ctx,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *move_obj
@@ -105,8 +105,8 @@ move_obj_at_cur_varmap(
 bool
 set_ref_at_cur_varmap(
     PadErrStack *err,
-    const node_t *ref_node,
-    context_t *ctx,
+    const PadNode *ref_node,
+    PadCtx *ctx,
     object_array_t *ref_owners,
     const char *identifier,
     object_t *ref
@@ -125,8 +125,8 @@ extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 );
 
@@ -135,8 +135,8 @@ extract_ref_of_obj_all(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 );
 
@@ -155,8 +155,8 @@ extract_copy_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 );
 
@@ -174,8 +174,8 @@ refer_chain_obj_with_ref(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *chain_obj
 );
 
@@ -195,10 +195,10 @@ refer_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_array_t *owns,
-    chain_object_t *co
+    PadChainObj *co
 );
 
 /**
@@ -215,11 +215,11 @@ object_t *
 refer_chain_call(
     ast_t *ref_ast,
     PadErrStack *err,
-    const node_t *ref_node,
+    const PadNode *ref_node,
     gc_t *ref_gc,
-    context_t *ref_context,
+    PadCtx *ref_context,
     object_array_t *owns,  // TODO: const
-    chain_object_t *co
+    PadChainObj *co
 );
 
 object_t *
@@ -227,8 +227,8 @@ refer_and_set_ref(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *chain_obj,
     object_t *ref
 );
@@ -251,8 +251,8 @@ parse_bool(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 );
 
@@ -266,8 +266,8 @@ parse_int(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 );
 
@@ -281,8 +281,8 @@ parse_float(
     ast_t *ref_ast,
     PadErrStack *err,
     gc_t *ref_gc,
-    context_t *ref_context,
-    const node_t *ref_node,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     object_t *obj
 );
 

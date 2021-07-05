@@ -42,7 +42,7 @@ kit_getc_stderr_buf(const kit_t *self);
 void
 kit_clear_context(kit_t *self);
 
-context_t *
+PadCtx *
 kit_get_context(kit_t *self);
 
 bool

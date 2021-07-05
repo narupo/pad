@@ -31,12 +31,12 @@ objarr_del(object_array_t *self);
 
 struct chain_object {
     // number of type of chain obj element
-    chain_object_type_t type;
+    PadChainObjType type;
 
     // obj
-    // if type == CHAIN_OBJ_TYPE_DOT then object is factor
-    // if type == CHAIN_OBJ_TYPE_CALL then object is call_args (obj->type == OBJ_TYPE_ARRAY)
-    // if type == CHAIN_OBJ_TYPE_INDEX then object is simple_assign
+    // if type == PAD_CHAIN_OBJ_TYPE__DOT then object is factor
+    // if type == PAD_CHAIN_OBJ_TYPE__CALL then object is call_args (obj->type == OBJ_TYPE_ARRAY)
+    // if type == PAD_CHAIN_OBJ_TYPE__INDEX then object is simple_assign
     object_t *obj;
 };
 
@@ -45,7 +45,7 @@ struct chain_object {
 ************/
 
 void
-chain_obj_del(chain_object_t *self) {
+PadChainObj_Del(PadChainObj *self) {
     if (!self) {
         return;
     }
@@ -55,13 +55,13 @@ chain_obj_del(chain_object_t *self) {
     free(self);
 }
 
-chain_object_t *
-chain_obj_new(chain_object_type_t type, object_t *move_obj) {
+PadChainObj *
+PadChainObj_New(PadChainObjType type, object_t *move_obj) {
     if (!move_obj) {
         return NULL;
     }
 
-    chain_object_t *self = mem_calloc(1, sizeof(*self));
+    PadChainObj *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -72,8 +72,8 @@ chain_obj_new(chain_object_type_t type, object_t *move_obj) {
     return self;
 }
 
-chain_object_t *
-_chain_obj_copy(const chain_object_t *other, bool deep) {
+PadChainObj *
+_chain_obj_copy(const PadChainObj *other, bool deep) {
     if (!other) {
         return NULL;
     }
@@ -92,7 +92,7 @@ _chain_obj_copy(const chain_object_t *other, bool deep) {
     }
 
     obj_inc_ref(obj);
-    chain_object_t *self = chain_obj_new(other->type, mem_move(obj));
+    PadChainObj *self = PadChainObj_New(other->type, mem_move(obj));
     if (!self) {
         obj_del(obj);
         return NULL;
@@ -101,38 +101,38 @@ _chain_obj_copy(const chain_object_t *other, bool deep) {
     return self;
 }
 
-chain_object_t *
-chain_obj_deep_copy(const chain_object_t *other) {
+PadChainObj *
+PadChainObj_DeepCopy(const PadChainObj *other) {
     return _chain_obj_copy(other, true);
 }
 
-chain_object_t *
-chain_obj_shallow_copy(const chain_object_t *other) {
+PadChainObj *
+PadChainObj_ShallowCopy(const PadChainObj *other) {
     return _chain_obj_copy(other, false);
 }
 
-chain_object_type_t
-chain_obj_getc_type(const chain_object_t *self) {
+PadChainObjType
+PadChainObj_GetcType(const PadChainObj *self) {
     return self->type;
 }
 
 object_t *
-chain_obj_get_obj(chain_object_t *self) {
+PadChainObj_GetObj(PadChainObj *self) {
     return self->obj;
 }
 
 const object_t *
-chain_obj_getc_obj(const chain_object_t *self) {
+PadChainObj_GetcObj(const PadChainObj *self) {
     return self->obj;
 }
 
 void
-chain_obj_dump(const chain_object_t *self, FILE *fout) {
+PadChainObj_Dump(const PadChainObj *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
 
-    fprintf(fout, "chain_object_t.type[%d]\n", self->type);
-    fprintf(fout, "chain_object_t.obj[%p]\n", self->obj);
+    fprintf(fout, "PadChainObj.type[%d]\n", self->type);
+    fprintf(fout, "PadChainObj.obj[%p]\n", self->obj);
     obj_dump(self->obj, fout);
 }

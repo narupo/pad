@@ -43,7 +43,7 @@ builtin_alias_set(builtin_func_args_t *fargs) {
     const char *val = uni_getc_mb(valobj->unicode);
     const char *desc = descobj ? uni_getc_mb(descobj->unicode) : NULL;
 
-    ctx_set_alias(ref_ast->ref_context, key, val, desc);
+    PadCtx_SetAlias(ref_ast->ref_context, key, val, desc);
 
     return obj_new_nil(ref_ast->ref_gc);
 }
@@ -55,9 +55,9 @@ builtin_func_infos[] = {
 };
 
 object_t *
-builtin_alias_module_new(const PadConfig *ref_config, gc_t *ref_gc) {
+Pad_NewBltAliasMod(const PadConfig *ref_config, gc_t *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
-    context_t *ctx = ctx_new(ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_gc);
     ast_t *ast = PadAst_New(ref_config);
     ast->ref_context = ctx;
 

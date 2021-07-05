@@ -180,7 +180,7 @@ trv_compare_comparison_lte_int(ast_t *ast, trv_args_t *targs);
 static object_t *
 trv_program(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_PROGRAM);
     node_program_t *program = node->real;
 
@@ -198,7 +198,7 @@ trv_program(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_blocks(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_BLOCKS);
     node_blocks_t *blocks = node->real;
 
@@ -212,8 +212,8 @@ trv_blocks(ast_t *ast, trv_args_t *targs) {
         return_trav(NULL);
     }
 
-    if (ctx_get_do_break(ast->ref_context) ||
-        ctx_get_do_continue(ast->ref_context)) {
+    if (PadCtx_GetDoBreak(ast->ref_context) ||
+        PadCtx_GetDoContinue(ast->ref_context)) {
         return_trav(NULL);
     }
 
@@ -247,7 +247,7 @@ trv_blocks(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_code_block(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_CODE_BLOCK);
     node_code_block_t *code_block = node->real;
 
@@ -267,7 +267,7 @@ trv_code_block(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_ref_block(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_REF_BLOCK);
     node_ref_block_t *ref_block = node->real;
     depth_t depth = targs->depth;
@@ -290,7 +290,7 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         assert(result);
     }
 
-    context_t *context = ctx_find_most_prev(ast->ref_context);
+    PadCtx *context = PadCtx_FindMostPrev(ast->ref_context);
     assert(context);
 
     switch (result->type) {
@@ -298,24 +298,24 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
         pushb_error("can't refer object (%d)", result->type);
         break;
     case OBJ_TYPE_NIL:
-        ctx_pushb_stdout_buf(context, "nil");
+        PadCtx_PushBackStdoutBuf(context, "nil");
         break;
     case OBJ_TYPE_INT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%ld", result->lvalue);
-        ctx_pushb_stdout_buf(context, n);
+        PadCtx_PushBackStdoutBuf(context, n);
     } break;
     case OBJ_TYPE_FLOAT: {
         char n[1024]; // very large
         snprintf(n, sizeof n, "%lf", result->float_value);
         cstr_rstrip_float_zero(n);
-        ctx_pushb_stdout_buf(context, n);
+        PadCtx_PushBackStdoutBuf(context, n);
     } break;
     case OBJ_TYPE_BOOL: {
         if (result->boolean) {
-            ctx_pushb_stdout_buf(context, "true");
+            PadCtx_PushBackStdoutBuf(context, "true");
         } else {
-            ctx_pushb_stdout_buf(context, "false");
+            PadCtx_PushBackStdoutBuf(context, "false");
         }
     } break;
     case OBJ_TYPE_IDENTIFIER: {
@@ -325,29 +325,29 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
         string_t *str = obj_to_str(obj);
-        ctx_pushb_stdout_buf(context, str_getc(str));
+        PadCtx_PushBackStdoutBuf(context, str_getc(str));
         str_del(str);
     } break;
     case OBJ_TYPE_UNICODE: {
-        ctx_pushb_stdout_buf(context, uni_getc_mb(result->unicode));
+        PadCtx_PushBackStdoutBuf(context, uni_getc_mb(result->unicode));
     } break;
     case OBJ_TYPE_ARRAY: {
-        ctx_pushb_stdout_buf(context, "(array)");
+        PadCtx_PushBackStdoutBuf(context, "(array)");
     } break;
     case OBJ_TYPE_DICT: {
-        ctx_pushb_stdout_buf(context, "(dict)");
+        PadCtx_PushBackStdoutBuf(context, "(dict)");
     } break;
     case OBJ_TYPE_FUNC: {
-        ctx_pushb_stdout_buf(context, "(function)");
+        PadCtx_PushBackStdoutBuf(context, "(function)");
     } break;
     case OBJ_TYPE_OBJECT: {
-        ctx_pushb_stdout_buf(context, "(object)");
+        PadCtx_PushBackStdoutBuf(context, "(object)");
     } break;
     case OBJ_TYPE_DEF_STRUCT: {
-        ctx_pushb_stdout_buf(context, "(struct)");
+        PadCtx_PushBackStdoutBuf(context, "(struct)");
     } break;
     case OBJ_TYPE_TYPE: {
-        ctx_pushb_stdout_buf(context, "(type)");
+        PadCtx_PushBackStdoutBuf(context, "(type)");
     } break;
     } // switch
 
@@ -358,14 +358,14 @@ trv_ref_block(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_text_block(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_TEXT_BLOCK);
-    node_text_block_t *text_block = node->real;
-    context_t *context = ctx_find_most_prev(ast->ref_context);
+    PadNodeext_block_t *text_block = node->real;
+    PadCtx *context = PadCtx_FindMostPrev(ast->ref_context);
     assert(context);
 
     if (text_block->text) {
-        ctx_pushb_stdout_buf(context, text_block->text);
+        PadCtx_PushBackStdoutBuf(context, text_block->text);
         check("store text block to buf");
     }
 
@@ -375,7 +375,7 @@ trv_text_block(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_elems(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_ELEMS);
     node_elems_t *elems = node->real;
     object_t *result = NULL;
@@ -399,10 +399,10 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
             return_trav(NULL);
         }
 
-        if (ctx_get_do_break(ast->ref_context) ||
-            ctx_get_do_continue(ast->ref_context)) {
+        if (PadCtx_GetDoBreak(ast->ref_context) ||
+            PadCtx_GetDoContinue(ast->ref_context)) {
             return_trav(result);
-        } else if (ctx_get_do_return(ast->ref_context)) {
+        } else if (PadCtx_GetDoReturn(ast->ref_context)) {
             return_trav(result);
         }
     } else if (elems->struct_) {
@@ -438,7 +438,7 @@ trv_elems(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_formula(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FORMULA);
     node_formula_t *formula = node->real;
 
@@ -471,7 +471,7 @@ trv_formula(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_STMT);
     node_stmt_t *stmt = node->real;
     object_t *result = NULL;
@@ -559,7 +559,7 @@ trv_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_import_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_IMPORT_STMT);
     node_import_stmt_t *import_stmt = node->real;
@@ -592,7 +592,7 @@ trv_import_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_IMPORT_AS_STMT);
     node_import_as_stmt_t *import_as_stmt = node->real;
@@ -657,7 +657,7 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_FROM_IMPORT_STMT);
     node_from_import_stmt_t *from_import_stmt = node->real;
@@ -718,7 +718,7 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_import_vars(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_IMPORT_VARS);
     node_import_vars_t *import_vars = node->real;
@@ -731,7 +731,7 @@ trv_import_vars(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     for (int32_t i = 0; i < nodearr_len(nodearr); ++i) {
-        node_t *node = nodearr_get(nodearr, i);
+        PadNode *node = nodearr_get(nodearr, i);
 
         check("call _trv_traverse with variable node of import variables");
         targs->ref_node = node;
@@ -758,7 +758,7 @@ trv_import_vars(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_import_var(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_IMPORT_VAR);
     node_import_var_t *import_var = node->real;
@@ -807,7 +807,7 @@ trv_import_var(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_if_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_if_stmt_t *if_stmt = node->real;
 
@@ -834,7 +834,7 @@ trv_if_stmt(ast_t *ast, trv_args_t *targs) {
 
     if (boolean) {
         for (int32_t i = 0; i < nodearr_len(if_stmt->contents); ++i) {
-            node_t *node = nodearr_get(if_stmt->contents, i);
+            PadNode *node = nodearr_get(if_stmt->contents, i);
             targs->ref_node = node;
             targs->depth = depth + 1;
             result = _trv_traverse(ast, targs);
@@ -871,7 +871,7 @@ trv_if_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_else_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_else_stmt_t *else_stmt = node->real;
     assert(else_stmt);
@@ -880,7 +880,7 @@ trv_else_stmt(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     for (int32_t i = 0; i < nodearr_len(else_stmt->contents); ++i) {
-        node_t *node = nodearr_get(else_stmt->contents, i);
+        PadNode *node = nodearr_get(else_stmt->contents, i);
         targs->ref_node = node;
         targs->depth = depth + 1;
         result = _trv_traverse(ast, targs);
@@ -896,7 +896,7 @@ trv_else_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_for_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_for_stmt_t *for_stmt = node->real;
     depth_t depth = targs->depth;
@@ -926,12 +926,12 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             }
         }
 
-        ctx_clear_jump_flags(ast->ref_context);
+        PadCtx_ClearJumpFlags(ast->ref_context);
         check("call _trv_traverse with contents");
         result = NULL;
 
         for (int32_t i = 0; i < nodearr_len(for_stmt->contents); ++i) {
-            node_t *node = nodearr_get(for_stmt->contents, i);
+            PadNode *node = nodearr_get(for_stmt->contents, i);
             targs->ref_node = node;
             targs->depth = depth + 1;
             result = _trv_traverse(ast, targs);
@@ -939,12 +939,12 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
                 goto done;
             }
 
-            if (ctx_get_do_return(ast->ref_context)) {
+            if (PadCtx_GetDoReturn(ast->ref_context)) {
                 return_trav(result);
-            } else if (ctx_get_do_break(ast->ref_context)) {
+            } else if (PadCtx_GetDoBreak(ast->ref_context)) {
                 obj_del(result);
                 break;
-            } else if (ctx_get_do_continue(ast->ref_context)) {
+            } else if (PadCtx_GetDoContinue(ast->ref_context)) {
                 obj_del(result);
                 break;
             }
@@ -952,7 +952,7 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
             obj_del(result);
         }  // for
 
-        if (ctx_get_do_break(ast->ref_context)) {
+        if (PadCtx_GetDoBreak(ast->ref_context)) {
             break;
         }
 
@@ -970,19 +970,19 @@ trv_for_stmt(ast_t *ast, trv_args_t *targs) {
     }  // for
 
 done:
-    ctx_clear_jump_flags(ast->ref_context);
+    PadCtx_ClearJumpFlags(ast->ref_context);
     return_trav(NULL);
 }
 
 static object_t *
 trv_break_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_BREAK_STMT);
 
     check("set true at do break flag");
-    ctx_set_do_break(ast->ref_context, true);
+    PadCtx_SetDoBreak(ast->ref_context, true);
 
     return_trav(NULL);
 }
@@ -990,12 +990,12 @@ trv_break_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_continue_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_CONTINUE_STMT);
 
     check("set true at do continue flag");
-    ctx_set_do_continue(ast->ref_context, true);
+    PadCtx_SetDoContinue(ast->ref_context, true);
 
     return_trav(NULL);
 }
@@ -1003,7 +1003,7 @@ trv_continue_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_return_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_RETURN_STMT);
     node_return_stmt_t *return_stmt = node->real;
@@ -1012,9 +1012,9 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     if (!return_stmt->formula) {
-        context_t *ref_context = PadAst_GetRefCtx(ast);
+        PadCtx *ref_context = PadAst_GetRefCtx(ast);
         gc_t *ref_gc = PadAst_GetRefGc(ast);
-        ctx_set_do_return(ref_context, true);
+        PadCtx_SetDoReturn(ref_context, true);
         object_t *ret = obj_new_nil(ref_gc);
         return_trav(ret);
     }
@@ -1068,8 +1068,8 @@ again:
     }
 
     check("set true at do return flag");
-    context_t *ref_context = PadAst_GetRefCtx(ast);
-    ctx_set_do_return(ref_context, true);
+    PadCtx *ref_context = PadAst_GetRefCtx(ast);
+    PadCtx_SetDoReturn(ref_context, true);
 
     assert(ret);
     return_trav(ret);
@@ -1087,7 +1087,7 @@ shallow_assign_varmap(object_dict_t *dst, object_dict_t *src) {
 static object_t *
 trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_BLOCK_STMT);
     node_block_stmt_t *block_stmt = node->real;
@@ -1114,14 +1114,14 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
 
     // push back scope
     ast_t *ref_ast = func->ref_ast;
-    context_t *ref_context = PadAst_GetRefCtx(ref_ast);
-    ctx_pushb_scope(ref_context);
+    PadCtx *ref_context = PadAst_GetRefCtx(ref_ast);
+    PadCtx_PushBackScope(ref_context);
 
     // extract variables from injector's varmap to current scope
     object_dict_t *src_varmap = block_stmt->inject_varmap;
     if (src_varmap) {
         assert(src_varmap);
-        object_dict_t *dst_varmap = ctx_get_ref_varmap_cur_scope(ref_context);
+        object_dict_t *dst_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
         assert(dst_varmap);
         shallow_assign_varmap(dst_varmap, src_varmap);
     }
@@ -1129,7 +1129,7 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     // execute contents nodes
     node_array_t *contents = block_stmt->contents;
     for (int32_t i = 0; i < nodearr_len(contents); ++i) {
-        node_t *content = nodearr_get(contents, i);
+        PadNode *content = nodearr_get(contents, i);
         assert(content);
         targs->ref_node = content;
         targs->depth = depth + 1;
@@ -1142,14 +1142,14 @@ trv_block_stmt(ast_t *ast, trv_args_t *targs) {
     }
 
 fail:
-    ctx_popb_scope(ref_context);
+    PadCtx_PopBackScope(ref_context);
     return_trav(NULL);
 }
 
 static object_t *
 trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_INJECT_STMT);
     node_inject_stmt_t *inject_stmt = node->real;
@@ -1201,8 +1201,8 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
 
     // inject varmap at block
     ast_t *ref_ast = ast;
-    context_t *ref_context = PadAst_GetRefCtx(ref_ast);
-    object_dict_t *ref_varmap = ctx_get_ref_varmap_cur_scope(ref_context);
+    PadCtx *ref_context = PadAst_GetRefCtx(ref_ast);
+    object_dict_t *ref_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
     object_dict_t *varmap = objdict_shallow_copy(ref_varmap);
     block_stmt->inject_varmap = varmap;
 
@@ -1214,7 +1214,7 @@ trv_inject_stmt(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_def_struct(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_STRUCT);
     node_struct_t *struct_ = node->real;
@@ -1231,8 +1231,8 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
     }
 
     // parse elems
-    context_t *struct_ctx = ctx_new(ast->ref_gc);
-    ctx_set_ref_prev(struct_ctx, PadAst_GetRefCtx(ast));
+    PadCtx *struct_ctx = PadCtx_New(ast->ref_gc);
+    PadCtx_SetRefPrev(struct_ctx, PadAst_GetRefCtx(ast));
 
     ast_t *struct_ast = PadAst_New(ast->ref_config);
     PadAst_SetRefCtx(struct_ast, struct_ctx);
@@ -1278,7 +1278,7 @@ trv_def_struct(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_content(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_CONTENT);
     node_content_t *content = node->real;
@@ -1386,13 +1386,13 @@ assign_to_chain_dot(
     ast_t *ast,
     trv_args_t *targs,
     object_array_t *owners,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *rhs
 ) {
     object_t *ref_owner = objarr_get_last(owners);
-    object_t *child = chain_obj_get_obj(co);
+    object_t *child = PadChainObj_GetObj(co);
     PadErrStack *errstack = ast->error_stack;
-    context_t *ref_context = ast->ref_context;
+    PadCtx *ref_context = ast->ref_context;
 
 again1:
     switch (rhs->type) {
@@ -1458,7 +1458,7 @@ assign_to_chain_call(
     ast_t *ast,
     trv_args_t *targs,
     object_array_t *owners,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *rhs
 ) {
     object_t *obj = refer_chain_call(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
@@ -1479,11 +1479,11 @@ assign_to_chain_array_index(
     ast_t *ast,
     trv_args_t *targs,
     object_t *owner,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *rhs
 ) {
     assert(owner->type == OBJ_TYPE_ARRAY);
-    const object_t *idxobj = chain_obj_get_obj(co);
+    const object_t *idxobj = PadChainObj_GetObj(co);
 
 again:
     switch (idxobj->type) {
@@ -1537,11 +1537,11 @@ assign_to_chain_dict_index(
     ast_t *ast,
     trv_args_t *targs,
     object_t *owner,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *rhs
 ) {
     assert(owner->type == OBJ_TYPE_DICT);
-    object_t *idxobj = chain_obj_get_obj(co);
+    object_t *idxobj = PadChainObj_GetObj(co);
 
 bob:
     switch (idxobj->type) {
@@ -1599,7 +1599,7 @@ assign_to_chain_index(
     ast_t *ast,
     trv_args_t *targs,
     object_array_t *owners,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *rhs
 ) {
     object_t *owner = objarr_get_last(owners);
@@ -1650,13 +1650,13 @@ assign_to_chain_three_objs(
     ast_t *ast,
     trv_args_t *targs,
     object_array_t *owners,
-    chain_object_t *co,
+    PadChainObj *co,
     object_t *rhs
 ) {
     assert(ast && owners && co);
 
-    switch (chain_obj_getc_type(co)) {
-    case CHAIN_OBJ_TYPE_DOT: {
+    switch (PadChainObj_GetcType(co)) {
+    case PAD_CHAIN_OBJ_TYPE__DOT: {
         object_t *result = assign_to_chain_dot(ast, targs, owners, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to chain dot");
@@ -1664,7 +1664,7 @@ assign_to_chain_three_objs(
         }
         return result;
     } break;
-    case CHAIN_OBJ_TYPE_CALL: {
+    case PAD_CHAIN_OBJ_TYPE__CALL: {
         object_t *result = assign_to_chain_call(ast, targs, owners, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to chain call");
@@ -1672,7 +1672,7 @@ assign_to_chain_three_objs(
         }
         return result;
     } break;
-    case CHAIN_OBJ_TYPE_INDEX: {
+    case PAD_CHAIN_OBJ_TYPE__INDEX: {
         object_t *result = assign_to_chain_index(ast, targs, owners, co, rhs);
         if (PadAst_HasErrs(ast)) {
             pushb_error("failed to assign to chain index");
@@ -1697,9 +1697,9 @@ trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
 
     object_t *operand = obj_get_chain_operand(lhs);
     assert(operand);
-    chain_objects_t *cos = obj_get_chain_objs(lhs);
+    PadChainObjs *cos = obj_get_chain_objs(lhs);
     assert(cos);
-    int32_t coslen = chain_objs_len(cos);
+    int32_t coslen = PadChainObjs_Len(cos);
 
     if (!coslen) {
         targs->lhs_obj = operand;
@@ -1714,7 +1714,7 @@ trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
     objarr_pushb(owners, operand);
 
     for (int32_t i = 0; i < coslen-1; ++i) {
-        chain_object_t *co = chain_objs_get(cos, i);
+        PadChainObj *co = PadChainObjs_Get(cos, i);
         assert(co);
 
         last = _refer_chain_three_objs(owners, co);
@@ -1727,7 +1727,7 @@ trv_assign_to_chain(ast_t *ast, trv_args_t *targs) {
         objarr_pushb(owners, last);
     }
 
-    chain_object_t *co = chain_objs_get(cos, coslen-1);
+    PadChainObj *co = PadChainObjs_Get(cos, coslen-1);
     assert(co);
     last = assign_to_chain_three_objs(ast, targs, owners, co, rhs);
     if (PadAst_HasErrs(ast)) {
@@ -1800,7 +1800,7 @@ trv_calc_assign(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_simple_assign(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_SIMPLE_ASSIGN);
     node_simple_assign_t *simple_assign = node->real;
@@ -1813,7 +1813,7 @@ trv_simple_assign(ast_t *ast, trv_args_t *targs) {
     }
 
     int32_t arrlen = nodearr_len(simple_assign->nodearr);
-    node_t *rnode = nodearr_get(simple_assign->nodearr, arrlen-1);
+    PadNode *rnode = nodearr_get(simple_assign->nodearr, arrlen-1);
     assert(rnode->type == NODE_TYPE_TEST);
 
     check("call _trv_traverse with right test");
@@ -1826,7 +1826,7 @@ trv_simple_assign(ast_t *ast, trv_args_t *targs) {
     assert(rhs);
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
-        node_t *lnode = nodearr_get(simple_assign->nodearr, i);
+        PadNode *lnode = nodearr_get(simple_assign->nodearr, i);
         assert(lnode->type == NODE_TYPE_TEST);
 
         check("call _trv_traverse with test left test");
@@ -1860,7 +1860,7 @@ trv_simple_assign(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_assign(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node->type == NODE_TYPE_ASSIGN);
     assert(targs && targs->ref_node);
     node_assign_list_t *assign_list = node->real;
@@ -1878,7 +1878,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
         return_trav(result); \
 
     int32_t arrlen = nodearr_len(assign_list->nodearr);
-    node_t *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
+    PadNode *rnode = nodearr_get(assign_list->nodearr, arrlen-1);
     assert(rnode->type == NODE_TYPE_TEST);
 
     check("call _trv_traverse with test rnode");
@@ -1892,7 +1892,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
         // assign node has not operators, operand only
-        node_t *lnode = nodearr_get(assign_list->nodearr, i);
+        PadNode *lnode = nodearr_get(assign_list->nodearr, i);
         assert(lnode->type == NODE_TYPE_TEST);
 
         check("call _trv_traverse with test lnode");
@@ -1930,7 +1930,7 @@ trv_assign(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_assign_list(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node->type == NODE_TYPE_ASSIGN_LIST);
     node_assign_list_t *assign_list = targs->ref_node->real;
 
@@ -1943,7 +1943,7 @@ trv_assign_list(ast_t *ast, trv_args_t *targs) {
     object_array_t *objarr = objarr_new();
 
     int32_t arrlen = nodearr_len(assign_list->nodearr);
-    node_t *assign = nodearr_get(assign_list->nodearr, 0);
+    PadNode *assign = nodearr_get(assign_list->nodearr, 0);
     assert(assign->type == NODE_TYPE_ASSIGN);
 
     check("call _trv_traverse with assign assign");
@@ -1995,7 +1995,7 @@ done:
 static object_t *
 trv_multi_assign(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_MULTI_ASSIGN);
     node_multi_assign_t *multi_assign = node->real;
@@ -2008,7 +2008,7 @@ trv_multi_assign(ast_t *ast, trv_args_t *targs) {
     }
 
     int32_t arrlen = nodearr_len(multi_assign->nodearr);
-    node_t *rnode = nodearr_get(multi_assign->nodearr, arrlen-1);
+    PadNode *rnode = nodearr_get(multi_assign->nodearr, arrlen-1);
     assert(rnode->type == NODE_TYPE_TEST_LIST);
 
     check("call _trv_traverse with right test_list node");
@@ -2021,7 +2021,7 @@ trv_multi_assign(ast_t *ast, trv_args_t *targs) {
     assert(rhs);
 
     for (int32_t i = arrlen-2; i >= 0; --i) {
-        node_t *lnode = nodearr_get(multi_assign->nodearr, i);
+        PadNode *lnode = nodearr_get(multi_assign->nodearr, i);
         assert(lnode->type == NODE_TYPE_TEST_LIST);
         check("call _trv_traverse with left test_list node");
         targs->ref_node = lnode;
@@ -2056,16 +2056,16 @@ trv_multi_assign(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_test_list(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
-    node_test_list_t *test_list = node->real;
+    PadNodeest_list_t *test_list = node->real;
     assert(test_list);
 
     depth_t depth = targs->depth;
 
     assert(nodearr_len(test_list->nodearr));
     if (nodearr_len(test_list->nodearr) == 1) {
-        node_t *test = nodearr_get(test_list->nodearr, 0);
+        PadNode *test = nodearr_get(test_list->nodearr, 0);
         check("call _trv_traverse")
         targs->ref_node = test;
         targs->depth = depth + 1;
@@ -2076,7 +2076,7 @@ trv_test_list(ast_t *ast, trv_args_t *targs) {
     object_array_t *arr = objarr_new();
 
     for (int32_t i = 0; i < nodearr_len(test_list->nodearr); ++i) {
-        node_t *test = nodearr_get(test_list->nodearr, i);
+        PadNode *test = nodearr_get(test_list->nodearr, i);
         check("call _trv_traverse");
         targs->ref_node = test;
         targs->depth = depth + 1;
@@ -2095,7 +2095,7 @@ trv_test_list(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_call_args(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_call_args_t *call_args = node->real;
     assert(call_args);
@@ -2104,7 +2104,7 @@ trv_call_args(ast_t *ast, trv_args_t *targs) {
     object_array_t *arr = objarr_new();
 
     for (int32_t i = 0; i < nodearr_len(call_args->nodearr); ++i) {
-        node_t *test = nodearr_get(call_args->nodearr, i);
+        PadNode *test = nodearr_get(call_args->nodearr, i);
         check("call _trv_traverse");
         targs->ref_node = test;
         targs->depth = depth + 1;
@@ -2142,9 +2142,9 @@ trv_call_args(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_test(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_TEST);
-    node_test_t *test = node->real;
+    PadNodeest_t *test = node->real;
 
     depth_t depth = targs->depth;
 
@@ -2165,10 +2165,10 @@ trv_roll_identifier_lhs(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    context_t *ref_context = obj_get_idn_ref_context(lhs);
+    PadCtx *ref_context = obj_get_idn_ref_context(lhs);
     assert(ref_context);
     const char *idn = obj_getc_idn_name(lhs);
-    object_t *lvar = ctx_find_var_ref_all(ref_context, idn);
+    object_t *lvar = PadCtx_FindVarRefAll(ref_context, idn);
     if (!lvar) {
         pushb_error("\"%s\" is not defined", idn);
         return_trav(NULL);
@@ -2192,9 +2192,9 @@ trv_roll_identifier_rhs(ast_t *ast, trv_args_t *targs) {
 
     depth_t depth = targs->depth;
 
-    context_t *ref_context = obj_get_idn_ref_context(rhs);
+    PadCtx *ref_context = obj_get_idn_ref_context(rhs);
     const char *idn = obj_getc_idn_name(rhs);
-    object_t *rvar = ctx_find_var_ref_all(ref_context, idn);
+    object_t *rvar = PadCtx_FindVarRefAll(ref_context, idn);
     if (!rvar) {
         pushb_error("\"%s\" is not defined in roll identifier rhs",
             obj_getc_idn_name(rhs));
@@ -2446,7 +2446,7 @@ trv_compare_or_bool(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *rvar = ctx_find_var_ref(ast->ref_context, obj_getc_idn_name(rhs));
+        object_t *rvar = PadCtx_FindVarRef(ast->ref_context, obj_getc_idn_name(rhs));
         if (!rvar) {
             pushb_error("%s is not defined compare or bool", str_getc(rhs->identifier.name));
             return_trav(NULL);
@@ -3260,14 +3260,14 @@ trv_compare_or(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_or_test(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_OR_TEST);
     node_or_test_t *or_test = node->real;
 
     depth_t depth = targs->depth;
 
-    node_t *lnode = nodearr_get(or_test->nodearr, 0);
+    PadNode *lnode = nodearr_get(or_test->nodearr, 0);
 
     check("call _trv_traverse");
     targs->ref_node = lnode;
@@ -3279,7 +3279,7 @@ trv_or_test(ast_t *ast, trv_args_t *targs) {
     assert(lhs);
 
     for (int i = 1; i < nodearr_len(or_test->nodearr); ++i) {
-        node_t *rnode = nodearr_get(or_test->nodearr, i);
+        PadNode *rnode = nodearr_get(or_test->nodearr, i);
         check("call _trv_traverse");
         targs->ref_node = rnode;
         targs->depth = depth + 1;
@@ -4298,13 +4298,13 @@ trv_compare_and(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_and_test(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     assert(node->type == NODE_TYPE_AND_TEST);
     node_and_test_t *and_test = node->real;
     depth_t depth = targs->depth;
 
-    node_t *lnode = nodearr_get(and_test->nodearr, 0);
+    PadNode *lnode = nodearr_get(and_test->nodearr, 0);
     check("call _trv_traverse with not_test");
     targs->ref_node = lnode;
     targs->depth = depth + 1;
@@ -4315,7 +4315,7 @@ trv_and_test(ast_t *ast, trv_args_t *targs) {
     assert(lhs);
 
     for (int i = 1; i < nodearr_len(and_test->nodearr); ++i) {
-        node_t *rnode = nodearr_get(and_test->nodearr, i);
+        PadNode *rnode = nodearr_get(and_test->nodearr, i);
         check("call _trv_traverse with not_test");
         targs->ref_node = rnode;
         targs->depth = depth + 1;
@@ -4369,7 +4369,7 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
         return_trav(obj);
     } break;
     case OBJ_TYPE_IDENTIFIER: {
-        object_t *var = ctx_find_var_ref(ast->ref_context, str_getc(operand->identifier.name));
+        object_t *var = PadCtx_FindVarRef(ast->ref_context, str_getc(operand->identifier.name));
         if (!var) {
             pushb_error("\"%s\" is not defined compare not", str_getc(operand->identifier.name));
             return_trav(NULL);
@@ -4414,7 +4414,7 @@ trv_compare_not(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_not_test(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_not_test_t *not_test = node->real;
 
@@ -6592,7 +6592,7 @@ trv_compare_comparison(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_comparison(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_comparison_t *comparison = node->real;
     assert(comparison);
@@ -6600,7 +6600,7 @@ trv_comparison(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     if (nodearr_len(comparison->nodearr) == 1) {
-        node_t *node = nodearr_get(comparison->nodearr, 0);
+        PadNode *node = nodearr_get(comparison->nodearr, 0);
         assert(node->type == NODE_TYPE_ASSCALC);
 
         check("call _trv_traverse with asscalc");
@@ -6609,7 +6609,7 @@ trv_comparison(ast_t *ast, trv_args_t *targs) {
         object_t *result = _trv_traverse(ast, targs);
         return_trav(result);
     } else if (nodearr_len(comparison->nodearr) >= 3) {
-        node_t *lnode = nodearr_get(comparison->nodearr, 0);
+        PadNode *lnode = nodearr_get(comparison->nodearr, 0);
         assert(lnode->type == NODE_TYPE_ASSCALC);
         check("call _trv_traverse with asscalc");
         targs->ref_node = lnode;
@@ -6621,12 +6621,12 @@ trv_comparison(ast_t *ast, trv_args_t *targs) {
         assert(lhs);
 
         for (int i = 1; i < nodearr_len(comparison->nodearr); i += 2) {
-            node_t *node = nodearr_get(comparison->nodearr, i);
+            PadNode *node = nodearr_get(comparison->nodearr, i);
             assert(node->type == NODE_TYPE_COMP_OP);
             node_comp_op_t *node_comp_op = node->real;
             assert(node_comp_op);
 
-            node_t *rnode = nodearr_get(comparison->nodearr, i+1);
+            PadNode *rnode = nodearr_get(comparison->nodearr, i+1);
             assert(rnode->type == NODE_TYPE_ASSCALC);
             assert(rnode);
             check("call _trv_traverse with asscalc");
@@ -7189,7 +7189,7 @@ trv_calc_expr(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_expr(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_expr_t *expr = node->real;
     assert(expr);
@@ -7197,14 +7197,14 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     if (nodearr_len(expr->nodearr) == 1) {
-        node_t *node = nodearr_get(expr->nodearr, 0);
+        PadNode *node = nodearr_get(expr->nodearr, 0);
         check("call _trv_traverse");
         targs->ref_node = node;
         targs->depth = depth + 1;
         object_t *result = _trv_traverse(ast, targs);
         return_trav(result);
     } else if (nodearr_len(expr->nodearr) >= 3) {
-        node_t *lnode = nodearr_get(expr->nodearr, 0);
+        PadNode *lnode = nodearr_get(expr->nodearr, 0);
         targs->ref_node = lnode;
         targs->depth = depth + 1;
         object_t *lhs = _trv_traverse(ast, targs);
@@ -7214,11 +7214,11 @@ trv_expr(ast_t *ast, trv_args_t *targs) {
         assert(lhs);
 
         for (int i = 1; i < nodearr_len(expr->nodearr); i += 2) {
-            node_t *node = nodearr_get(expr->nodearr, i);
+            PadNode *node = nodearr_get(expr->nodearr, i);
             node_add_sub_op_t *op = node->real;
             assert(op);
 
-            node_t *rnode = nodearr_get(expr->nodearr, i+1);
+            PadNode *rnode = nodearr_get(expr->nodearr, i+1);
             assert(rnode);
             check("call _trv_traverse");
             targs->ref_node = rnode;
@@ -7916,15 +7916,15 @@ trv_calc_term(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_term(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
-    node_term_t *term = node->real;
+    PadNodeerm_t *term = node->real;
     assert(term);
 
     depth_t depth = targs->depth;
 
     if (nodearr_len(term->nodearr) == 1) {
-        node_t *node = nodearr_get(term->nodearr, 0);
+        PadNode *node = nodearr_get(term->nodearr, 0);
         assert(node->type == NODE_TYPE_NEGATIVE);
         check("call _trv_traverse with dot");
         targs->ref_node = node;
@@ -7932,7 +7932,7 @@ trv_term(ast_t *ast, trv_args_t *targs) {
         object_t *result = _trv_traverse(ast, targs);
         return_trav(result);
     } else if (nodearr_len(term->nodearr) >= 3) {
-        node_t *lnode = nodearr_get(term->nodearr, 0);
+        PadNode *lnode = nodearr_get(term->nodearr, 0);
         assert(lnode->type == NODE_TYPE_NEGATIVE);
         check("call _trv_traverse with dot");
         targs->ref_node = lnode;
@@ -7944,12 +7944,12 @@ trv_term(ast_t *ast, trv_args_t *targs) {
         assert(lhs);
 
         for (int i = 1; i < nodearr_len(term->nodearr); i += 2) {
-            node_t *node = nodearr_get(term->nodearr, i);
+            PadNode *node = nodearr_get(term->nodearr, i);
             assert(node->type == NODE_TYPE_MUL_DIV_OP);
             node_mul_div_op_t *op = node->real;
             assert(op);
 
-            node_t *rnode = nodearr_get(term->nodearr, i+1);
+            PadNode *rnode = nodearr_get(term->nodearr, i+1);
             assert(rnode->type == NODE_TYPE_NEGATIVE);
             check("call _trv_traverse with index");
             targs->ref_node = rnode;
@@ -7983,7 +7983,7 @@ trv_term(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_negative(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_negative_t *negative = node->real;
     assert(negative);
@@ -8048,7 +8048,7 @@ again:
 static object_t *
 trv_chain(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_chain_t *chain = node->real;
     assert(chain);
@@ -8056,7 +8056,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
     depth_t depth = targs->depth;
 
     // get operand
-    node_t *factor = chain->factor;
+    PadNode *factor = chain->factor;
     assert(factor);
 
     targs->ref_node = factor;
@@ -8069,19 +8069,19 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
     assert(operand);
 
     // get objects
-    chain_nodes_t *cns = chain->chain_nodes;
+    PadChainNodes *cns = chain->chain_nodes;
     assert(cns);
-    if (!chain_nodes_len(cns)) {
+    if (!PadChainNodes_Len(cns)) {
         return_trav(operand);
     }
 
     // convert chain-nodes to chain-objects
-    chain_objects_t *chobjs = chain_objs_new();
+    PadChainObjs *chobjs = PadChainObjs_New();
 
-    for (int32_t i = 0; i < chain_nodes_len(cns); ++i) {
-        chain_node_t *cn = chain_nodes_get(cns, i);
+    for (int32_t i = 0; i < PadChainNodes_Len(cns); ++i) {
+        PadChainNode *cn = PadChainNodes_Get(cns, i);
         assert(cn);
-        node_t *node = chain_node_get_node(cn);
+        PadNode *node = PadChainNode_GetNode(cn);
         assert(node);
 
         targs->ref_node = node;
@@ -8092,22 +8092,22 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
             goto fail;
         }
 
-        chain_object_type_t type;
-        switch (chain_node_getc_type(cn)) {
-        case CHAIN_NODE_TYPE_DOT:   type = CHAIN_OBJ_TYPE_DOT;   break;
-        case CHAIN_NODE_TYPE_INDEX: type = CHAIN_OBJ_TYPE_INDEX; break;
-        case CHAIN_NODE_TYPE_CALL:  type = CHAIN_OBJ_TYPE_CALL;  break;
+        PadChainObjType type;
+        switch (PadChainNode_GetcType(cn)) {
+        case PAD_CHAIN_NODE_TYPE__DOT:   type = PAD_CHAIN_OBJ_TYPE__DOT;   break;
+        case PAD_CHAIN_NODE_TYPE__INDEX: type = PAD_CHAIN_OBJ_TYPE__INDEX; break;
+        case PAD_CHAIN_NODE_TYPE__CALL:  type = PAD_CHAIN_OBJ_TYPE__CALL;  break;
         default:
-            pushb_error("invalid chain node type (%d)", chain_node_getc_type(cn));
+            pushb_error("invalid chain node type (%d)", PadChainNode_GetcType(cn));
             goto fail;
             break;
         }
 
         obj_inc_ref(elem);
-        chain_object_t *chobj = chain_obj_new(type, mem_move(elem));
-        chain_objs_moveb(chobjs, mem_move(chobj));
+        PadChainObj *chobj = PadChainObj_New(type, mem_move(elem));
+        PadChainObjs_MoveBack(chobjs, mem_move(chobj));
     }
-    assert(chain_objs_len(chobjs) != 0);
+    assert(PadChainObjs_Len(chobjs) != 0);
 
     // done
     obj_inc_ref(operand);
@@ -8135,7 +8135,7 @@ trv_chain(ast_t *ast, trv_args_t *targs) {
 
 fail:
     obj_del(operand);
-    chain_objs_del(chobjs);
+    PadChainObjs_Del(chobjs);
     return_trav(NULL);
 }
 
@@ -8208,7 +8208,7 @@ trv_calc_asscalc_add_ass_identifier_int(ast_t *ast, trv_args_t *targs) {
     const char *idnname = str_getc(idnobj->identifier.name);
     object_t *intobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
@@ -8265,7 +8265,7 @@ trv_calc_asscalc_add_ass_identifier_float(ast_t *ast, trv_args_t *targs) {
     const char *idnname = str_getc(idnobj->identifier.name);
     object_t *floatobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
 
@@ -8320,7 +8320,7 @@ trv_calc_asscalc_add_ass_identifier_bool(ast_t *ast, trv_args_t *targs) {
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
     object_t *boolobj = pull_ref_all(idnobj);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == OBJ_TYPE_IDENTIFIER);
@@ -8378,7 +8378,7 @@ trv_calc_asscalc_add_ass_identifier_string(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *unicodeobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
@@ -9108,7 +9108,7 @@ trv_calc_asscalc_sub_ass_idn_int(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *intobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9155,7 +9155,7 @@ trv_calc_asscalc_sub_ass_idn_float(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *floatobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9201,7 +9201,7 @@ trv_calc_asscalc_sub_ass_idn_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *boolobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9318,7 +9318,7 @@ trv_calc_asscalc_mul_ass_int(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *intobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9365,7 +9365,7 @@ trv_calc_asscalc_mul_ass_float(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *floatobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9411,7 +9411,7 @@ trv_calc_asscalc_mul_ass_bool(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *boolobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9460,7 +9460,7 @@ trv_calc_asscalc_mul_ass_string(ast_t *ast, trv_args_t *targs) {
     tready();
     object_t *idnobj = targs->lhs_obj;
     const char *idnname = str_getc(idnobj->identifier.name);
-    object_dict_t *varmap = ctx_get_varmap(idnobj->identifier.ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     object_t *unicodeobj = pull_ref_all(idnobj);
     object_t *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9960,7 +9960,7 @@ trv_calc_asscalc(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_asscalc(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_ASSCALC);
     node_asscalc_t *asscalc = node->real;
     assert(asscalc);
@@ -9973,7 +9973,7 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
     return_trav(result); \
 
     if (nodearr_len(asscalc->nodearr) == 1) {
-        node_t *node = nodearr_get(asscalc->nodearr, 0);
+        PadNode *node = nodearr_get(asscalc->nodearr, 0);
         assert(node->type == NODE_TYPE_EXPR);
         check("call _trv_traverse with expr");
         targs->ref_node = node;
@@ -9982,7 +9982,7 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
         _return(result);
     } else if (nodearr_len(asscalc->nodearr) >= 3) {
         node_array_t *nodearr = asscalc->nodearr;
-        node_t *rnode = nodearr_get_last(nodearr);
+        PadNode *rnode = nodearr_get_last(nodearr);
         assert(rnode->type == NODE_TYPE_EXPR);
         check("call _trv_traverse");
         targs->ref_node = rnode;
@@ -9995,12 +9995,12 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
         assert(rhs);
 
         for (int i = nodearr_len(nodearr) - 2; i > 0; i -= 2) {
-            node_t *node = nodearr_get(nodearr, i);
+            PadNode *node = nodearr_get(nodearr, i);
             assert(node->type == NODE_TYPE_AUGASSIGN);
             node_augassign_t *op = node->real;
             assert(op);
 
-            node_t *lnode = nodearr_get(nodearr, i - 1);
+            PadNode *lnode = nodearr_get(nodearr, i - 1);
             assert(lnode);
             assert(lnode->type == NODE_TYPE_EXPR);
             check("call _trv_traverse");
@@ -10037,7 +10037,7 @@ trv_asscalc(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_factor(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FACTOR);
     node_factor_t *factor = node->real;
     assert(factor);
@@ -10063,7 +10063,7 @@ trv_factor(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_atom(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_ATOM);
     node_atom_t *atom = node->real;
     assert(atom);
@@ -10124,7 +10124,7 @@ trv_atom(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_nil(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_NIL);
     node_nil_t *nil = node->real;
     assert(nil);
@@ -10136,7 +10136,7 @@ trv_nil(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_false(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FALSE);
     node_false_t *false_ = node->real;
     assert(false_);
@@ -10147,9 +10147,9 @@ trv_false(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_true(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_TRUE);
-    node_true_t *true_ = node->real;
+    PadNoderue_t *true_ = node->real;
     assert(true_);
     assert(true_->boolean);
     return_trav(obj_new_true(ast->ref_gc));
@@ -10158,7 +10158,7 @@ trv_true(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_digit(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_DIGIT);
     node_digit_t *digit = node->real;
     assert(digit);
@@ -10169,7 +10169,7 @@ trv_digit(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_float(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FLOAT);
     node_float_t *float_ = node->real;
     assert(float_);
@@ -10180,7 +10180,7 @@ trv_float(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_string(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_STRING);
     node_string_t *string = node->real;
     assert(string);
@@ -10197,7 +10197,7 @@ trv_string(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_array_elems(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_ARRAY_ELEMS);
     node_array_elems_t *array_elems = node->real;
     assert(array_elems);
@@ -10206,7 +10206,7 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
     object_array_t *objarr = objarr_new();
 
     for (int32_t i = 0; i < nodearr_len(array_elems->nodearr); ++i) {
-        node_t *n = nodearr_get(array_elems->nodearr, i);
+        PadNode *n = nodearr_get(array_elems->nodearr, i);
         targs->ref_node = n;
         targs->depth = depth + 1;
         object_t *result = _trv_traverse(ast, targs);
@@ -10249,7 +10249,7 @@ trv_array_elems(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_array(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_ARRAY);
     node_array_t_ *array = node->real;
     assert(array);
@@ -10265,7 +10265,7 @@ trv_array(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_dict_elem(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_DICT_ELEM);
     node_dict_elem_t *dict_elem = node->real;
     assert(dict_elem);
@@ -10313,7 +10313,7 @@ trv_dict_elem(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_dict_elems(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_DICT_ELEMS);
     node_dict_elems_t *dict_elems = node->real;
     assert(dict_elems);
@@ -10322,7 +10322,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
     object_dict_t *objdict = objdict_new(ast->ref_gc);
 
     for (int32_t i = 0; i < nodearr_len(dict_elems->nodearr); ++i) {
-        node_t *dict_elem = nodearr_get(dict_elems->nodearr, i);
+        PadNode *dict_elem = nodearr_get(dict_elems->nodearr, i);
         check("call _trv_traverse with dict_elem");
         targs->ref_node = dict_elem;
         targs->depth = depth + 1;
@@ -10384,7 +10384,7 @@ trv_dict_elems(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_dict(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     _node_dict_t *dict = node->real;
     assert(dict && node->type == NODE_TYPE_DICT);
@@ -10400,13 +10400,13 @@ trv_dict(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_identifier(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node);
     node_identifier_t *identifier = node->real;
     assert(identifier && node->type == NODE_TYPE_IDENTIFIER);
     object_array_t *ref_owners = targs->ref_owners;
 
-    context_t *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
+    PadCtx *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
     if (!ref_context) {
         pushb_error("failed to get context by owners");
         return_trav(NULL);
@@ -10423,7 +10423,7 @@ trv_identifier(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_def(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_DEF);
     node_def_t *def = node->real;
     assert(def);
@@ -10438,7 +10438,7 @@ trv_def(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_func_def(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FUNC_DEF);
     node_func_def_t *func_def = node->real;
     assert(func_def);
@@ -10523,7 +10523,7 @@ trv_func_def(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_func_def_params(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FUNC_DEF_PARAMS);
     node_func_def_params_t *func_def_params = node->real;
     assert(func_def_params);
@@ -10537,13 +10537,13 @@ trv_func_def_params(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FUNC_DEF_ARGS);
     node_func_def_args_t *func_def_args = node->real;
     assert(func_def_args && node->type == NODE_TYPE_FUNC_DEF_ARGS);
     object_array_t *ref_owners = targs->ref_owners;
 
-    context_t *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
+    PadCtx *ref_context = get_context_by_owners(ref_owners, ast->ref_context);
     if (!ref_context) {
         pushb_error("failed to get context by owners");
         return_trav(NULL);
@@ -10552,7 +10552,7 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
     object_array_t *args = objarr_new();
 
     for (int32_t i = 0; i < nodearr_len(func_def_args->identifiers); ++i) {
-        node_t *n = nodearr_get(func_def_args->identifiers, i);
+        PadNode *n = nodearr_get(func_def_args->identifiers, i);
         assert(n);
         assert(n->type == NODE_TYPE_IDENTIFIER);
         node_identifier_t *nidn = n->real;
@@ -10572,7 +10572,7 @@ trv_func_def_args(ast_t *ast, trv_args_t *targs) {
 static object_t *
 trv_func_extends(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     assert(node && node->type == NODE_TYPE_FUNC_EXTENDS);
     node_func_extends_t *func_extends = node->real;
     assert(func_extends);
@@ -10593,7 +10593,7 @@ trv_func_extends(ast_t *ast, trv_args_t *targs) {
 object_t *
 _trv_traverse(ast_t *ast, trv_args_t *targs) {
     tready();
-    node_t *node = targs->ref_node;
+    PadNode *node = targs->ref_node;
     if (!node) {
         return_trav(NULL);
     }
@@ -10907,31 +10907,31 @@ _trv_traverse(ast_t *ast, trv_args_t *targs) {
 
 ast_t *
 trv_import_builtin_modules(ast_t *ast) {
-    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
     object_t *mod = NULL;
 
     // builtin functions
-    mod = builtin_module_new(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin unicode
-    mod = builtin_unicode_module_new(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltUnicodeMod(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin array
-    mod = builtin_array_module_new(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltAryMod(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin dict
-    mod = builtin_dict_module_new(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltDictMod(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin alias
-    mod = builtin_alias_module_new(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltAliasMod(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, mod->module.name, mem_move(mod));
 
     // builtin opts
-    mod = builtin_opts_module_new(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
     objdict_move(varmap, mod->module.name, mem_move(mod));
 
     return ast;
@@ -10939,7 +10939,7 @@ trv_import_builtin_modules(ast_t *ast) {
 
 ast_t *
 trv_define_builtin_types(ast_t *ast) {
-    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
     object_t *obj = NULL;
 
     obj = obj_new_type(ast->ref_gc, OBJ_TYPE_ARRAY);
@@ -10965,7 +10965,7 @@ trv_define_builtin_types(ast_t *ast) {
 
 ast_t *
 trv_define_builtin_funcs(ast_t *ast) {
-    object_dict_t *varmap = ctx_get_varmap(ast->ref_context);
+    object_dict_t *varmap = PadCtx_GetVarmap(ast->ref_context);
     object_t *obj = NULL;
 
     obj = obj_new_builtin_func(ast->ref_gc, "dance");
@@ -11023,9 +11023,9 @@ trv_define_builtin_funcs(ast_t *ast) {
 }
 
 void
-trv_traverse(ast_t *ast, context_t *context) {
+trv_traverse(ast_t *ast, PadCtx *context) {
     PadAst_SetRefCtx(ast, context);
-    PadAst_SetRefGc(ast, ctx_get_gc(context));
+    PadAst_SetRefGc(ast, PadCtx_GetGc(context));
 
     if (!trv_import_builtin_modules(ast)) {
         pushb_error_node(ast->error_stack, ast->root, "failed to import builtin modules");

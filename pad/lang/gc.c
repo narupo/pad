@@ -5,7 +5,7 @@
 **********/
 
 void
-gc_item_dump(const gc_item_t *self, FILE *fout) {
+PadGcItem_Dump(const gc_item_t *self, FILE *fout) {
     if (!self) {
         fprintf(fout, "gc_item[null]\n");
         return;
@@ -32,7 +32,7 @@ struct gc {
 };
 
 void
-gc_del(gc_t *self) {
+PadGc_Del(gc_t *self) {
     if (!self) {
         return;
     }
@@ -47,7 +47,7 @@ gc_del(gc_t *self) {
 }
 
 gc_t *
-gc_new(void) {
+PadGc_New(void) {
     gc_t *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -55,7 +55,7 @@ gc_new(void) {
 
     self->pool = mem_calloc(INIT_CAPA_SIZE+1, sizeof(void *));
     if (!self->pool) {
-        gc_del(self);
+        PadGc_Del(self);
         return NULL;
     }
 
@@ -94,7 +94,7 @@ gc_resize(gc_t *self, int32_t newcapa) {
 }
 
 gc_item_t *
-gc_alloc(gc_t *self, gc_item_t *item, int32_t size) {
+PadGc_Alloc(gc_t *self, gc_item_t *item, int32_t size) {
     if (!self || !item || size <= 0) {
         return NULL;
     }
@@ -119,7 +119,7 @@ gc_alloc(gc_t *self, gc_item_t *item, int32_t size) {
 }
 
 void
-gc_free(gc_t *self, gc_item_t *item) {
+PadGc_Free(gc_t *self, gc_item_t *item) {
     if (!self || !item) {
         return;
     }

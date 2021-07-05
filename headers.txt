@@ -8,20 +8,20 @@
 ./pad/core/util.h *
 ./pad/lang/arguments.h *
 ./pad/lang/ast.h *
-./pad/lang/builtin/function.h
-./pad/lang/builtin/functions.h
-./pad/lang/builtin/modules/alias.h
-./pad/lang/builtin/modules/array.h
-./pad/lang/builtin/modules/dict.h
-./pad/lang/builtin/modules/opts.h
-./pad/lang/builtin/modules/unicode.h
-./pad/lang/chain_node.h
-./pad/lang/chain_nodes.h
-./pad/lang/chain_object.h
-./pad/lang/chain_objects.h
-./pad/lang/compiler.h
-./pad/lang/context.h
-./pad/lang/gc.h
+./pad/lang/builtin/function.h *
+./pad/lang/builtin/functions.h *
+./pad/lang/builtin/modules/alias.h *
+./pad/lang/builtin/modules/array.h *
+./pad/lang/builtin/modules/dict.h *
+./pad/lang/builtin/modules/opts.h *
+./pad/lang/builtin/modules/unicode.h *
+./pad/lang/chain_node.h *
+./pad/lang/chain_nodes.h *
+./pad/lang/chain_object.h *
+./pad/lang/chain_objects.h *
+./pad/lang/compiler.h *
+./pad/lang/context.h *
+./pad/lang/gc.h *
 ./pad/lang/importer.h
 ./pad/lang/kit.h
 ./pad/lang/nodes.h

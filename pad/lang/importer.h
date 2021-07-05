@@ -49,7 +49,7 @@ importer_import_as(
     importer_t *self,
     gc_t *ref_gc,
     const ast_t *ref_ast,
-    context_t *dstctx,
+    PadCtx *dstctx,
     const char *path,
     const char *alias
 );
@@ -73,7 +73,7 @@ importer_from_import(
     importer_t *self,
     gc_t *ref_gc,
     const ast_t *ref_ast,
-    context_t *dstctx,
+    PadCtx *dstctx,
     const char *path,
     object_array_t *vars
 );
