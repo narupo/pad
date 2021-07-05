@@ -232,11 +232,11 @@ app_init(app_t *self, int argc, char *argv[]) {
 }
 
 static void
-trace_kit(const app_t *self, const kit_t *kit, FILE *fout) {
+trace_kit(const app_t *self, const PadKit *kit, FILE *fout) {
     if (self->opts.is_debug) {
-        kit_trace_error_debug(kit, fout);
+        PadKit_TraceErrDebug(kit, fout);
     } else {
-        kit_trace_error(kit, fout);
+        PadKit_TraceErr(kit, fout);
     }
 }
 
@@ -248,11 +248,11 @@ _app_run(app_t *self) {
         return 1;
     }
 
-    kit_t *kit = kit_new(self->config);
-    PadCtx *ctx = kit_get_context(kit);
+    PadKit *kit = PadKit_New(self->config);
+    PadCtx *ctx = PadKit_GetCtx(kit);
     PadCtx_SetUseBuf(ctx, false);  // no use stdout/stderr buffer
 
-    if (!kit_compile_from_string(kit, content)) {
+    if (!PadKit_CompileFromStr(kit, content)) {
         trace_kit(self, kit, stderr);
         Pad_PushErr("failed to compile from stdin");
         return 1;
@@ -261,7 +261,7 @@ _app_run(app_t *self) {
     fflush(stdout);
     fflush(stderr);
 
-    kit_del(kit);
+    PadKit_Del(kit);
     free(content);
     return 0;
 }
@@ -281,11 +281,11 @@ app_run_args(app_t *self) {
         return 1;
     }
 
-    kit_t *kit = kit_new(self->config);
-    PadCtx *ctx = kit_get_context(kit);
+    PadKit *kit = PadKit_New(self->config);
+    PadCtx *ctx = PadKit_GetCtx(kit);
     PadCtx_SetUseBuf(ctx, false);  // no use stdout/stderr buffer
     
-    if (!kit_compile_from_path_args(kit, path, argc, argv)) {
+    if (!PadKit_CompileFromPathArgs(kit, path, argc, argv)) {
         trace_kit(self, kit, stderr);
         Pad_PushErr("failed to compile \"%s\"", path);
         return 1;
@@ -294,7 +294,7 @@ app_run_args(app_t *self) {
     fflush(stdout);
     fflush(stderr);
 
-    kit_del(kit);
+    PadKit_Del(kit);
     return 0;
 }
 

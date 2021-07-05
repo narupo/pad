@@ -48,13 +48,13 @@ objdict_escdel(object_dict_t *self);
 /**
  * construct object_dict_t
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  *
  * @return success to pointer to object_dict_t (dynamic allocate memory)
  * @return failed to NULL
  */
 object_dict_t *
-objdict_new(gc_t *ref_gc);
+objdict_new(PadGc *ref_gc);
 
 /**
  * deep copy

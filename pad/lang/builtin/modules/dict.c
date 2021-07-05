@@ -4,7 +4,7 @@ static object_t *
 builtin_dict_get(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
     assert(ref_ast);
-    gc_t * ref_gc = PadAst_GetRefGc(ref_ast);
+    PadGc * ref_gc = PadAst_GetRefGc(ref_ast);
     assert(ref_gc);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -90,7 +90,7 @@ builtin_func_infos[] = {
 };
 
 object_t *
-Pad_NewBltDictMod(const PadConfig *ref_config, gc_t *ref_gc) {
+Pad_NewBltDictMod(const PadConfig *ref_config, PadGc *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

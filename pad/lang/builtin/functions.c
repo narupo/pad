@@ -583,7 +583,7 @@ builtin_getattr(builtin_func_args_t *fargs) {
 static object_t *
 builtin_dance(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    gc_t *ref_gc = ref_ast->ref_gc;
+    PadGc *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -687,7 +687,7 @@ builtin_dance(builtin_func_args_t *fargs) {
 static object_t *
 builtin_ord(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    gc_t *ref_gc = ref_ast->ref_gc;
+    PadGc *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -725,7 +725,7 @@ builtin_ord(builtin_func_args_t *fargs) {
 static object_t *
 builtin_chr(builtin_func_args_t *fargs) {
     ast_t *ref_ast = fargs->ref_ast;
-    gc_t *ref_gc = ref_ast->ref_gc;
+    PadGc *ref_gc = ref_ast->ref_gc;
     assert(ref_ast);
     object_t *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -779,7 +779,7 @@ builtin_func_infos[] = {
 };
 
 object_t *
-Pad_NewBltMod(const PadConfig *ref_config, gc_t *ref_gc) {
+Pad_NewBltMod(const PadConfig *ref_config, PadGc *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);

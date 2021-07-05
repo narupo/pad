@@ -72,10 +72,10 @@ typedef object_t *(*builtin_func_t)(builtin_func_args_t *args);
 typedef struct PadBuiltFuncInfo builtin_func_info_t;
 
 struct gc;
-typedef struct gc gc_t;
+typedef struct gc PadGc;
 
 struct PadGcItem;
-typedef struct PadGcItem gc_item_t;
+typedef struct PadGcItem PadGcItem;
 
 typedef long objint_t;
 typedef double objfloat_t;
@@ -99,5 +99,5 @@ struct node;
 typedef struct node PadNode;
 
 struct kit;
-typedef struct kit kit_t;
+typedef struct kit PadKit;
 

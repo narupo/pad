@@ -5,7 +5,7 @@ enum {
 };
 
 struct object_array {
-    gc_t *ref_gc;
+    PadGc *ref_gc;
     int32_t len;
     int32_t capa;
     object_t **parray;

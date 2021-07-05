@@ -18,4 +18,4 @@
  * @return
  */
 object_t *
-Pad_NewBltAliasMod(const PadConfig *ref_config, gc_t *ref_gc);
+Pad_NewBltAliasMod(const PadConfig *ref_config, PadGc *ref_gc);

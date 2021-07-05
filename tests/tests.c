@@ -134,7 +134,7 @@
     tokenizer_option_t *opt = tkropt_new(); \
     tokenizer_t *tkr = tkr_new(mem_move(opt)); \
     ast_t *ast = PadAst_New(config); \
-    gc_t *gc = PadGc_New(); \
+    PadGc *gc = PadGc_New(); \
     PadCtx *ctx = PadCtx_New(gc); \
 
 #define trv_cleanup \
@@ -13231,7 +13231,7 @@ test_trv_array_index(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     // tkr_parse(tkr, "{@ a[0] @}");
@@ -13347,7 +13347,7 @@ test_trv_text_block_old(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "abc");
@@ -13372,7 +13372,7 @@ test_trv_ref_block_old(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: nil :}");
@@ -13488,7 +13488,7 @@ test_trv_assign_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
@@ -13721,7 +13721,7 @@ test_trv_index(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ a = \"abc\" @}{: a :}");
@@ -14108,7 +14108,7 @@ test_trv_string_index(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ a = \"ab\" \n @}{: a[0] :}");
@@ -14184,7 +14184,7 @@ test_trv_multi_assign(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     // error
@@ -14244,7 +14244,7 @@ test_trv_and_test(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     // nil and objects
@@ -15564,7 +15564,7 @@ test_trv_assign_list(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     // success
@@ -15752,7 +15752,7 @@ test_trv_test_list(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ 1, 2 @}");
@@ -15796,7 +15796,7 @@ test_trv_negative_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 :}");
@@ -15886,7 +15886,7 @@ test_trv_dot_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: \"ABC\".lower() :}");
@@ -16054,7 +16054,7 @@ test_trv_builtin_string(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /********
@@ -16411,7 +16411,7 @@ test_trv_builtin_functions(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /********
@@ -16642,7 +16642,7 @@ test_trv_builtin_structs_error_0(void) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ err = Error() @}{: type(err) :}");
@@ -16708,7 +16708,7 @@ test_trv_builtin_structs_error_1(void) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     tokenizer_t *s_tkr = tkr_new(mem_move(tkropt_new()));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr,
@@ -16905,7 +16905,7 @@ test_trv_builtin_functions_type_dict(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ d = {\"a\": 1} @}");
@@ -17018,7 +17018,7 @@ test_trv_builtin_functions_len_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: len([1, 2]) :}");
@@ -17182,7 +17182,7 @@ test_trv_traverse(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /*******
@@ -19199,7 +19199,7 @@ test_trv_assign_and_reference_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19252,7 +19252,7 @@ test_trv_assign_and_reference_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19280,7 +19280,7 @@ test_trv_assign_and_reference_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19309,7 +19309,7 @@ test_trv_assign_and_reference_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19337,7 +19337,7 @@ test_trv_assign_and_reference_4(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19366,7 +19366,7 @@ test_trv_assign_and_reference_5(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19395,7 +19395,7 @@ test_trv_assign_and_reference_6(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19425,7 +19425,7 @@ test_trv_assign_and_reference_7(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19453,7 +19453,7 @@ test_trv_assign_and_reference_8(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19481,7 +19481,7 @@ test_trv_assign_and_reference_9(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19524,7 +19524,7 @@ test_trv_assign_and_reference_11(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19645,7 +19645,7 @@ test_trv_assign_and_reference_13(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -19886,7 +19886,7 @@ test_trv_ref_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 :}");
@@ -19995,7 +19995,7 @@ test_trv_text_block(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "1");
@@ -20061,7 +20061,7 @@ test_trv_import_stmt_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /**********************
@@ -20417,7 +20417,7 @@ test_trv_from_import_stmt_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr,
@@ -20445,7 +20445,7 @@ test_trv_from_import_stmt_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr,
@@ -20475,7 +20475,7 @@ test_trv_from_import_stmt_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr,
@@ -20504,7 +20504,7 @@ test_trv_if_stmt_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 1: puts(1) end @}");
@@ -20600,7 +20600,7 @@ test_trv_if_stmt_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 1: @}1{@ end @}");
@@ -20666,7 +20666,7 @@ test_trv_if_stmt_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 1: if 1: puts(1) end end @}");
@@ -20731,7 +20731,7 @@ test_trv_if_stmt_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end @}{@ end @}");
@@ -20837,7 +20837,7 @@ test_trv_if_stmt_4(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ i = 1 \n if i: puts(1) end @}");
@@ -20909,7 +20909,7 @@ test_trv_if_stmt_5(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -21469,7 +21469,7 @@ test_trv_elif_stmt_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 0: elif 1: if 1: puts(1) end end @}");
@@ -21565,7 +21565,7 @@ test_trv_elif_stmt_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1: @}1{@ end @}{@ end @}");
@@ -22004,7 +22004,7 @@ test_trv_else_stmt_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 0: else: puts(1) end @}");
@@ -22090,7 +22090,7 @@ test_trv_else_stmt_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 0: @}{@ else: @}1{@ end @}");
@@ -22186,7 +22186,7 @@ test_trv_else_stmt_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ if 0: else: if 1: puts(1) end end @}");
@@ -22432,7 +22432,7 @@ test_trv_for_stmt_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ for i=0; i<2; i +=1: puts(i) end @}");
@@ -22568,7 +22568,7 @@ test_trv_for_stmt_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ i=0 for i<2: puts(i)\ni+=1 end @}");
@@ -22634,7 +22634,7 @@ test_trv_for_stmt_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
@@ -23346,7 +23346,7 @@ test_trv_return_stmt_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
@@ -23372,7 +23372,7 @@ test_trv_return_stmt_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -25032,7 +25032,7 @@ test_trv_func_def_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ def f(): end @}");
@@ -25058,7 +25058,7 @@ test_trv_func_def_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ def f(a, b): puts(a, b) end f(1, 2) @}");
@@ -25084,7 +25084,7 @@ test_trv_func_def_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -25113,7 +25113,7 @@ test_trv_func_def_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ def f(): end \n a = not f @}");
@@ -25138,7 +25138,7 @@ test_trv_func_def_4(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ i = 1 \n def f(): puts(i) end \n f() @}");
@@ -25164,7 +25164,7 @@ test_trv_func_def_5(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ def f(arg): end \n f() @}");
@@ -25190,7 +25190,7 @@ test_trv_func_def_6(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@\n"
@@ -26606,7 +26606,7 @@ test_trv_assign_list_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ a = 1 @}{: a :}");
@@ -26632,7 +26632,7 @@ test_trv_assign_list_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
@@ -26658,7 +26658,7 @@ test_trv_assign_list_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ a = b = 1 @}{: a :},{: b :}");
@@ -26798,7 +26798,7 @@ test_trv_comparison_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 == 1 :}");
@@ -26824,7 +26824,7 @@ test_trv_comparison_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 != 1 :}");
@@ -26850,7 +26850,7 @@ test_trv_comparison_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 < 2 :}");
@@ -26876,7 +26876,7 @@ test_trv_comparison_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 2 > 1 :}");
@@ -26902,7 +26902,7 @@ test_trv_comparison_4(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 <= 2 :}");
@@ -26928,7 +26928,7 @@ test_trv_comparison_5(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 2 >= 1 :}");
@@ -26976,7 +26976,7 @@ test_trv_asscalc_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /*****
@@ -27044,7 +27044,7 @@ test_trv_asscalc_1(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /*****
@@ -27138,7 +27138,7 @@ test_trv_asscalc_2(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /*****
@@ -27282,7 +27282,7 @@ test_trv_asscalc_3(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     /*****
@@ -29143,7 +29143,7 @@ test_trv_nil(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: nil :}");
@@ -29169,7 +29169,7 @@ test_trv_false(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: false :}");
@@ -29195,7 +29195,7 @@ test_trv_true(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: true :}");
@@ -29221,7 +29221,7 @@ test_trv_digit(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: 1 :}");
@@ -29247,7 +29247,7 @@ test_trv_string(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{: \"abc\" :}");
@@ -29469,7 +29469,7 @@ test_trv_identifier(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ i = 1 @}{: i :}");
@@ -29495,7 +29495,7 @@ test_trv_builtin_array_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ arr = [1, 2] \n arr.push(3) @}{: len(arr) :}");
@@ -29561,7 +29561,7 @@ test_trv_builtin_dict_0(void) {
     tokenizer_option_t *opt = tkropt_new();
     tokenizer_t *tkr = tkr_new(mem_move(opt));
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
 
     tkr_parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(1) :}");
@@ -31208,17 +31208,17 @@ PadErrStackests[] = {
 
 static void
 test_lang_PadGc_New(void) {
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     assert(gc);
     PadGc_Del(gc);
 }
 
 static void
 test_lang_PadGc_Alloc(void) {
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     assert(gc);
 
-    gc_item_t item = {0};
+    PadGcItem item = {0};
     PadGc_Alloc(gc, &item, 100);
 
     assert(item.ptr);
@@ -31245,7 +31245,7 @@ test_lang_PadGc_Alloc(void) {
 }
 
 static const struct testcase
-lang_gc_tests[] = {
+lang_PadGcests[] = {
     {"PadGc_New", test_lang_PadGc_New},
     {"PadGc_Alloc", test_lang_PadGc_Alloc},
     {0},
@@ -31257,7 +31257,7 @@ lang_gc_tests[] = {
 
 static void
 test_lang_objdict_move(void) {
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     object_dict_t *d = objdict_new(gc);
 
     object_t *obj1 = obj_new_int(gc, 1);
@@ -31282,7 +31282,7 @@ test_lang_objdict_move(void) {
 
 static void
 test_lang_objdict_set(void) {
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     object_dict_t *d = objdict_new(gc);
 
     object_t *obj1 = obj_new_int(gc, 1);
@@ -31311,7 +31311,7 @@ test_lang_objdict_pop(void) {
     * pop one *
     **********/
 
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     object_dict_t *d = objdict_new(gc);
     object_t *obj = obj_new_int(gc, 0);
 
@@ -31535,7 +31535,7 @@ testmodules[] = {
     {"stdlib.list", stdlib_list_tests},
     {"stdlib.stream", stdlib_stream_tests},
     {"error_stack", PadErrStackests},
-    {"gc", lang_gc_tests},
+    {"gc", lang_PadGcests},
     {"objdict", lang_object_dict_tests},
     {0},
 };

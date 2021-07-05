@@ -134,7 +134,7 @@ obj_del(object_t *self) {
     PadGc_Free(self->ref_gc, &self->gc_item);
 }
 
-gc_t *
+PadGc *
 obj_get_gc(object_t *self) {
     if (!self) {
         return NULL;
@@ -142,12 +142,12 @@ obj_get_gc(object_t *self) {
     return self->ref_gc;
 }
 
-gc_t *
-obj_set_gc(object_t *self, gc_t *ref_gc) {
+PadGc *
+obj_set_gc(object_t *self, PadGc *ref_gc) {
     if (!self) {
         return NULL;
     }
-    gc_t *savegc = self->ref_gc;
+    PadGc *savegc = self->ref_gc;
     self->ref_gc = ref_gc;
     return savegc;
 }
@@ -165,7 +165,7 @@ obj_deep_copy(const object_t *other) {
     }
 
     // allocate memory by gc
-    gc_item_t gc_item = {0};
+    PadGcItem gc_item = {0};
     if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
         return NULL;
     }
@@ -284,7 +284,7 @@ obj_shallow_copy(const object_t *other) {
     }
 
     // allocate memory by gc
-    gc_item_t gc_item = {0};
+    PadGcItem gc_item = {0};
     if (!PadGc_Alloc(other->ref_gc, &gc_item, sizeof(object_t))) {
         return NULL;
     }
@@ -391,12 +391,12 @@ obj_shallow_copy(const object_t *other) {
 }
 
 object_t *
-obj_new(gc_t *ref_gc, obj_type_t type) {
+obj_new(PadGc *ref_gc, obj_type_t type) {
     if (!ref_gc) {
         return NULL;
     }
 
-    gc_item_t gc_item = {0};
+    PadGcItem gc_item = {0};
     if (!PadGc_Alloc(ref_gc, &gc_item, sizeof(object_t))) {
         return NULL;
     }
@@ -410,7 +410,7 @@ obj_new(gc_t *ref_gc, obj_type_t type) {
 }
 
 object_t *
-obj_new_nil(gc_t *ref_gc) {
+obj_new_nil(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -424,7 +424,7 @@ obj_new_nil(gc_t *ref_gc) {
 }
 
 object_t *
-obj_new_false(gc_t *ref_gc) {
+obj_new_false(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -440,7 +440,7 @@ obj_new_false(gc_t *ref_gc) {
 }
 
 object_t *
-obj_new_true(gc_t *ref_gc) {
+obj_new_true(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -457,7 +457,7 @@ obj_new_true(gc_t *ref_gc) {
 
 object_t *
 obj_new_cidentifier(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const char *identifier
 ) {
@@ -479,7 +479,7 @@ obj_new_cidentifier(
 
 object_t *
 obj_new_identifier(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     string_t *move_identifier
 ) {
@@ -499,7 +499,7 @@ obj_new_identifier(
 }
 
 object_t *
-obj_new_unicode_cstr(gc_t *ref_gc, const char *str) {
+obj_new_unicode_cstr(PadGc *ref_gc, const char *str) {
     if (!ref_gc || !str) {
         return NULL;
     }
@@ -516,7 +516,7 @@ obj_new_unicode_cstr(gc_t *ref_gc, const char *str) {
 }
 
 object_t *
-obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode) {
+obj_new_unicode(PadGc *ref_gc, unicode_t *move_unicode) {
     if (!ref_gc || !move_unicode) {
         return NULL;
     }
@@ -532,7 +532,7 @@ obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode) {
 }
 
 object_t *
-obj_new_int(gc_t *ref_gc, objint_t lvalue) {
+obj_new_int(PadGc *ref_gc, objint_t lvalue) {
     if (!ref_gc) {
         return NULL;
     }
@@ -548,7 +548,7 @@ obj_new_int(gc_t *ref_gc, objint_t lvalue) {
 }
 
 object_t *
-obj_new_float(gc_t *ref_gc, objfloat_t value) {
+obj_new_float(PadGc *ref_gc, objfloat_t value) {
     if (!ref_gc) {
         return NULL;
     }
@@ -564,7 +564,7 @@ obj_new_float(gc_t *ref_gc, objfloat_t value) {
 }
 
 object_t *
-obj_new_bool(gc_t *ref_gc, bool boolean) {
+obj_new_bool(PadGc *ref_gc, bool boolean) {
     if (!ref_gc) {
         return NULL;
     }
@@ -580,7 +580,7 @@ obj_new_bool(gc_t *ref_gc, bool boolean) {
 }
 
 object_t *
-obj_new_array(gc_t *ref_gc, object_array_t *move_objarr) {
+obj_new_array(PadGc *ref_gc, object_array_t *move_objarr) {
     if (!ref_gc || !move_objarr) {
         return NULL;
     }
@@ -596,7 +596,7 @@ obj_new_array(gc_t *ref_gc, object_array_t *move_objarr) {
 }
 
 object_t *
-obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict) {
+obj_new_dict(PadGc *ref_gc, object_dict_t *move_objdict) {
     if (!ref_gc || !move_objdict) {
         return NULL;
     }
@@ -613,7 +613,7 @@ obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict) {
 
 object_t *
 obj_new_func(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     ast_t *ref_ast,
     PadCtx *ref_context,
     object_t *move_name,
@@ -647,7 +647,7 @@ obj_new_func(
 }
 
 object_t *
-obj_new_chain(gc_t *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs) {
+obj_new_chain(PadGc *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs) {
     if (!ref_gc || !move_operand || !move_chain_objs) {
         return NULL;
     }
@@ -664,7 +664,7 @@ obj_new_chain(gc_t *ref_gc, object_t *move_operand, PadChainObjs *move_chain_obj
 }
 
 object_t *
-obj_new_module(gc_t *ref_gc) {
+obj_new_module(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }
@@ -679,7 +679,7 @@ obj_new_module(gc_t *ref_gc) {
 
 object_t *
 obj_new_def_struct(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     object_t *move_idn,
     ast_t *move_ast,
     PadCtx *move_context
@@ -703,7 +703,7 @@ obj_new_def_struct(
 
 object_t *
 obj_new_object(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     ast_t *ref_ast,
     PadCtx *move_struct_context,
     object_t *ref_def_obj
@@ -726,7 +726,7 @@ obj_new_object(
 
 object_t *
 obj_new_owners_method(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     object_t *owner,
     string_t *move_method_name
 ) {
@@ -747,7 +747,7 @@ obj_new_owners_method(
 
 object_t *
 obj_new_module_by(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     const char *name,
     const char *program_filename,
     char *move_program_source,
@@ -790,7 +790,7 @@ obj_new_module_by(
 }
 
 object_t *
-obj_new_type(gc_t *ref_gc, obj_type_t type) {
+obj_new_type(PadGc *ref_gc, obj_type_t type) {
     if (!ref_gc) {
         return NULL;
     }
@@ -806,7 +806,7 @@ obj_new_type(gc_t *ref_gc, obj_type_t type) {
 }
 
 object_t *
-obj_new_builtin_func(gc_t *ref_gc, const char *funcname) {
+obj_new_builtin_func(PadGc *ref_gc, const char *funcname) {
     if (!ref_gc) {
         return NULL;
     }
@@ -1025,7 +1025,7 @@ obj_dec_ref(object_t *self) {
     self->gc_item.ref_counts -= 1;
 }
 
-gc_item_t *
+PadGcItem *
 obj_get_gc_item(object_t *self) {
     if (!self) {
         return NULL;

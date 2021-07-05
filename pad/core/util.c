@@ -194,7 +194,7 @@ char *
 Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *argv[], const char *src) {
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
     opts_t *opts = opts_new();
 
@@ -264,7 +264,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
 
     tokenizer_t *tkr = tkr_new(tkropt_new());
     ast_t *ast = PadAst_New(config);
-    gc_t *gc = PadGc_New();
+    PadGc *gc = PadGc_New();
     PadCtx *ctx = PadCtx_New(gc);
     opts_t *opts = opts_new();
 

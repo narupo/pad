@@ -19,4 +19,4 @@
  * @return
  */
 object_t *
-Pad_NewBltDictMod(const PadConfig *ref_config, gc_t *ref_gc);
+Pad_NewBltDictMod(const PadConfig *ref_config, PadGc *ref_gc);

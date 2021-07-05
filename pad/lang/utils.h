@@ -124,7 +124,7 @@ object_t *
 extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -134,7 +134,7 @@ object_t *
 extract_ref_of_obj_all(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -154,7 +154,7 @@ object_t *
 extract_copy_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -173,7 +173,7 @@ object_t *
 refer_chain_obj_with_ref(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *chain_obj
@@ -194,7 +194,7 @@ object_t *
 refer_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,
@@ -216,7 +216,7 @@ refer_chain_call(
     ast_t *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     object_array_t *owns,  // TODO: const
     PadChainObj *co
@@ -226,7 +226,7 @@ object_t *
 refer_and_set_ref(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *chain_obj,
@@ -250,7 +250,7 @@ bool
 parse_bool(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -265,7 +265,7 @@ objint_t
 parse_int(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -280,7 +280,7 @@ objfloat_t
 parse_float(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj

@@ -18,4 +18,4 @@
  * @return
  */
 object_t *
-Pad_NewBltOptsMod(const PadConfig *config, gc_t *ref_gc);
+Pad_NewBltOptsMod(const PadConfig *config, PadGc *ref_gc);

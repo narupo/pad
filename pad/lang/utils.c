@@ -22,7 +22,7 @@ static object_t *
 invoke_func_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,  // TODO const
@@ -233,7 +233,7 @@ static object_t *
 refer_chain_dot(
     PadErrStack *err,
     const PadNode *ref_node,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     object_array_t *owns,
     PadChainObj *co
@@ -350,7 +350,7 @@ again2:
 static object_t *
 refer_and_set_ref_chain_dot(
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     object_array_t *owns,
     PadChainObj *co,
@@ -544,7 +544,7 @@ static object_t *
 copy_func_args(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *drtargs
@@ -609,7 +609,7 @@ static object_t *
 copy_array_args(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *drtargs
@@ -674,7 +674,7 @@ static void
 extract_func_args(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,  // TODO const
@@ -766,7 +766,7 @@ static object_t *
 invoke_func_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,  // TODO const
@@ -861,7 +861,7 @@ static object_t *
 invoke_builtin_modules(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,  // TODO const
@@ -967,7 +967,7 @@ static object_t *
 gen_struct(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     const PadNode *ref_node,
     object_array_t *owns,
     object_t *drtargs
@@ -1004,7 +1004,7 @@ static object_t *
 invoke_type_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,
@@ -1166,7 +1166,7 @@ refer_chain_call(
     ast_t *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     object_array_t *owns,  // TODO: const
     PadChainObj *co
@@ -1250,7 +1250,7 @@ refer_chain_call(
 static object_t *
 refer_unicode_index(
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     const PadNode *ref_node,
     object_t *owner,
     object_t *indexobj
@@ -1466,7 +1466,7 @@ static object_t *
 refer_chain_index(
     PadErrStack *err,
     const PadNode *ref_node,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     object_array_t *owns,
     PadChainObj *co
 ) {
@@ -1511,7 +1511,7 @@ again:
 static object_t *
 refer_and_set_ref_chain_index(
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     const PadNode *ref_node,
     object_array_t *owns,
     PadChainObj *co,
@@ -1560,7 +1560,7 @@ object_t *
 refer_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_array_t *owns,
@@ -1600,7 +1600,7 @@ refer_and_set_ref_chain_three_objs(
     ast_t *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     object_array_t *owns,
     PadChainObj *co,
@@ -1642,7 +1642,7 @@ object_t *
 refer_chain_obj_with_ref(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *chain_obj
@@ -1694,7 +1694,7 @@ object_t *
 refer_and_set_ref(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *chain_obj,
@@ -1759,7 +1759,7 @@ object_t *
 extract_copy_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -1822,7 +1822,7 @@ static object_t *
 _extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj,
@@ -1889,7 +1889,7 @@ object_t *
 extract_ref_of_obj(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -1901,7 +1901,7 @@ object_t *
 extract_ref_of_obj_all(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -1927,7 +1927,7 @@ bool
 parse_bool(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -1982,7 +1982,7 @@ objint_t
 parse_int(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj
@@ -2040,7 +2040,7 @@ objfloat_t
 parse_float(
     ast_t *ref_ast,
     PadErrStack *err,
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
     object_t *obj

@@ -1,21 +1,21 @@
 #include <pad/lang/importer.h>
 
-struct importer {
+struct PadImporter {
     const PadConfig *ref_config;
     char error[1024];
 };
 
 void
-importer_del(importer_t *self) {
+PadImporter_Del(PadImporter *self) {
     if (!self) {
         return;
     }
     free(self);
 }
 
-importer_t *
-importer_new(const PadConfig *ref_config) {
-    importer_t *self = mem_calloc(1, sizeof(*self));
+PadImporter *
+PadImporter_New(const PadConfig *ref_config) {
+    PadImporter *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -25,7 +25,7 @@ importer_new(const PadConfig *ref_config) {
 }
 
 void
-importer_set_error(importer_t *self, const char *fmt, ...) {
+PadImporter_SetErr(PadImporter *self, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
 
@@ -35,14 +35,14 @@ importer_set_error(importer_t *self, const char *fmt, ...) {
 }
 
 const char *
-importer_getc_error(const importer_t *self) {
+PadImporter_GetcErr(const PadImporter *self) {
     return self->error;
 }
 
 static char *
-fix_path(importer_t *self, char *dst, int32_t dstsz, const char *path) {
+fix_path(PadImporter *self, char *dst, int32_t dstsz, const char *path) {
     if (!dst || dstsz <= 0 || !path) {
-        importer_set_error(self, "invalid arguments");
+        PadImporter_SetErr(self, "invalid arguments");
         return NULL;
     }
 
@@ -53,7 +53,7 @@ fix_path(importer_t *self, char *dst, int32_t dstsz, const char *path) {
 
     if (!file_solvefmt(dst, sizeof dst, "%s/%s", self->ref_config->std_lib_dir_path, path
     )) {
-        importer_set_error(self, "failed to solve path for standard library");
+        PadImporter_SetErr(self, "failed to solve path for standard library");
         return NULL;
     }
 
@@ -62,26 +62,26 @@ fix_path(importer_t *self, char *dst, int32_t dstsz, const char *path) {
 
 static object_t *
 create_modobj(
-    importer_t *self,
-    gc_t *ref_gc,
+    PadImporter *self,
+    PadGc *ref_gc,
     const ast_t *ref_ast,
     const char *path
 ) {
     // read source
     char src_path[FILE_NPATH];
     if (!fix_path(self, src_path, sizeof src_path, path)) {
-        importer_set_error(self, "failed to fix path from \"%s\"", path);
+        PadImporter_SetErr(self, "failed to fix path from \"%s\"", path);
         return NULL; 
     }
 
     if (!file_exists(src_path)) {
-        importer_set_error(self, "\"%s\" is not found", src_path);
+        PadImporter_SetErr(self, "\"%s\" is not found", src_path);
         return NULL;
     }
 
     char *src = file_readcp_from_path(src_path);
     if (!src) {
-        importer_set_error(self, "failed to read content from \"%s\"", src_path);
+        PadImporter_SetErr(self, "failed to read content from \"%s\"", src_path);
         return NULL;
     }
 
@@ -97,7 +97,7 @@ create_modobj(
     tkr_set_program_filename(tkr, src_path);
     tkr_parse(tkr, src);
     if (tkr_has_error_stack(tkr)) {
-        importer_set_error(self, tkr_getc_first_error_message(tkr));
+        PadImporter_SetErr(self, tkr_getc_first_error_message(tkr));
         free(src);
         return NULL;
     }
@@ -105,14 +105,14 @@ create_modobj(
     PadAst_Clear(ast);
     PadCc_Compile(ast, tkr_get_tokens(tkr));
     if (PadAst_HasErrs(ast)) {
-        importer_set_error(self, PadAst_GetcFirstErrMsg(ast));
+        PadImporter_SetErr(self, PadAst_GetcFirstErrMsg(ast));
         free(src);
         return NULL;
     }
 
     trv_traverse(ast, ctx);
     if (PadAst_HasErrs(ast)) {
-        importer_set_error(self, PadAst_GetcFirstErrMsg(ast));
+        PadImporter_SetErr(self, PadAst_GetcFirstErrMsg(ast));
         free(src);
         return NULL;
     }
@@ -131,10 +131,10 @@ create_modobj(
     return modobj;
 }
 
-importer_t *
-importer_import_as(
-    importer_t *self,
-    gc_t *ref_gc,
+PadImporter *
+PadImporter_ImportAs(
+    PadImporter *self,
+    PadGc *ref_gc,
     const ast_t *ref_ast,
     PadCtx *dstctx,
     const char *path,
@@ -159,10 +159,10 @@ importer_import_as(
     return self;
 }
 
-importer_t *
-importer_from_import(
-    importer_t *self,
-    gc_t *ref_gc,
+PadImporter *
+PadImporter_FromImport(
+    PadImporter *self,
+    PadGc *ref_gc,
     const ast_t *ref_ast,
     PadCtx *dstctx,
     const char *path,
@@ -214,7 +214,7 @@ importer_from_import(
         // get object from imported module
         object_t *objinmod = PadCtx_FindVarRef(modobj->module.ast->ref_context, objname);
         if (!objinmod) {
-            importer_set_error(self,
+            PadImporter_SetErr(self,
                 "\"%s\" is can't import from module \"%s\"",
                 objname, path
             );

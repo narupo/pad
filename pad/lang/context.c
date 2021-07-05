@@ -12,7 +12,7 @@ struct context {
     // これによってルートのコンテキストや1つ前のコンテキストを辿れる
     PadCtx *ref_prev;  // reference to previous context
 
-    gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
+    PadGc *ref_gc;  // reference to gc (DO NOT DELETE)
     PadAliasInfo *alinfo;  // alias info for builtin alias module
 
     // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
@@ -63,7 +63,7 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self) {
 }
 
 PadCtx *
-PadCtx_New(gc_t *ref_gc) {
+PadCtx_New(PadGc *ref_gc) {
     PadCtx *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -253,7 +253,7 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     return NULL;
 }
 
-gc_t *
+PadGc *
 PadCtx_GetGc(PadCtx *self) {
     return self->ref_gc;
 }

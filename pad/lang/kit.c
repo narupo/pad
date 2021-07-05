@@ -14,14 +14,14 @@ struct kit {
     char *program_source;
     tokenizer_t *tkr;
     ast_t *ast;
-    gc_t *gc;
+    PadGc *gc;
     PadCtx *ctx;
     PadErrStack *errstack;
     bool gc_is_reference;
 };
 
 void
-kit_del(kit_t *self) {
+PadKit_Del(PadKit *self) {
     if (!self) {
         return;
     }
@@ -36,9 +36,9 @@ kit_del(kit_t *self) {
     free(self);
 }
 
-kit_t *
-kit_new(const PadConfig *config) {
-    kit_t *self = mem_calloc(1, sizeof(*self));
+PadKit *
+PadKit_New(const PadConfig *config) {
+    PadKit *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -46,40 +46,40 @@ kit_new(const PadConfig *config) {
     self->ref_config = config;
     self->tkr = tkr_new(tkropt_new());
     if (!self->tkr) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     self->ast = PadAst_New(config);
     if (!self->ast) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     self->gc = PadGc_New();
     if (!self->gc) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     self->ctx = PadCtx_New(self->gc);
     if (!self->ctx) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     self->errstack = PadErrStack_New();
     if (!self->errstack) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-kit_t *
-kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc) {
-    kit_t *self = mem_calloc(1, sizeof(*self));
+PadKit *
+PadKit_NewRefGc(const PadConfig *config, PadGc *ref_gc) {
+    PadKit *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -88,13 +88,13 @@ kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc) {
 
     self->tkr = tkr_new(tkropt_new());
     if (!self->tkr) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     self->ast = PadAst_New(config);
     if (!self->ast) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
@@ -103,26 +103,26 @@ kit_new_ref_gc(const PadConfig *config, gc_t *ref_gc) {
 
     self->ctx = PadCtx_New(self->gc);
     if (!self->ctx) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     self->errstack = PadErrStack_New();
     if (!self->errstack) {
-        kit_del(self);
+        PadKit_Del(self);
         return NULL;
     }
 
     return self;
 }
 
-kit_t *
-kit_compile_from_path(kit_t *self, const char *path) {
-    return kit_compile_from_path_args(self, path, 0, NULL);
+PadKit *
+PadKit_CompileFromPath(PadKit *self, const char *path) {
+    return PadKit_CompileFromPathArgs(self, path, 0, NULL);
 }
 
-kit_t *
-kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]) {
+PadKit *
+PadKit_CompileFromPathArgs(PadKit *self, const char *path, int argc, char *argv[]) {
     if (self->program_source) {
         Pad_SafeFree(self->program_source);
     }
@@ -132,7 +132,7 @@ kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]
         return NULL;
     }
 
-    kit_t *result = kit_compile_from_string_args(self, path, self->program_source, argc, argv);
+    PadKit *result = PadKit_CompileFromStrArgs(self, path, self->program_source, argc, argv);
     // allow null
 
     return result;
@@ -140,9 +140,9 @@ kit_compile_from_path_args(kit_t *self, const char *path, int argc, char *argv[]
 
 extern const char *builtin_structs_source;
 
-kit_t *
-kit_compile_from_string_args(
-    kit_t *self,
+PadKit *
+PadKit_CompileFromStrArgs(
+    PadKit *self,
     const char *path,
     const char *src,
     int argc,
@@ -205,48 +205,48 @@ kit_compile_from_string_args(
     return self;
 }
 
-kit_t *
-kit_compile_from_string(kit_t *self, const char *str) {
-    return kit_compile_from_string_args(self, NULL, str, 0, NULL);
+PadKit *
+PadKit_CompileFromStr(PadKit *self, const char *str) {
+    return PadKit_CompileFromStrArgs(self, NULL, str, 0, NULL);
 }
 
 void
-kit_clear_context(kit_t *self) {
+PadKit_ClearCtx(PadKit *self) {
     PadCtx_Clear(self->ctx);
 }
 
 void
-kit_clear_context_buffer(kit_t *self) {
+PadKit_ClearCtxBuf(PadKit *self) {
     PadCtx_ClearStdoutBuf(self->ctx);
 }
 
 const char *
-kit_getc_stdout_buf(const kit_t *self) {
+PadKit_GetcStdoutBuf(const PadKit *self) {
     return PadCtx_GetcStdoutBuf(self->ctx);
 }
 
 const char *
-kit_getc_stderr_buf(const kit_t *self) {
+PadKit_GetcStderrBuf(const PadKit *self) {
     return PadCtx_GetcStderrBuf(self->ctx);
 }
 
 bool
-kit_has_error_stack(const kit_t *self) {
+PadKit_HasErrStack(const PadKit *self) {
     return PadErrStack_Len(self->errstack);
 }
 
 const PadErrStack *
-kit_getc_error_stack(const kit_t *self) {
+PadKit_GetcErrStack(const PadKit *self) {
     return self->errstack;
 }
 
 PadCtx *
-kit_get_context(kit_t *self) {
+PadKit_GetCtx(PadKit *self) {
     return self->ctx;
 }
 
 void
-kit_trace_error(const kit_t *self, FILE *fout) {
+PadKit_TraceErr(const PadKit *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }
@@ -255,7 +255,7 @@ kit_trace_error(const kit_t *self, FILE *fout) {
 }
 
 void
-kit_trace_error_debug(const kit_t *self, FILE *fout) {
+PadKit_TraceErrDebug(const PadKit *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }

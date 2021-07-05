@@ -12,24 +12,24 @@
 #include <pad/lang/object_dict.h>
 #include <pad/lang/object_array.h>
 
-struct importer;
-typedef struct importer importer_t;
+struct PadImporter;
+typedef struct PadImporter PadImporter;
 
 /**
  * destruct object
  *
- * @param[out] *self poitner to importer_t
+ * @param[out] *self poitner to PadImporter
  */
 void
-importer_del(importer_t *self);
+PadImporter_Del(PadImporter *self);
 
 /**
  * construct object
  *
- * @return pointer to importer_t
+ * @return pointer to PadImporter
  */
-importer_t *
-importer_new(const PadConfig *ref_config);
+PadImporter *
+PadImporter_New(const PadConfig *ref_config);
 
 /**
  * import module from path as alias
@@ -44,10 +44,10 @@ importer_new(const PadConfig *ref_config);
  * 
  * @return 
  */
-importer_t * 
-importer_import_as(
-    importer_t *self,
-    gc_t *ref_gc,
+PadImporter * 
+PadImporter_ImportAs(
+    PadImporter *self,
+    PadGc *ref_gc,
     const ast_t *ref_ast,
     PadCtx *dstctx,
     const char *path,
@@ -68,10 +68,10 @@ importer_import_as(
  * 
  * @return 
  */
-importer_t * 
-importer_from_import(
-    importer_t *self,
-    gc_t *ref_gc,
+PadImporter * 
+PadImporter_FromImport(
+    PadImporter *self,
+    PadGc *ref_gc,
     const ast_t *ref_ast,
     PadCtx *dstctx,
     const char *path,
@@ -86,7 +86,7 @@ importer_from_import(
  * @param[in] ...   
  */
 void 
-importer_set_error(importer_t *self, const char *fmt, ...);
+PadImporter_SetErr(PadImporter *self, const char *fmt, ...);
 
 /**
  * get error string
@@ -96,4 +96,4 @@ importer_set_error(importer_t *self, const char *fmt, ...);
  * @return 
  */
 const char * 
-importer_getc_error(const importer_t *self);
+PadImporter_GetcErr(const PadImporter *self);

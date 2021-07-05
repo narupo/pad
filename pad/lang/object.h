@@ -176,8 +176,8 @@ struct object_builtin_func {
  */
 struct object {
     obj_type_t type;  // object type
-    gc_t *ref_gc;  // reference to gc (DO NOT DELETE)
-    gc_item_t gc_item;  // gc item for memory management
+    PadGc *ref_gc;  // reference to gc (DO NOT DELETE)
+    PadGcItem gc_item;  // gc item for memory management
     object_identifier_t identifier;  // value of identifier (type == OBJ_TYPE_IDENTIFIER)
     unicode_t *unicode;  // value of unicode (type == OBJ_TYPE_UNICODE)
     object_array_t *objarr;  // value of array (type == OBJ_TYPE_ARRAY)
@@ -206,14 +206,14 @@ obj_del(object_t *self);
 /**
  * construct object
  *
- * @param[in] *ref_gc reference to gc_t (DO NOT DELETE)
+ * @param[in] *ref_gc reference to PadGc (DO NOT DELETE)
  * @param[in] type number of object type
  *
  * @return success to pointer to object_t (dynamic allocate memory)
  * @return failed to NULL
  */
 object_t *
-obj_new(gc_t *ref_gc, obj_type_t type);
+obj_new(PadGc *ref_gc, obj_type_t type);
 
 /**
  * deep copy
@@ -239,56 +239,56 @@ obj_shallow_copy(const object_t *other);
  * construct nil object
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_nil(gc_t *ref_gc);
+obj_new_nil(PadGc *ref_gc);
 
 /**
  * construct false of boolean object
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_false(gc_t *ref_gc);
+obj_new_false(PadGc *ref_gc);
 
 /**
  * construct true of boolean object
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_true(gc_t *ref_gc);
+obj_new_true(PadGc *ref_gc);
 
 /**
  * construct boolean object by value
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  * @param[in] boolean value of boolean
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_bool(gc_t *ref_gc, bool boolean);
+obj_new_bool(PadGc *ref_gc, bool boolean);
 
 /**
  * construct identifier object by C string
  * if failed to allocate memory then exit from process
  *
- * @param[in]      *ref_gc      reference to gc_t (do not delete)
+ * @param[in]      *ref_gc      reference to PadGc (do not delete)
  * @param[in|out]  *ref_ast     reference to ast_t current context (do not delete)
  * @param [in|out] *ref_context reference to PadCtx
  * @param[in]      *identifier  C strings of identifier
@@ -298,7 +298,7 @@ obj_new_bool(gc_t *ref_gc, bool boolean);
  */
 object_t *
 obj_new_cidentifier(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     const char *identifier
 );
@@ -307,7 +307,7 @@ obj_new_cidentifier(
  * construct identifier object by string_t
  * if failed to allocate memory then exit from process
  *
- * @param[in]     *ref_gc          reference to gc_t (do not delete)
+ * @param[in]     *ref_gc          reference to PadGc (do not delete)
  * @param[in|out] *ref_ast         reference to ast_t current context (do not delete)
  * @param [in|out] *ref_context    reference to PadCtx
  * @param[in]     *move_identifier pointer to string_t (with move semantics)
@@ -317,7 +317,7 @@ obj_new_cidentifier(
  */
 object_t *
 obj_new_identifier(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     PadCtx *ref_context,
     string_t *move_identifier
 );
@@ -326,85 +326,85 @@ obj_new_identifier(
  * construct unicode object by C strings
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  * @param[in] *str    pointer to C strings
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_unicode_cstr(gc_t *ref_gc, const char *str);
+obj_new_unicode_cstr(PadGc *ref_gc, const char *str);
 
 /**
  * construct unicode object by unicode_t
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc   reference to gc_t (do not delete)
+ * @param[in] *ref_gc   reference to PadGc (do not delete)
  * @param[in] *move_str pointer to string_t (with move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_unicode(gc_t *ref_gc, unicode_t *move_unicode);
+obj_new_unicode(PadGc *ref_gc, unicode_t *move_unicode);
 
 /**
  * construct integer object by value
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  * @param[in] lvalue  value of integer
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_int(gc_t *ref_gc, objint_t lvalue);
+obj_new_int(PadGc *ref_gc, objint_t lvalue);
 
 /**
  * construct float object by value
  * if failed to allocate memory then exit from process
  * 
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  * @param[in] value  value of objfloat_t
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_float(gc_t *ref_gc, objfloat_t value);
+obj_new_float(PadGc *ref_gc, objfloat_t value);
 
 /**
  * construct array object by object_array_t
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc      reference to gc_t (do not delete)
+ * @param[in] *ref_gc      reference to PadGc (do not delete)
  * @param[in] *move_objarr pointer to object_array_t (with move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_array(gc_t *ref_gc, object_array_t *move_objarr);
+obj_new_array(PadGc *ref_gc, object_array_t *move_objarr);
 
 /**
  * construct dictionary object by object_dict_t
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc       reference to gc_t (do not delete)
+ * @param[in] *ref_gc       reference to PadGc (do not delete)
  * @param[in] *move_objdict pointer to object_dict_t (with move semantics)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict);
+obj_new_dict(PadGc *ref_gc, object_dict_t *move_objdict);
 
 /**
  * construct function object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc       reference to gc_t (do not delete)
+ * @param[in] *ref_gc       reference to PadGc (do not delete)
  * @param[in] *ref_ast      reference to ast_t (do not delete). The function object refer this context
  * @param[in] *move_name    pointer to identifier object for function name (with move semantics)
  * @param[in] *move_args    pointer to array object for function arguments (with move semantics)
@@ -417,7 +417,7 @@ obj_new_dict(gc_t *ref_gc, object_dict_t *move_objdict);
  */
 object_t *
 obj_new_func(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     ast_t *ref_ast,
     PadCtx *ref_context,
     object_t *move_name,
@@ -432,7 +432,7 @@ obj_new_func(
  * construct chain object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc          reference to gc_t (do not delete)
+ * @param[in] *ref_gc          reference to PadGc (do not delete)
  * @param[in] *move_operand    pointer to object_t (move semantics)
  * @param[in] *move_chain_objs pointer to PadChainObjs (move semantics)
  *
@@ -440,19 +440,19 @@ obj_new_func(
  * @return failed to NULL
  */
 object_t *
-obj_new_chain(gc_t *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs);
+obj_new_chain(PadGc *ref_gc, object_t *move_operand, PadChainObjs *move_chain_objs);
 
 /**
  * construct module object (default constructor)
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc reference to gc_t (do not delete)
+ * @param[in] *ref_gc reference to PadGc (do not delete)
  *
  * @return success to pointer to object_t (new object)
  * @return failed to NULL
  */
 object_t *
-obj_new_module(gc_t *ref_gc);
+obj_new_module(PadGc *ref_gc);
 
 /**
  * construct def-struct-object 
@@ -463,7 +463,7 @@ obj_new_module(gc_t *ref_gc);
  */
 object_t *
 obj_new_def_struct(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     object_t *move_idn,
     ast_t *move_ast,
     PadCtx *move_context
@@ -478,7 +478,7 @@ obj_new_def_struct(
  */
 object_t *
 obj_new_object(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     ast_t *ref_ast,
     PadCtx *move_context,
     object_t *ref_def_obj
@@ -488,7 +488,7 @@ obj_new_object(
  * construct module object by parameters
  * if failed to allocate memory then exit from process
  *
- * @param[in] *ref_gc              reference to gc_t (do not delete)
+ * @param[in] *ref_gc              reference to PadGc (do not delete)
  * @param[in] *name                pointer to C strings for module name
  * @param[in] *program_filename    file name
  * @param[in] *move_program_source program source
@@ -501,7 +501,7 @@ obj_new_object(
  */
 object_t *
 obj_new_module_by(
-    gc_t *ref_gc,
+    PadGc *ref_gc,
     const char *name,
     const char *program_filename,
     char *move_program_source,
@@ -522,13 +522,13 @@ obj_new_module_by(
  * @return pointer to object_t
  */
 object_t *
-obj_new_owners_method(gc_t *ref_gc, object_t *owner, string_t *move_method_name);
+obj_new_owners_method(PadGc *ref_gc, object_t *owner, string_t *move_method_name);
 
 object_t *
-obj_new_type(gc_t *ref_gc, obj_type_t type);
+obj_new_type(PadGc *ref_gc, obj_type_t type);
 
 object_t *
-obj_new_builtin_func(gc_t *ref_gc, const char *funcname);
+obj_new_builtin_func(PadGc *ref_gc, const char *funcname);
 
 /**
  * object to string_t
@@ -569,14 +569,14 @@ void
 obj_dec_ref(object_t *self);
 
 /**
- * get reference of gc_item_t in object
+ * get reference of PadGcItem in object
  *
  * @param[in] *self
  *
- * @return reference to gc_item_t (do not delete)
+ * @return reference to PadGcItem (do not delete)
  * @return failed to NULL
  */
-gc_item_t *
+PadGcItem *
 obj_get_gc_item(object_t *self);
 
 /**
@@ -771,8 +771,8 @@ obj_get_owners_method_owner(object_t *self);
 const char *
 obj_getc_mod_name(const object_t *self);
 
-gc_t *
+PadGc *
 obj_get_gc(object_t *self);
 
-gc_t *
-obj_set_gc(object_t *self, gc_t *ref_gc);
+PadGc *
+obj_set_gc(object_t *self, PadGc *ref_gc);

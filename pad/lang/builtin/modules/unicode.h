@@ -20,4 +20,4 @@
  * @return
  */
 object_t *
-Pad_NewBltUnicodeMod(const PadConfig *ref_config, gc_t *ref_gc);
+Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGc *ref_gc);

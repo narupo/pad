@@ -5,7 +5,7 @@ enum {
 };
 
 struct object_dict {
-    gc_t *ref_gc; // do not delete (this is reference)
+    PadGc *ref_gc; // do not delete (this is reference)
     object_dict_item_t *map;
     size_t capa;
     size_t len;
@@ -49,7 +49,7 @@ objdict_escdel(object_dict_t *self) {
 }
 
 object_dict_t *
-objdict_new(gc_t *ref_gc) {
+objdict_new(PadGc *ref_gc) {
     if (!ref_gc) {
         return NULL;
     }

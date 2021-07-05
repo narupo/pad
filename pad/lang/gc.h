@@ -25,50 +25,50 @@ struct PadGcItem {
 };
 
 /**
- * dump gc_item_t at stream
+ * dump PadGcItem at stream
  *
  * @param[in] *self
  */
 void
-PadGcItem_Dump(const gc_item_t *self, FILE *fout);
+PadGcItem_Dump(const PadGcItem *self, FILE *fout);
 
 /**
  * destruct gc
  *
- * @param[in] *self pointer to gc_t
+ * @param[in] *self pointer to PadGc
  */
 void
-PadGc_Del(gc_t *self);
+PadGc_Del(PadGc *self);
 
 /**
  * construct gc
  *
- * @return success to pointer to gc_t (dynamic allocate memory)
+ * @return success to pointer to PadGc (dynamic allocate memory)
  */
-gc_t *
+PadGc *
 PadGc_New(void);
 
 /**
- * allocate memory by gc_item_t and size
+ * allocate memory by PadGcItem and size
  * and stored allocated memory at memory pool of gc
- * and stored allocated memory address at gc_item_t.ptr
- * and save item id at gc_item_t.id
+ * and stored allocated memory address at PadGcItem.ptr
+ * and save item id at PadGcItem.id
  *
- * @param[in] *self pointer to gc_t
- * @param[in] *item pointer to gc_item_t
+ * @param[in] *self pointer to PadGc
+ * @param[in] *item pointer to PadGcItem
  * @param[in] size  number of size of want to allocate memory
  *
  * @return
  */
-gc_item_t *
-PadGc_Alloc(gc_t *self, gc_item_t *item, int32_t size);
+PadGcItem *
+PadGc_Alloc(PadGc *self, PadGcItem *item, int32_t size);
 
 /**
- * free allocated memory in gc_item_t
- * and remove from poll of gc_t
+ * free allocated memory in PadGcItem
+ * and remove from poll of PadGc
  *
- * @param[in] *self pointer to gc_t
- * @param[in] *item pointer to gc_item_t
+ * @param[in] *self pointer to PadGc
+ * @param[in] *item pointer to PadGcItem
  */
 void
-PadGc_Free(gc_t *self, gc_item_t *item);
+PadGc_Free(PadGc *self, PadGcItem *item);

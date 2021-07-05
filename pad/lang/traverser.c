@@ -633,9 +633,9 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
     const char *alias = obj_getc_idn_name(aliasobj);
     assert(alias);
 
-    importer_t *importer = importer_new(ast->ref_config);
+    PadImporter *importer = PadImporter_New(ast->ref_config);
 
-    if (!importer_import_as(
+    if (!PadImporter_ImportAs(
         importer,
         ast->ref_gc,
         ast,
@@ -643,14 +643,14 @@ trv_import_as_stmt(ast_t *ast, trv_args_t *targs) {
         path,
         alias
     )) {
-        pushb_error(importer_getc_error(importer));
+        pushb_error(PadImporter_GetcErr(importer));
         obj_del(pathobj);
         obj_del(aliasobj);
         return_trav(NULL);
     }
 
     // done
-    importer_del(importer);
+    PadImporter_Del(importer);
     return_trav(NULL);
 }
 
@@ -694,9 +694,9 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
 
     // import start
     const char *path = uni_getc_mb(pathobj->unicode);
-    importer_t *importer = importer_new(ast->ref_config);
+    PadImporter *importer = PadImporter_New(ast->ref_config);
 
-    if (!importer_from_import(
+    if (!PadImporter_FromImport(
         importer,
         ast->ref_gc,
         ast,
@@ -704,14 +704,14 @@ trv_from_import_stmt(ast_t *ast, trv_args_t *targs) {
         path,
         varsobj->objarr
     )) {
-        pushb_error(importer_getc_error(importer));
+        pushb_error(PadImporter_GetcErr(importer));
         obj_del(pathobj);
         obj_del(varsobj);
         return_trav(NULL);
     }
 
     // done
-    importer_del(importer);
+    PadImporter_Del(importer);
     return_trav(NULL);
 }
 
@@ -1013,7 +1013,7 @@ trv_return_stmt(ast_t *ast, trv_args_t *targs) {
 
     if (!return_stmt->formula) {
         PadCtx *ref_context = PadAst_GetRefCtx(ast);
-        gc_t *ref_gc = PadAst_GetRefGc(ast);
+        PadGc *ref_gc = PadAst_GetRefGc(ast);
         PadCtx_SetDoReturn(ref_context, true);
         object_t *ret = obj_new_nil(ref_gc);
         return_trav(ret);

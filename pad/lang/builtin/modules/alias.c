@@ -55,7 +55,7 @@ builtin_func_infos[] = {
 };
 
 object_t *
-Pad_NewBltAliasMod(const PadConfig *ref_config, gc_t *ref_gc) {
+Pad_NewBltAliasMod(const PadConfig *ref_config, PadGc *ref_gc) {
     tokenizer_t *tkr = tkr_new(mem_move(tkropt_new()));
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast_t *ast = PadAst_New(ref_config);

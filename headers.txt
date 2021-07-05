@@ -22,9 +22,9 @@
 ./pad/lang/compiler.h *
 ./pad/lang/context.h *
 ./pad/lang/gc.h *
-./pad/lang/importer.h
-./pad/lang/kit.h
-./pad/lang/nodes.h
+./pad/lang/importer.h *
+./pad/lang/kit.h *
+./pad/lang/nodes.h *
 ./pad/lang/node_array.h
 ./pad/lang/node_dict.h
 ./pad/lang/object.h
