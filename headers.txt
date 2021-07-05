@@ -44,7 +44,7 @@
 ./pad/lib/dict.h *
 ./pad/lib/error.h *
 ./pad/lib/file.h *
-./pad/lib/format.h
+./pad/lib/format.h *
 ./pad/lib/memory.h
 ./pad/lib/path.h
 ./pad/lib/pipe.h

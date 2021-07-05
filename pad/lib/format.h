@@ -14,4 +14,4 @@
  * @return failed to pointer to NULL
  */
 char *
-fmt_capitalize_text(char *dst, size_t dstsz, const char *text);
+PadFmt_CapiTxt(char *dst, size_t dstsz, const char *text);
