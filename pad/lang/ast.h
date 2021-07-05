@@ -32,10 +32,10 @@ struct PadAst {
     const PadConfig *ref_config;
 
     // reference of tokens with null terminated (do not delete)
-    token_t **ref_tokens;
+    PadTok **ref_tokens;
 
     // refenrece of tokens with null temrinated (do not delete)
-    token_t **ref_ptr;
+    PadTok **ref_ptr;
 
     // root node. compiler parsed
     PadNode *root;
@@ -53,7 +53,7 @@ struct PadAst {
     PadErrStack *error_stack;
 
     // error tokens for display error to developer
-    token_t *error_tokens[PAD_AST__ERR_TOKENS_SIZE];
+    PadTok *error_tokens[PAD_AST__ERR_TOKENS_SIZE];
     int32_t error_tokens_pos;
 
     // number of import level
@@ -243,7 +243,7 @@ PadAst_GetRefCtx(ast_t *self);
  *
  * @return
  */
-token_t *
+PadTok *
 PadAst_ReadTok(ast_t *self);
 
 /**
@@ -265,4 +265,4 @@ PadGc *
 PadAst_GetRefGc(ast_t *self);
 
 ast_t *
-PadAst_PushBackErrTok(ast_t *self, token_t *ref_token);
+PadAst_PushBackErrTok(ast_t *self, PadTok *ref_token);

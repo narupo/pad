@@ -1,22 +1,22 @@
 #include <pad/lang/tokens.h>
 
 void
-token_del(token_t *self) {
+PadTok_Del(PadTok *self) {
     if (self != NULL) {
         free(self->text);
         free(self);
     }
 }
 
-token_t *
-token_new(
-    token_type_t type,
+PadTok *
+PadTok_New(
+    PadTokType type,
     const char *program_filename,
     int32_t program_lineno,
     const char *program_source,
     int32_t program_source_pos
 ) {
-    token_t *self = mem_calloc(1, sizeof(*self));
+    PadTok *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -30,9 +30,9 @@ token_new(
     return self;
 }
 
-token_t *
-token_deep_copy(const token_t *other) {
-    token_t *self = mem_calloc(1, sizeof(*self));
+PadTok *
+PadTok_DeepCopy(const PadTok *other) {
+    PadTok *self = mem_calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -41,7 +41,7 @@ token_deep_copy(const token_t *other) {
     if (other->text) {
         self->text = cstr_dup(other->text);
         if (!self->text) {
-            token_del(self);
+            PadTok_Del(self);
             return NULL;
         }
     } else {
@@ -53,26 +53,26 @@ token_deep_copy(const token_t *other) {
 }
 
 void
-token_move_text(token_t *self, char *move_text) {
+PadTok_MoveTxt(PadTok *self, char *move_text) {
     free(self->text);
     self->text = move_text;
 }
 
 int
-token_get_type(const token_t *self) {
+PadTok_GetType(const PadTok *self) {
     if (self == NULL) {
-        return TOKEN_TYPE_INVALID;
+        return PAD_TOK_TYPE__INVALID;
     }
     return self->type;
 }
 
 const char *
-token_getc_text(const token_t *self) {
+PadTok_GetcTxt(const PadTok *self) {
     return self->text;
 }
 
 char *
-token_copy_text(const token_t *self) {
+PadTok_CopyTxt(const PadTok *self) {
     return cstr_dup(self->text);
 }
 
@@ -80,110 +80,110 @@ token_copy_text(const token_t *self) {
  * not thread safe
  */
 const char *
-token_type_to_str(const token_t *self) {
+PadTok_TypeToStr(const PadTok *self) {
     static char str[100] = {0};
     if (!self) {
         return "(null)";
     }
 
     switch (self->type) {
-    case TOKEN_TYPE_INVALID: return "invalid"; break;
-    case TOKEN_TYPE_NIL: return "nil"; break;
-    case TOKEN_TYPE_NEWLINE: return "NEWLINE"; break;
-    case TOKEN_TYPE_TEXT_BLOCK:
+    case PAD_TOK_TYPE__INVALID: return "invalid"; break;
+    case PAD_TOK_TYPE__NIL: return "nil"; break;
+    case PAD_TOK_TYPE__NEWLINE: return "NEWLINE"; break;
+    case PAD_TOK_TYPE__TEXT_BLOCK:
         snprintf(str, sizeof str, "text block[%s]", self->text);
         return str;
         break;
-    case TOKEN_TYPE_BLOCK: return "block"; break;
-    case TOKEN_TYPE_LBRACEAT: return "{@"; break;
-    case TOKEN_TYPE_RBRACEAT: return "@}"; break;
-    case TOKEN_TYPE_LDOUBLE_BRACE: return "{:"; break;
-    case TOKEN_TYPE_RDOUBLE_BRACE: return ":}"; break;
-    case TOKEN_TYPE_LBRACKET: return "["; break;
-    case TOKEN_TYPE_RBRACKET: return "]"; break;
-    case TOKEN_TYPE_LBRACE: return "{"; break;
-    case TOKEN_TYPE_RBRACE: return "}"; break;
-    case TOKEN_TYPE_DOT_OPE: return "."; break;
-    case TOKEN_TYPE_COMMA: return ","; break;
-    case TOKEN_TYPE_COLON: return "colon"; break;
-    case TOKEN_TYPE_SEMICOLON: return "semicolon"; break;
-    case TOKEN_TYPE_IDENTIFIER: return self->text; break;
-    case TOKEN_TYPE_LPAREN: return "("; break;
-    case TOKEN_TYPE_RPAREN: return ")"; break;
-    case TOKEN_TYPE_DQ_STRING:
+    case PAD_TOK_TYPE__BLOCK: return "block"; break;
+    case PAD_TOK_TYPE__LBRACEAT: return "{@"; break;
+    case PAD_TOK_TYPE__RBRACEAT: return "@}"; break;
+    case PAD_TOK_TYPE__LDOUBLE_BRACE: return "{:"; break;
+    case PAD_TOK_TYPE__RDOUBLE_BRACE: return ":}"; break;
+    case PAD_TOK_TYPE__LBRACKET: return "["; break;
+    case PAD_TOK_TYPE__RBRACKET: return "]"; break;
+    case PAD_TOK_TYPE__LBRACE: return "{"; break;
+    case PAD_TOK_TYPE__RBRACE: return "}"; break;
+    case PAD_TOK_TYPE__DOT_OPE: return "."; break;
+    case PAD_TOK_TYPE__COMMA: return ","; break;
+    case PAD_TOK_TYPE__COLON: return "colon"; break;
+    case PAD_TOK_TYPE__SEMICOLON: return "semicolon"; break;
+    case PAD_TOK_TYPE__IDENTIFIER: return self->text; break;
+    case PAD_TOK_TYPE__LPAREN: return "("; break;
+    case PAD_TOK_TYPE__RPAREN: return ")"; break;
+    case PAD_TOK_TYPE__DQ_STRING:
         snprintf(str, sizeof str, "str[%s]", self->text);
         return str;
         break;
-    case TOKEN_TYPE_INTEGER:
+    case PAD_TOK_TYPE__INTEGER:
         snprintf(str, sizeof str, "int[%ld]", self->lvalue);
         return str;
         break;
-    case TOKEN_TYPE_FLOAT:
+    case PAD_TOK_TYPE__FLOAT:
         snprintf(str, sizeof str, "float[%lf]", self->float_value);
         return str;
         break;
 
-    case TOKEN_TYPE_FALSE: return "false"; break;
-    case TOKEN_TYPE_TRUE: return "true"; break;
+    case PAD_TOK_TYPE__FALSE: return "false"; break;
+    case PAD_TOK_TYPE__TRUE: return "true"; break;
 
     // operators
-    case TOKEN_TYPE_PAD_OP__ADD: return "+"; break;
-    case TOKEN_TYPE_PAD_OP__SUB: return "-"; break;
-    case TOKEN_TYPE_PAD_OP__MUL: return "*"; break;
-    case TOKEN_TYPE_PAD_OP__DIV: return "/"; break;
-    case TOKEN_TYPE_PAD_OP__MOD: return "%"; break;
-    case TOKEN_TYPE_PAD_OP__OR: return "or"; break;
-    case TOKEN_TYPE_PAD_OP__AND: return "and"; break;
-    case TOKEN_TYPE_PAD_OP__NOT: return "not"; break;
+    case PAD_TOK_TYPE__PAD_OP__ADD: return "+"; break;
+    case PAD_TOK_TYPE__PAD_OP__SUB: return "-"; break;
+    case PAD_TOK_TYPE__PAD_OP__MUL: return "*"; break;
+    case PAD_TOK_TYPE__PAD_OP__DIV: return "/"; break;
+    case PAD_TOK_TYPE__PAD_OP__MOD: return "%"; break;
+    case PAD_TOK_TYPE__PAD_OP__OR: return "or"; break;
+    case PAD_TOK_TYPE__PAD_OP__AND: return "and"; break;
+    case PAD_TOK_TYPE__PAD_OP__NOT: return "not"; break;
 
     // assign operators
-    case TOKEN_TYPE_PAD_OP__ASS: return "="; break;
-    case TOKEN_TYPE_PAD_OP__ADD_ASS: return "+="; break;
-    case TOKEN_TYPE_PAD_OP__SUB_ASS: return "-="; break;
-    case TOKEN_TYPE_PAD_OP__MUL_ASS: return "*="; break;
-    case TOKEN_TYPE_PAD_OP__DIV_ASS: return "/="; break;
-    case TOKEN_TYPE_PAD_OP__MOD_ASS: return "%="; break;
+    case PAD_TOK_TYPE__PAD_OP__ASS: return "="; break;
+    case PAD_TOK_TYPE__PAD_OP__ADD_ASS: return "+="; break;
+    case PAD_TOK_TYPE__PAD_OP__SUB_ASS: return "-="; break;
+    case PAD_TOK_TYPE__PAD_OP__MUL_ASS: return "*="; break;
+    case PAD_TOK_TYPE__PAD_OP__DIV_ASS: return "/="; break;
+    case PAD_TOK_TYPE__PAD_OP__MOD_ASS: return "%="; break;
 
     // comparison operators
-    case TOKEN_TYPE_PAD_OP__EQ: return "=="; break;
-    case TOKEN_TYPE_PAD_OP__NOT_EQ: return "!="; break;
-    case TOKEN_TYPE_PAD_OP__LTE: return "<="; break;
-    case TOKEN_TYPE_PAD_OP__GTE: return ">="; break;
-    case TOKEN_TYPE_PAD_OP__LT: return "<"; break;
-    case TOKEN_TYPE_PAD_OP__GT: return ">"; break;
+    case PAD_TOK_TYPE__PAD_OP__EQ: return "=="; break;
+    case PAD_TOK_TYPE__PAD_OP__NOT_EQ: return "!="; break;
+    case PAD_TOK_TYPE__PAD_OP__LTE: return "<="; break;
+    case PAD_TOK_TYPE__PAD_OP__GTE: return ">="; break;
+    case PAD_TOK_TYPE__PAD_OP__LT: return "<"; break;
+    case PAD_TOK_TYPE__PAD_OP__GT: return ">"; break;
 
     // statements
-    case TOKEN_TYPE_STMT_END: return "end"; break;
+    case PAD_TOK_TYPE__STMT_END: return "end"; break;
 
-    case TOKEN_TYPE_STMT_IMPORT: return "import"; break;
-    case TOKEN_TYPE_AS: return "as"; break;
-    case TOKEN_TYPE_FROM: return "from"; break;
+    case PAD_TOK_TYPE__STMT_IMPORT: return "import"; break;
+    case PAD_TOK_TYPE__AS: return "as"; break;
+    case PAD_TOK_TYPE__FROM: return "from"; break;
 
-    case TOKEN_TYPE_STMT_IF: return "if"; break;
-    case TOKEN_TYPE_STMT_ELIF: return "elif"; break;
-    case TOKEN_TYPE_STMT_ELSE: return "else"; break;
+    case PAD_TOK_TYPE__STMT_IF: return "if"; break;
+    case PAD_TOK_TYPE__STMT_ELIF: return "elif"; break;
+    case PAD_TOK_TYPE__STMT_ELSE: return "else"; break;
 
-    case TOKEN_TYPE_STMT_FOR: return "for"; break;
-    case TOKEN_TYPE_STMT_BREAK: return "break"; break;
-    case TOKEN_TYPE_STMT_CONTINUE: return "continue"; break;
-    case TOKEN_TYPE_STMT_RETURN: return "return"; break;
-    case TOKEN_TYPE_STMT_BLOCK: return "block"; break;
-    case TOKEN_TYPE_STMT_INJECT: return "inject"; break;
+    case PAD_TOK_TYPE__STMT_FOR: return "for"; break;
+    case PAD_TOK_TYPE__STMT_BREAK: return "break"; break;
+    case PAD_TOK_TYPE__STMT_CONTINUE: return "continue"; break;
+    case PAD_TOK_TYPE__STMT_RETURN: return "return"; break;
+    case PAD_TOK_TYPE__STMT_BLOCK: return "block"; break;
+    case PAD_TOK_TYPE__STMT_INJECT: return "inject"; break;
 
     // struct
-    case TOKEN_TYPE_STRUCT: return "struct"; break;
+    case PAD_TOK_TYPE__STRUCT: return "struct"; break;
 
     // def
-    case TOKEN_TYPE_DEF: return "def"; break;
-    case TOKEN_TYPE_MET: return "met"; break;
-    case TOKEN_TYPE_EXTENDS: return "extends"; break;
+    case PAD_TOK_TYPE__DEF: return "def"; break;
+    case PAD_TOK_TYPE__MET: return "met"; break;
+    case PAD_TOK_TYPE__EXTENDS: return "extends"; break;
     }
 
     return "unknown";
 }
 
 void
-token_dump(const token_t *self, FILE *fout) {
+PadTok_Dump(const PadTok *self, FILE *fout) {
     if (!self || !fout) {
         return;
     }

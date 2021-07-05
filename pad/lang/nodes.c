@@ -15,7 +15,7 @@ PadNode_Del(PadNode *self) {
 }
 
 PadNode *
-PadNode_New(PadNodeType type, void *real, const token_t *ref_token) {
+PadNode_New(PadNodeType type, void *real, const PadTok *ref_token) {
     assert(ref_token);
     if (!real || !ref_token) {
         return NULL;
@@ -659,13 +659,13 @@ PadNode_Dump(const PadNode *self, FILE *fout) {
     fprintf(fout, "type[%d]\n", self->type);
     fprintf(fout, "real[%p]\n", self->real);
     if (self->ref_token) {
-        token_dump(self->ref_token, fout);
+        PadTok_Dump(self->ref_token, fout);
     } else {
         fprintf(fout, "ref_token[%p]\n", self->ref_token);
     }
 }
 
-const token_t *
+const PadTok *
 PadNode_GetcRefTok(const PadNode *self) {
     if (!self) {
         return NULL;

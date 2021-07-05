@@ -57,7 +57,7 @@ tkropt_validate(PadTkrOpt *self) {
 * macros *
 *********/
 
-#define tok_new(type) token_new(type, self->program_filename, self->program_lineno, self->program_source, tkr_get_program_source_pos(self))
+#define tok_new(type) PadTok_New(type, self->program_filename, self->program_lineno, self->program_source, tkr_get_program_source_pos(self))
 
 #undef pushb_error
 #define pushb_error(fmt, ...) \
@@ -80,7 +80,7 @@ struct PadTkr {
     char *program_filename;
     const char *program_source;
     const char *ptr;
-    token_t **tokens;
+    PadTok **tokens;
     string_t *buf;
     PadTkrOpt *option;
     int32_t tokens_len;
@@ -96,7 +96,7 @@ PadTkr_Del(PadTkr *self) {
     }
 
     for (int32_t i = 0; i < self->tokens_len; ++i) {
-        token_del(self->tokens[i]);
+        PadTok_Del(self->tokens[i]);
     }
     free(self->program_filename);
     free(self->tokens);
@@ -121,7 +121,7 @@ PadTkr_New(PadTkrOpt *move_option) {
 
     self->tokens_capa = INIT_TOKENS_CAPA;
     self->tokens_len = 0;
-    self->tokens = mem_calloc(self->tokens_capa+1, sizeof(token_t *));  // +1 for final null
+    self->tokens = mem_calloc(self->tokens_capa+1, sizeof(PadTok *));  // +1 for final null
     if (!self->tokens) {
         PadTkr_Del(self);
         return NULL;
@@ -181,15 +181,15 @@ PadTkr_DeepCopy(const PadTkr *other) {
     self->option = mem_move(opt);
     self->debug = other->debug;
 
-    self->tokens = mem_calloc(self->tokens_capa + 1, sizeof(token_t *));  // +1 for final null
+    self->tokens = mem_calloc(self->tokens_capa + 1, sizeof(PadTok *));  // +1 for final null
     if (!self->tokens) {
         PadTkr_Del(self);
         return NULL;
     }
 
     for (int32_t i = 0; i < self->tokens_len; ++i) {
-        const token_t *tok = other->tokens[i];
-        self->tokens[i] = token_deep_copy(tok);
+        const PadTok *tok = other->tokens[i];
+        self->tokens[i] = PadTok_DeepCopy(tok);
         if (!self->tokens[i]) {
             PadTkr_Del(self);
             return NULL;
@@ -201,10 +201,10 @@ PadTkr_DeepCopy(const PadTkr *other) {
 
 PadTkr *
 PadTkr_ExtendBackOther(PadTkr *self, const PadTkr *other) {
-    int32_t byte = sizeof(token_t *);
+    int32_t byte = sizeof(PadTok *);
     int32_t needcapa = (self->tokens_capa + other->tokens_len);
     int32_t needsize = needcapa * byte + byte;
-    token_t **tmp = realloc(self->tokens, needsize);
+    PadTok **tmp = realloc(self->tokens, needsize);
     if (!tmp) {
         return NULL;
     }
@@ -212,7 +212,7 @@ PadTkr_ExtendBackOther(PadTkr *self, const PadTkr *other) {
     self->tokens_capa = needcapa;
 
     for (int32_t i = 0; i < other->tokens_len; i++) {
-        token_t *tok = token_deep_copy(other->tokens[i]);
+        PadTok *tok = PadTok_DeepCopy(other->tokens[i]);
         self->tokens[self->tokens_len++] = mem_move(tok);
     }
     self->tokens[self->tokens_len] = NULL;
@@ -222,10 +222,10 @@ PadTkr_ExtendBackOther(PadTkr *self, const PadTkr *other) {
 
 PadTkr *
 PadTkr_ExtendFrontOther(PadTkr *self, const PadTkr *other) {
-    int32_t byte = sizeof(token_t *);
+    int32_t byte = sizeof(PadTok *);
     int32_t needcapa = (self->tokens_capa + other->tokens_len);
     int32_t needsize = needcapa * byte + byte;
-    token_t **tmp = realloc(self->tokens, needsize);
+    PadTok **tmp = realloc(self->tokens, needsize);
     if (!tmp) {
         return NULL;
     }
@@ -238,9 +238,9 @@ PadTkr_ExtendFrontOther(PadTkr *self, const PadTkr *other) {
         self->tokens[j] = NULL;
     }
     for (int32_t i = 0; i < other->tokens_len; i++) {
-        token_t *otok = other->tokens[i];
+        PadTok *otok = other->tokens[i];
         assert(otok);
-        token_t *tok = token_deep_copy(otok);
+        PadTok *tok = PadTok_DeepCopy(otok);
         self->tokens[i] = tok;
     }
     self->tokens_len = self->tokens_len + other->tokens_len;
@@ -293,8 +293,8 @@ PadTkr_MoveOpt(PadTkr *self, PadTkrOpt *move_opt) {
 
 static void
 tkr_resize_tokens(PadTkr *self, int32_t capa) {
-    size_t byte = sizeof(token_t *);
-    token_t **tmp = mem_realloc(self->tokens, byte*capa +byte); // +byte for final null
+    size_t byte = sizeof(PadTok *);
+    PadTok **tmp = mem_realloc(self->tokens, byte*capa +byte); // +byte for final null
     if (!tmp) {
         return;
     }
@@ -304,7 +304,7 @@ tkr_resize_tokens(PadTkr *self, int32_t capa) {
 }
 
 static void
-tkr_move_token(PadTkr *self, token_t *move_token) {
+tkr_move_token(PadTkr *self, PadTok *move_token) {
     if (self->tokens_len >= self->tokens_capa) {
         tkr_resize_tokens(self, self->tokens_capa*2);
     }
@@ -313,7 +313,7 @@ tkr_move_token(PadTkr *self, token_t *move_token) {
     self->tokens[self->tokens_len] = NULL;
 }
 
-static token_t *
+static PadTok *
 tkr_read_atmark(PadTkr *self) {
     int m = 0;
 
@@ -342,7 +342,7 @@ done:
     } else if (m == 10) {
         pushb_error("invalid syntax. single '@' is not supported");
     } else if (m == 20) {
-        return tok_new(TOKEN_TYPE_RBRACEAT);
+        return tok_new(PAD_TOK_TYPE__RBRACEAT);
     }
     return NULL; // impossible
 }
@@ -350,7 +350,7 @@ done:
 static void
 tkr_clear_tokens(PadTkr *self) {
     for (int i = 0; i < self->tokens_len; ++i) {
-        token_del(self->tokens[i]);
+        PadTok_Del(self->tokens[i]);
         self->tokens[i] = NULL;
     }
     self->tokens_len = 0;
@@ -361,7 +361,7 @@ tkr_is_identifier_char(PadTkr *self, int c) {
     return isalpha(c) || isdigit(c) || c == '_';
 }
 
-static token_t *
+static PadTok *
 tkr_read_identifier(PadTkr *self) {
     string_t *buf = str_new();
 
@@ -379,8 +379,8 @@ tkr_read_identifier(PadTkr *self) {
         err_die("impossible. identifier is empty");
     }
 
-    token_t *token = tok_new(TOKEN_TYPE_IDENTIFIER);
-    token_move_text(token, str_esc_del(buf));
+    PadTok *token = tok_new(PAD_TOK_TYPE__IDENTIFIER);
+    PadTok_MoveTxt(token, str_esc_del(buf));
     return token;
 }
 
@@ -415,7 +415,7 @@ tkr_read_Pad_Escape(PadTkr *self) {
     return esc;
 }
 
-static token_t *
+static PadTok *
 tkr_read_dq_string(PadTkr *self) {
     int m = 0;
 
@@ -452,8 +452,8 @@ tkr_read_dq_string(PadTkr *self) {
     }
 
 done: {
-        token_t *token = tok_new(TOKEN_TYPE_DQ_STRING);
-        token_move_text(token, str_esc_del(buf));
+        PadTok *token = tok_new(PAD_TOK_TYPE__DQ_STRING);
+        PadTok_MoveTxt(token, str_esc_del(buf));
         return token;
     }
 fail:
@@ -466,60 +466,60 @@ PadTkr_HasErrStack(const PadTkr *self) {
     return PadErrStack_Len(self->error_stack);
 }
 
-static token_t *
+static PadTok *
 PadTkr_Parse_identifier(PadTkr *self) {
-    token_t *token = tkr_read_identifier(self);
+    PadTok *token = tkr_read_identifier(self);
     if (PadTkr_HasErrStack(self)) {
-        token_del(token);
+        PadTok_Del(token);
         return NULL;
     }
 
     if (cstr_eq(token->text, "end")) {
-        token->type = TOKEN_TYPE_STMT_END;
+        token->type = PAD_TOK_TYPE__STMT_END;
     } else if (cstr_eq(token->text, "import")) {
-        token->type = TOKEN_TYPE_STMT_IMPORT;
+        token->type = PAD_TOK_TYPE__STMT_IMPORT;
     } else if (cstr_eq(token->text, "as")) {
-        token->type = TOKEN_TYPE_AS;
+        token->type = PAD_TOK_TYPE__AS;
     } else if (cstr_eq(token->text, "from")) {
-        token->type = TOKEN_TYPE_FROM;
+        token->type = PAD_TOK_TYPE__FROM;
     } else if (cstr_eq(token->text, "if")) {
-        token->type = TOKEN_TYPE_STMT_IF;
+        token->type = PAD_TOK_TYPE__STMT_IF;
     } else if (cstr_eq(token->text, "elif")) {
-        token->type = TOKEN_TYPE_STMT_ELIF;
+        token->type = PAD_TOK_TYPE__STMT_ELIF;
     } else if (cstr_eq(token->text, "else")) {
-        token->type = TOKEN_TYPE_STMT_ELSE;
+        token->type = PAD_TOK_TYPE__STMT_ELSE;
     } else if (cstr_eq(token->text, "for")) {
-        token->type = TOKEN_TYPE_STMT_FOR;
+        token->type = PAD_TOK_TYPE__STMT_FOR;
     } else if (cstr_eq(token->text, "or")) {
-        token->type = TOKEN_TYPE_PAD_OP__OR;
+        token->type = PAD_TOK_TYPE__PAD_OP__OR;
     } else if (cstr_eq(token->text, "and")) {
-        token->type = TOKEN_TYPE_PAD_OP__AND;
+        token->type = PAD_TOK_TYPE__PAD_OP__AND;
     } else if (cstr_eq(token->text, "not")) {
-        token->type = TOKEN_TYPE_PAD_OP__NOT;
+        token->type = PAD_TOK_TYPE__PAD_OP__NOT;
     } else if (cstr_eq(token->text, "nil")) {
-        token->type = TOKEN_TYPE_NIL;
+        token->type = PAD_TOK_TYPE__NIL;
     } else if (cstr_eq(token->text, "break")) {
-        token->type = TOKEN_TYPE_STMT_BREAK;
+        token->type = PAD_TOK_TYPE__STMT_BREAK;
     } else if (cstr_eq(token->text, "continue")) {
-        token->type = TOKEN_TYPE_STMT_CONTINUE;
+        token->type = PAD_TOK_TYPE__STMT_CONTINUE;
     } else if (cstr_eq(token->text, "return")) {
-        token->type = TOKEN_TYPE_STMT_RETURN;
+        token->type = PAD_TOK_TYPE__STMT_RETURN;
     } else if (cstr_eq(token->text, "def")) {
-        token->type = TOKEN_TYPE_DEF;
+        token->type = PAD_TOK_TYPE__DEF;
     } else if (cstr_eq(token->text, "met")) {
-        token->type = TOKEN_TYPE_MET;
+        token->type = PAD_TOK_TYPE__MET;
     } else if (cstr_eq(token->text, "true")) {
-        token->type = TOKEN_TYPE_TRUE;
+        token->type = PAD_TOK_TYPE__TRUE;
     } else if (cstr_eq(token->text, "false")) {
-        token->type = TOKEN_TYPE_FALSE;
+        token->type = PAD_TOK_TYPE__FALSE;
     } else if (cstr_eq(token->text, "block")) {
-        token->type = TOKEN_TYPE_STMT_BLOCK;
+        token->type = PAD_TOK_TYPE__STMT_BLOCK;
     } else if (cstr_eq(token->text, "inject")) {
-        token->type = TOKEN_TYPE_STMT_INJECT;
+        token->type = PAD_TOK_TYPE__STMT_INJECT;
     } else if (cstr_eq(token->text, "extends")) {
-        token->type = TOKEN_TYPE_EXTENDS;
+        token->type = PAD_TOK_TYPE__EXTENDS;
     } else if (cstr_eq(token->text, "struct")) {
-        token->type = TOKEN_TYPE_STRUCT;
+        token->type = PAD_TOK_TYPE__STRUCT;
     }
 
     tkr_move_token(self, token);
@@ -531,8 +531,8 @@ tkr_store_textblock(PadTkr *self) {
     if (!str_len(self->buf)) {
         return self;
     }
-    token_t *textblock = tok_new(TOKEN_TYPE_TEXT_BLOCK);
-    token_move_text(textblock, mem_move(str_esc_del(self->buf)));
+    PadTok *textblock = tok_new(PAD_TOK_TYPE__TEXT_BLOCK);
+    PadTok_MoveTxt(textblock, mem_move(str_esc_del(self->buf)));
     tkr_move_token(self, mem_move(textblock));
     self->buf = str_new();
     return self;
@@ -542,8 +542,8 @@ static PadTkr *
 PadTkr_Parse_op(
     PadTkr *self,
     char op,
-    token_type_t type_op,
-    token_type_t type_op_ass
+    PadTokType type_op,
+    PadTokType type_op_ass
 ) {
     if (*self->ptr != op) {
         pushb_error("not found '%c'", op);
@@ -553,13 +553,13 @@ PadTkr_Parse_op(
     tkr_next(self);
 
     if (*self->ptr != '=') {
-        token_t *token = tok_new(type_op);
+        PadTok *token = tok_new(type_op);
         tkr_move_token(self, mem_move(token));
         return self;
     }
 
     tkr_next(self);
-    token_t *token = tok_new(type_op_ass);
+    PadTok *token = tok_new(type_op_ass);
     tkr_move_token(self, mem_move(token));
     return self;
 }
@@ -569,7 +569,7 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
     const char *save = self->ptr;
     int m = 0;
     string_t *buf = str_new();
-    token_type_t type = TOKEN_TYPE_INTEGER;
+    PadTokType type = PAD_TOK_TYPE__INTEGER;
 
     for (; *self->ptr; ) {
         char c = *self->ptr++;
@@ -599,7 +599,7 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
                 str_pushb(buf, c);
             } else if (c == '.') {
                 m = 300;
-                type = TOKEN_TYPE_FLOAT;
+                type = PAD_TOK_TYPE__FLOAT;
                 str_pushb(buf, c);
             } else {
                 self->ptr--;
@@ -627,10 +627,10 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
         }
     }
 
-    token_t *token;
+    PadTok *token;
 done:
     token = tok_new(type);
-    if (type == TOKEN_TYPE_INTEGER) {
+    if (type == PAD_TOK_TYPE__INTEGER) {
         token->lvalue = strtol(str_getc(buf), NULL, 10);
     } else {
         token->float_value = strtod(str_getc(buf), NULL);
@@ -666,14 +666,14 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
         if (m == 0) { // first
             if (c == '{' && *self->ptr == '@') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_LBRACEAT);
+                PadTok *token = tok_new(PAD_TOK_TYPE__LBRACEAT);
                 tkr_store_textblock(self);
                 tkr_move_token(self, mem_move(token));
                 m = 10;
             } else if (c == self->option->ldbrace_value[0] &&
                        *self->ptr == self->option->ldbrace_value[1]) {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_LDOUBLE_BRACE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__LDOUBLE_BRACE);
                 tkr_store_textblock(self);
                 tkr_move_token(self, mem_move(token));
                 m = 20;
@@ -697,9 +697,9 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
         } else if (m == 10) { // found '{@'
             if (c == '"') {
                 tkr_prev(self);
-                token_t *token = tkr_read_dq_string(self);
+                PadTok *token = tkr_read_dq_string(self);
                 if (PadTkr_HasErrStack(self)) {
-                    token_del(token);
+                    PadTok_Del(token);
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
@@ -721,90 +721,90 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
                 m = 150;
             } else if (c == '\r' && *self->ptr == '\n') {
                 tkr_next(self);
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__NEWLINE)));
                 self->program_lineno++;
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__NEWLINE)));
                 self->program_lineno++;
             } else if (c == '@') {
                 tkr_prev(self);
-                token_t *token = tkr_read_atmark(self);
+                PadTok *token = tkr_read_atmark(self);
                 if (PadTkr_HasErrStack(self)) {
-                    token_del(token);
+                    PadTok_Del(token);
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
 
-                if (token->type == TOKEN_TYPE_RBRACEAT) {
+                if (token->type == PAD_TOK_TYPE__RBRACEAT) {
                     m = 0;
                 }
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ASS, PAD_TOK_TYPE__PAD_OP__EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__NOT_EQ);
+                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__NOT_EQ);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__LTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__LTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__GTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__GTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__LT)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__PAD_OP__LT)));
             } else if (c == '>') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__GT)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__PAD_OP__GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ADD, PAD_TOK_TYPE__PAD_OP__ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__SUB, PAD_TOK_TYPE__PAD_OP__SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MUL, PAD_TOK_TYPE__PAD_OP__MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__DIV, PAD_TOK_TYPE__PAD_OP__DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MOD, PAD_TOK_TYPE__PAD_OP__MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_DOT_OPE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__DOT_OPE)));
             } else if (c == ',') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_COMMA)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__COMMA)));
             } else if (c == '(') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_LPAREN)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__LPAREN)));
             } else if (c == ')') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_RPAREN)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__RPAREN)));
             } else if (c == '[') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_LBRACKET)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__LBRACKET)));
             } else if (c == ']') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_RBRACKET)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__RBRACKET)));
             } else if (c == '{') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_LBRACE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__LBRACE)));
             } else if (c == '}') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_RBRACE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__RBRACE)));
             } else if (c == ':') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_COLON)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__COLON)));
             } else if (c == ';') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_SEMICOLON)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__SEMICOLON)));
             } else if (isspace(c)) {
                 // pass
             } else {
@@ -814,9 +814,9 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
         } else if (m == 20) {  // found '{:'
             if (c == '"') {
                 tkr_prev(self);
-                token_t *token = tkr_read_dq_string(self);
+                PadTok *token = tkr_read_dq_string(self);
                 if (PadTkr_HasErrStack(self)) {
-                    token_del(token);
+                    PadTok_Del(token);
                     goto fail;
                 }
                 tkr_move_token(self, mem_move(token));
@@ -833,83 +833,83 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
             } else if (c == self->option->rdbrace_value[0] &&
                        *self->ptr == self->option->rdbrace_value[1]) {
                tkr_next(self);
-               token_t *token = tok_new(TOKEN_TYPE_RDOUBLE_BRACE);
+               PadTok *token = tok_new(PAD_TOK_TYPE__RDOUBLE_BRACE);
                tkr_store_textblock(self);
                tkr_move_token(self, mem_move(token));
                m = 0;
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ASS, TOKEN_TYPE_PAD_OP__EQ)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ASS, PAD_TOK_TYPE__PAD_OP__EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__NOT_EQ);
+                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__NOT_EQ);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__LTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__LTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 tkr_next(self);
-                token_t *token = tok_new(TOKEN_TYPE_PAD_OP__GTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__GTE);
                 tkr_move_token(self, mem_move(token));
             } else if (c == '<') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__LT)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__PAD_OP__LT)));
             } else if (c == '>') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_PAD_OP__GT)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__PAD_OP__GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__ADD, TOKEN_TYPE_PAD_OP__ADD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ADD, PAD_TOK_TYPE__PAD_OP__ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__SUB, TOKEN_TYPE_PAD_OP__SUB_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__SUB, PAD_TOK_TYPE__PAD_OP__SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MUL, TOKEN_TYPE_PAD_OP__MUL_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MUL, PAD_TOK_TYPE__PAD_OP__MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__DIV, TOKEN_TYPE_PAD_OP__DIV_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__DIV, PAD_TOK_TYPE__PAD_OP__DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, TOKEN_TYPE_PAD_OP__MOD, TOKEN_TYPE_PAD_OP__MOD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MOD, PAD_TOK_TYPE__PAD_OP__MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_DOT_OPE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__DOT_OPE)));
             } else if (c == ',') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_COMMA)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__COMMA)));
             } else if (c == '(') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_LPAREN)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__LPAREN)));
             } else if (c == ')') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_RPAREN)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__RPAREN)));
             } else if (c == '[') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_LBRACKET)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__LBRACKET)));
             } else if (c == ']') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_RBRACKET)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__RBRACKET)));
             } else if (c == '{') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_LBRACE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__LBRACE)));
             } else if (c == '}') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_RBRACE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__RBRACE)));
             } else if (c == ':') {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_COLON)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__COLON)));
             } else if (c == ' ') {
                 // pass
             } else if (c == '\r' && *self->ptr == '\n') {
                 tkr_next(self);
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__NEWLINE)));
                 self->program_lineno++;
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
-                tkr_move_token(self, mem_move(tok_new(TOKEN_TYPE_NEWLINE)));
+                tkr_move_token(self, mem_move(tok_new(PAD_TOK_TYPE__NEWLINE)));
                 self->program_lineno++;
             } else {
                 pushb_error("syntax error. unsupported character \"%c\"", c);
@@ -956,7 +956,7 @@ PadTkr_ToksLen(const PadTkr *self) {
     return self->tokens_len;
 }
 
-const token_t *
+const PadTok *
 PadTkr_ToksGetc(PadTkr *self, int32_t index) {
     if (index < 0 || index >= self->tokens_len) {
         return NULL;
@@ -982,7 +982,7 @@ PadTkr_GetcErrStack(const PadTkr *self) {
     return self->error_stack;
 }
 
-token_t **
+PadTok **
 PadTkr_GetToks(PadTkr *self) {
     return self->tokens;
 }

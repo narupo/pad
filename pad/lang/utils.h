@@ -15,7 +15,7 @@
 
 #undef pushb_error_token
 #define pushb_error_token(errstack, token, fmt, ...) { \
-        const token_t *t = token; \
+        const PadTok *t = token; \
         const char *fname = NULL; \
         int32_t lineno = 0; \
         const char *src = NULL; \
@@ -37,7 +37,7 @@
         const char *src = NULL; \
         int32_t pos = 0; \
         if (n) { \
-            const token_t *t = n->ref_token; \
+            const PadTok *t = n->ref_token; \
             if (t) { \
                 fname = t->program_filename; \
                 lineno = t->program_lineno; \

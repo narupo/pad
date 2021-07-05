@@ -9,106 +9,106 @@
 #include <pad/lang/types.h>
 
 typedef enum {
-    TOKEN_TYPE_INVALID,
-    TOKEN_TYPE_NEWLINE, // '\n'
-    TOKEN_TYPE_TEXT_BLOCK,
-    TOKEN_TYPE_BLOCK,
-    TOKEN_TYPE_LBRACEAT, // '{@'
-    TOKEN_TYPE_RBRACEAT, // '@}'
-    TOKEN_TYPE_LDOUBLE_BRACE, // '{:'
-    TOKEN_TYPE_RDOUBLE_BRACE, // ':}'
-    TOKEN_TYPE_DOT_OPE, // '.'
-    TOKEN_TYPE_COMMA, // ','
+    PAD_TOK_TYPE__INVALID,
+    PAD_TOK_TYPE__NEWLINE, // '\n'
+    PAD_TOK_TYPE__TEXT_BLOCK,
+    PAD_TOK_TYPE__BLOCK,
+    PAD_TOK_TYPE__LBRACEAT, // '{@'
+    PAD_TOK_TYPE__RBRACEAT, // '@}'
+    PAD_TOK_TYPE__LDOUBLE_BRACE, // '{:'
+    PAD_TOK_TYPE__RDOUBLE_BRACE, // ':}'
+    PAD_TOK_TYPE__DOT_OPE, // '.'
+    PAD_TOK_TYPE__COMMA, // ','
 
-    TOKEN_TYPE_COLON, // ':'
-    TOKEN_TYPE_SEMICOLON, // ';'
-    TOKEN_TYPE_IDENTIFIER,
-    TOKEN_TYPE_LPAREN, // '('
-    TOKEN_TYPE_RPAREN, // ')'
-    TOKEN_TYPE_LBRACKET, // '['
-    TOKEN_TYPE_RBRACKET, // ']'
-    TOKEN_TYPE_LBRACE, // '{'
-    TOKEN_TYPE_RBRACE, // '}'
-    TOKEN_TYPE_NIL, // 'nil'
-    TOKEN_TYPE_DQ_STRING, // '"string"'
+    PAD_TOK_TYPE__COLON, // ':'
+    PAD_TOK_TYPE__SEMICOLON, // ';'
+    PAD_TOK_TYPE__IDENTIFIER,
+    PAD_TOK_TYPE__LPAREN, // '('
+    PAD_TOK_TYPE__RPAREN, // ')'
+    PAD_TOK_TYPE__LBRACKET, // '['
+    PAD_TOK_TYPE__RBRACKET, // ']'
+    PAD_TOK_TYPE__LBRACE, // '{'
+    PAD_TOK_TYPE__RBRACE, // '}'
+    PAD_TOK_TYPE__NIL, // 'nil'
+    PAD_TOK_TYPE__DQ_STRING, // '"string"'
 
-    TOKEN_TYPE_INTEGER, // 123
-    TOKEN_TYPE_FLOAT, // 123.456
-    TOKEN_TYPE_PAD_OP__ADD, // '+'
-    TOKEN_TYPE_PAD_OP__SUB, // '-'
-    TOKEN_TYPE_PAD_OP__MUL, // '*'
-    TOKEN_TYPE_PAD_OP__DIV, // '/'
-    TOKEN_TYPE_PAD_OP__MOD, // '%'
-    TOKEN_TYPE_PAD_OP__ASS, // '='
-    TOKEN_TYPE_PAD_OP__ADD_ASS, // '+='
-    TOKEN_TYPE_PAD_OP__SUB_ASS, // '-='
-    TOKEN_TYPE_PAD_OP__MUL_ASS, // '*='
-    TOKEN_TYPE_PAD_OP__DIV_ASS, // '/='
-    TOKEN_TYPE_PAD_OP__MOD_ASS, // '%='
+    PAD_TOK_TYPE__INTEGER, // 123
+    PAD_TOK_TYPE__FLOAT, // 123.456
+    PAD_TOK_TYPE__PAD_OP__ADD, // '+'
+    PAD_TOK_TYPE__PAD_OP__SUB, // '-'
+    PAD_TOK_TYPE__PAD_OP__MUL, // '*'
+    PAD_TOK_TYPE__PAD_OP__DIV, // '/'
+    PAD_TOK_TYPE__PAD_OP__MOD, // '%'
+    PAD_TOK_TYPE__PAD_OP__ASS, // '='
+    PAD_TOK_TYPE__PAD_OP__ADD_ASS, // '+='
+    PAD_TOK_TYPE__PAD_OP__SUB_ASS, // '-='
+    PAD_TOK_TYPE__PAD_OP__MUL_ASS, // '*='
+    PAD_TOK_TYPE__PAD_OP__DIV_ASS, // '/='
+    PAD_TOK_TYPE__PAD_OP__MOD_ASS, // '%='
 
-    TOKEN_TYPE_PAD_OP__EQ, // '=='
-    TOKEN_TYPE_PAD_OP__NOT_EQ, // '!='
-    TOKEN_TYPE_PAD_OP__LTE, // '<='
-    TOKEN_TYPE_PAD_OP__GTE, // '>='
-    TOKEN_TYPE_PAD_OP__LT, // '<'
-    TOKEN_TYPE_PAD_OP__GT, // '>'
-    TOKEN_TYPE_PAD_OP__OR, // 'or'
-    TOKEN_TYPE_PAD_OP__AND, // 'and'
-    TOKEN_TYPE_PAD_OP__NOT, // 'not'
-    TOKEN_TYPE_STMT_END, // 'end'
-    TOKEN_TYPE_STMT_IMPORT, // 'import'
-    TOKEN_TYPE_AS, // 'as'
+    PAD_TOK_TYPE__PAD_OP__EQ, // '=='
+    PAD_TOK_TYPE__PAD_OP__NOT_EQ, // '!='
+    PAD_TOK_TYPE__PAD_OP__LTE, // '<='
+    PAD_TOK_TYPE__PAD_OP__GTE, // '>='
+    PAD_TOK_TYPE__PAD_OP__LT, // '<'
+    PAD_TOK_TYPE__PAD_OP__GT, // '>'
+    PAD_TOK_TYPE__PAD_OP__OR, // 'or'
+    PAD_TOK_TYPE__PAD_OP__AND, // 'and'
+    PAD_TOK_TYPE__PAD_OP__NOT, // 'not'
+    PAD_TOK_TYPE__STMT_END, // 'end'
+    PAD_TOK_TYPE__STMT_IMPORT, // 'import'
+    PAD_TOK_TYPE__AS, // 'as'
 
-    TOKEN_TYPE_FROM, // 'from'
-    TOKEN_TYPE_STMT_IF, // 'if'
-    TOKEN_TYPE_STMT_ELIF, // 'if'
-    TOKEN_TYPE_STMT_ELSE, // 'if'
-    TOKEN_TYPE_STMT_FOR, // 'for'
-    TOKEN_TYPE_STMT_BREAK, // 'break'
-    TOKEN_TYPE_STMT_CONTINUE, // 'continue'
-    TOKEN_TYPE_STMT_RETURN, // 'return'
-    TOKEN_TYPE_STMT_BLOCK,  // 'block'
-    TOKEN_TYPE_STMT_INJECT,  // 'inject'
+    PAD_TOK_TYPE__FROM, // 'from'
+    PAD_TOK_TYPE__STMT_IF, // 'if'
+    PAD_TOK_TYPE__STMT_ELIF, // 'if'
+    PAD_TOK_TYPE__STMT_ELSE, // 'if'
+    PAD_TOK_TYPE__STMT_FOR, // 'for'
+    PAD_TOK_TYPE__STMT_BREAK, // 'break'
+    PAD_TOK_TYPE__STMT_CONTINUE, // 'continue'
+    PAD_TOK_TYPE__STMT_RETURN, // 'return'
+    PAD_TOK_TYPE__STMT_BLOCK,  // 'block'
+    PAD_TOK_TYPE__STMT_INJECT,  // 'inject'
 
-    TOKEN_TYPE_STRUCT,  // 'struct'
+    PAD_TOK_TYPE__STRUCT,  // 'struct'
 
-    TOKEN_TYPE_DEF, // 'def'
-    TOKEN_TYPE_MET, // 'met'
-    TOKEN_TYPE_EXTENDS,  // 'extends'
-    TOKEN_TYPE_FALSE, // 'false'
-    TOKEN_TYPE_TRUE, // 'true'
-} token_type_t;
+    PAD_TOK_TYPE__DEF, // 'def'
+    PAD_TOK_TYPE__MET, // 'met'
+    PAD_TOK_TYPE__EXTENDS,  // 'extends'
+    PAD_TOK_TYPE__FALSE, // 'false'
+    PAD_TOK_TYPE__TRUE, // 'true'
+} PadTokType;
 
 /**
  * abstract token
  */
-typedef struct token {
+typedef struct PadTok {
     char *text;  // value of token text (dynamic allocate memory)
     const char *program_filename;  // pointer to program file name
     const char *program_source;  // pointer to program source strings
     int32_t program_lineno;  // program line number
     int32_t program_source_pos;  // position of token in program source strings
-    token_type_t type;  // token type
+    PadTokType type;  // token type
     objint_t lvalue;  // value of token value
     objfloat_t float_value;  // value of float value
-} token_t;
+} PadTok;
 
 /**
- * Destruct token
+ * Destruct PadTok
  *
- * @param[in] self pointer to dynamic allocate memory of token_t
+ * @param[in] self pointer to dynamic allocate memory of PadTok
  */
 void
-token_del(token_t *self);
+PadTok_Del(PadTok *self);
 
 /**
- * Construct token
+ * Construct PadTok
  *
  * @param[in] type number of token type
  */
-token_t *
-token_new(
-    token_type_t type,
+PadTok *
+PadTok_New(
+    PadTokType type,
     const char *program_filename,
     int32_t program_lineno,
     const char *program_source,
@@ -122,56 +122,56 @@ token_new(
  *
  * @return
  */
-token_t *
-token_deep_copy(const token_t *other);
+PadTok *
+PadTok_DeepCopy(const PadTok *other);
 
 /**
  * Move text pointer to token
  *
- * @param[in] self pointer to dynamic allocate memory of token_t
+ * @param[in] self pointer to dynamic allocate memory of PadTok
  */
 void
-token_move_text(token_t *self, char *move_text);
+PadTok_MoveTxt(PadTok *self, char *move_text);
 
 /**
  * Get number of type of token
  *
- * @param[in] self pointer to dynamic allocate memory of token_t
+ * @param[in] self pointer to dynamic allocate memory of PadTok
  *
  * @return number of type of token
  */
 int
-token_get_type(const token_t *self);
+PadTok_GetType(const PadTok *self);
 
 /**
  * Get text of token
  *
- * @param[in] self pointer to dynamic allocate memory of token_t
+ * @param[in] self pointer to dynamic allocate memory of PadTok
  *
  * @return read-only pointer to text in token
  */
 const char *
-token_getc_text(const token_t *self);
+PadTok_GetcTxt(const PadTok *self);
 
 /**
  * Copy text from token
  *
- * @param[in] self pointer to dynamic allocate memory of token_t
+ * @param[in] self pointer to dynamic allocate memory of PadTok
  *
  * @return pointer to dynamic allocate memory of text
  */
 char *
-token_copy_text(const token_t *self);
+PadTok_CopyTxt(const PadTok *self);
 
 /**
  * Type value to string
  *
- * @param[in] self pointer to dynamic allocate memory of token_t
+ * @param[in] self pointer to dynamic allocate memory of PadTok
  *
  * @return pointer to string
  */
 const char *
-token_type_to_str(const token_t *self);
+PadTok_TypeToStr(const PadTok *self);
 
 void
-token_dump(const token_t *self, FILE *fout);
+PadTok_Dump(const PadTok *self, FILE *fout);

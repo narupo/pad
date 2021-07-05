@@ -3976,13 +3976,13 @@ static void
 test_PadTkr_Parse(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "abc");
     {
         assert(PadTkr_ToksLen(tkr) == 1);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_TEXT_BLOCK);
+        assert(token->type == PAD_TOK_TYPE__TEXT_BLOCK);
         assert(strcmp(token->text, "abc") == 0);
     }
 
@@ -3990,14 +3990,14 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_TEXT_BLOCK);
+        assert(token->type == PAD_TOK_TYPE__TEXT_BLOCK);
         assert(strcmp(token->text, "abc") == 0);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_TEXT_BLOCK);
+        assert(token->type == PAD_TOK_TYPE__TEXT_BLOCK);
         assert(strcmp(token->text, "bbc") == 0);
     }
 
@@ -4018,7 +4018,7 @@ test_PadTkr_Parse(void) {
         assert(PadTkr_ToksLen(tkr) == 1);
         assert(PadTkr_HasErrStack(tkr) == true);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@@");
@@ -4031,233 +4031,233 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 2);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@.@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@..@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@,@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_COMMA);
+        assert(token->type == PAD_TOK_TYPE__COMMA);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@,,@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_COMMA);
+        assert(token->type == PAD_TOK_TYPE__COMMA);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_COMMA);
+        assert(token->type == PAD_TOK_TYPE__COMMA);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@:@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_COLON);
+        assert(token->type == PAD_TOK_TYPE__COLON);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@;@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_SEMICOLON);
+        assert(token->type == PAD_TOK_TYPE__SEMICOLON);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@(@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_LPAREN);
+        assert(token->type == PAD_TOK_TYPE__LPAREN);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@)@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RPAREN);
+        assert(token->type == PAD_TOK_TYPE__RPAREN);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@[@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_LBRACKET);
+        assert(token->type == PAD_TOK_TYPE__LBRACKET);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@]@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RBRACKET);
+        assert(token->type == PAD_TOK_TYPE__RBRACKET);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@{@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_LBRACE);
+        assert(token->type == PAD_TOK_TYPE__LBRACE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@}@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RBRACE);
+        assert(token->type == PAD_TOK_TYPE__RBRACE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@()@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_LPAREN);
+        assert(token->type == PAD_TOK_TYPE__LPAREN);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RPAREN);
+        assert(token->type == PAD_TOK_TYPE__RPAREN);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@a@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "a") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@abc@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "abc") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@abc123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "abc123") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@abc_123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "abc_123") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
         assert(strcmp(token->text, "123") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@-123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /**********
@@ -4268,22 +4268,22 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_AS);
+        assert(token->type == PAD_TOK_TYPE__AS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@from@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_FROM);
+        assert(token->type == PAD_TOK_TYPE__FROM);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /*************
@@ -4294,55 +4294,55 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_STMT_END);
+        assert(token->type == PAD_TOK_TYPE__STMT_END);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ if @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_STMT_IF);
+        assert(token->type == PAD_TOK_TYPE__STMT_IF);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ elif @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_STMT_ELIF);
+        assert(token->type == PAD_TOK_TYPE__STMT_ELIF);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ else @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_STMT_ELSE);
+        assert(token->type == PAD_TOK_TYPE__STMT_ELSE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ for @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_STMT_FOR);
+        assert(token->type == PAD_TOK_TYPE__STMT_FOR);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /************
@@ -4353,121 +4353,121 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ - @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ * @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MUL);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ / @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__DIV);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ % @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MOD);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MOD);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ = @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ += @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ADD_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ -= @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ *= @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MUL_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ /= @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__DIV_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ %= @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MOD_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MOD_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /***********************
@@ -4478,99 +4478,99 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__EQ);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__EQ);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ != @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__NOT_EQ);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__NOT_EQ);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ <= @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__LTE);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__LTE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ >= @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__GTE);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__GTE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ < @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__LT);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__LT);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ > @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__GT);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__GT);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ or @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__OR);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__OR);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ and @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__AND);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__AND);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@ not @}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__NOT);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__NOT);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /*******
@@ -4581,15 +4581,15 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 5);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MUL);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         token = PadTkr_ToksGetc(tkr, 4);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /*********
@@ -4600,39 +4600,39 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         assert(strcmp(token->text, "") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\"abc\"@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         assert(strcmp(token->text, "abc") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\"abc\"\"bbc\"@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         assert(strcmp(token->text, "abc") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         assert(strcmp(token->text, "bbc") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr,
@@ -4641,37 +4641,37 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 13);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_STMT_IMPORT);
+        assert(token->type == PAD_TOK_TYPE__STMT_IMPORT);
         assert(strcmp(token->text, "import") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "alias") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 4);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "alias") == 0);
         token = PadTkr_ToksGetc(tkr, 5);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 6);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "set") == 0);
         token = PadTkr_ToksGetc(tkr, 7);
-        assert(token->type == TOKEN_TYPE_LPAREN);
+        assert(token->type == PAD_TOK_TYPE__LPAREN);
         token = PadTkr_ToksGetc(tkr, 8);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         assert(strcmp(token->text, "dtl") == 0);
         token = PadTkr_ToksGetc(tkr, 9);
-        assert(token->type == TOKEN_TYPE_COMMA);
+        assert(token->type == PAD_TOK_TYPE__COMMA);
         token = PadTkr_ToksGetc(tkr, 10);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         assert(strcmp(token->text, "run bin/date-line") == 0);
         token = PadTkr_ToksGetc(tkr, 11);
-        assert(token->type == TOKEN_TYPE_RPAREN);
+        assert(token->type == PAD_TOK_TYPE__RPAREN);
         token = PadTkr_ToksGetc(tkr, 12);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /******************
@@ -4682,7 +4682,7 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 1);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         assert(PadTkr_HasErrStack(tkr) == true);
         assert(strcmp(PadTkr_GetcFirstErrMsg(tkr), "not closed by block") == 0);
     }
@@ -4691,86 +4691,86 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 2);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{:\n:}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{:abc:}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{:abc123:}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{:abc_123:}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: 123 :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: alias.run(\"dtl\") :}");
     {
         assert(PadTkr_ToksLen(tkr) == 8);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         token = PadTkr_ToksGetc(tkr, 4);
-        assert(token->type == TOKEN_TYPE_LPAREN);
+        assert(token->type == PAD_TOK_TYPE__LPAREN);
         token = PadTkr_ToksGetc(tkr, 5);
-        assert(token->type == TOKEN_TYPE_DQ_STRING);
+        assert(token->type == PAD_TOK_TYPE__DQ_STRING);
         token = PadTkr_ToksGetc(tkr, 6);
-        assert(token->type == TOKEN_TYPE_RPAREN);
+        assert(token->type == PAD_TOK_TYPE__RPAREN);
         token = PadTkr_ToksGetc(tkr, 7);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     /*****************************
@@ -4781,99 +4781,99 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: - :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: * :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MUL);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: / :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__DIV);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: = :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: += :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ADD_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: -= :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: *= :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__MUL_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: /= :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__DIV_ASS);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     /****************************************
@@ -4884,22 +4884,22 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__EQ);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__EQ);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     PadTkr_Parse(tkr, "{: != :}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__NOT_EQ);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__NOT_EQ);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RDOUBLE_BRACE);
+        assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
 
     /**********
@@ -4912,11 +4912,11 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\n"
@@ -4926,11 +4926,11 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\n"
@@ -4952,11 +4952,11 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\n"
@@ -4967,11 +4967,11 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     /***********
@@ -4982,92 +4982,92 @@ test_PadTkr_Parse(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\n\n@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\r@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\r\r@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\r\n@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@\r\n\r\n@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_NEWLINE);
+        assert(token->type == PAD_TOK_TYPE__NEWLINE);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@@}\n");
     {
         assert(PadTkr_ToksLen(tkr) == 2);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@@}\n\n");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_TEXT_BLOCK);
+        assert(token->type == PAD_TOK_TYPE__TEXT_BLOCK);
     }
 
     PadTkr_Del(tkr);
@@ -5131,19 +5131,19 @@ static void
 test_PadTkr_Parse_int(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "{@123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
         assert(strcmp(token->text, "123") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5153,21 +5153,21 @@ static void
 test_PadTkr_Parse_int_plus(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "{@+123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
         assert(strcmp(token->text, "123") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5177,21 +5177,21 @@ static void
 test_PadTkr_Parse_int_minus(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "{@-123@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
         assert(strcmp(token->text, "123") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5201,19 +5201,19 @@ static void
 test_PadTkr_Parse_float(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "{@123.456@}");
     {
         assert(PadTkr_ToksLen(tkr) == 3);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->type == PAD_TOK_TYPE__FLOAT);
         assert(token->float_value == 123.456);
         assert(strcmp(token->text, "123.456") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5223,21 +5223,21 @@ static void
 test_PadTkr_Parse_float_plus(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "{@+123.456@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->type == PAD_TOK_TYPE__FLOAT);
         assert(token->float_value == 123.456);
         assert(strcmp(token->text, "123.456") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5247,21 +5247,21 @@ static void
 test_PadTkr_Parse_float_minus(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(tkr, "{@-123.456@}");
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->type == PAD_TOK_TYPE__FLOAT);
         assert(token->float_value == 123.456);
         assert(strcmp(token->text, "123.456") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5271,7 +5271,7 @@ static void
 test_PadTkr_Parse_float_errors(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     assert(PadTkr_Parse(tkr, "{@123.@}") == NULL);
     assert(strcmp(PadTkr_GetcFirstErrMsg(tkr), "invalid float") == 0);
@@ -5280,31 +5280,31 @@ test_PadTkr_Parse_float_errors(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 4);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(strcmp(token->text, "456") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Parse(tkr, "{@123.456.789@}");
     {
         assert(PadTkr_ToksLen(tkr) == 5);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_FLOAT);
+        assert(token->type == PAD_TOK_TYPE__FLOAT);
         assert(strcmp(token->text, "123.456") == 0);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_DOT_OPE);
+        assert(token->type == PAD_TOK_TYPE__DOT_OPE);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(strcmp(token->text, "789") == 0);
         token = PadTkr_ToksGetc(tkr, 4);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);
@@ -5314,7 +5314,7 @@ static void
 test_PadTkr_ExtendFrontOther(void) {
     PadTkr *a = PadTkr_New(PadTkrOpt_New());
     PadTkr *b = PadTkr_New(PadTkrOpt_New());
-    const token_t *token;
+    const PadTok *token;
 
     PadTkr_Parse(a, "{@ 1 @}");
     PadTkr_Parse(b, "{@ 2 @}");
@@ -5323,19 +5323,19 @@ test_PadTkr_ExtendFrontOther(void) {
     {
         assert(PadTkr_ToksLen(a) == 6);
         token = PadTkr_ToksGetc(a, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(a, 1);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(strcmp(token->text, "2") == 0);
         token = PadTkr_ToksGetc(a, 2);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
         token = PadTkr_ToksGetc(a, 3);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(a, 4);
-        assert(token->type == TOKEN_TYPE_INTEGER);
+        assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(strcmp(token->text, "1") == 0);
         token = PadTkr_ToksGetc(a, 5);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(a);
@@ -5346,7 +5346,7 @@ static void
 test_PadTkr_Parse_struct_0(void) {
     PadTkrOpt *opt = PadTkrOpt_New();
     PadTkr *tkr = PadTkr_New(opt);
-    const token_t *token;
+    const PadTok *token;
 
     assert(PadTkr_Parse(tkr, "{@123.@}") == NULL);
     assert(strcmp(PadTkr_GetcFirstErrMsg(tkr), "invalid float") == 0);
@@ -5355,31 +5355,31 @@ test_PadTkr_Parse_struct_0(void) {
     {
         assert(PadTkr_ToksLen(tkr) == 12);
         token = PadTkr_ToksGetc(tkr, 0);
-        assert(token->type == TOKEN_TYPE_LBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == TOKEN_TYPE_DEF);
+        assert(token->type == PAD_TOK_TYPE__DEF);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "func") == 0);
         token = PadTkr_ToksGetc(tkr, 3);
-        assert(token->type == TOKEN_TYPE_LPAREN);
+        assert(token->type == PAD_TOK_TYPE__LPAREN);
         token = PadTkr_ToksGetc(tkr, 4);
-        assert(token->type == TOKEN_TYPE_RPAREN);
+        assert(token->type == PAD_TOK_TYPE__RPAREN);
         token = PadTkr_ToksGetc(tkr, 5);
-        assert(token->type == TOKEN_TYPE_COLON);
+        assert(token->type == PAD_TOK_TYPE__COLON);
         token = PadTkr_ToksGetc(tkr, 6);
-        assert(token->type == TOKEN_TYPE_STRUCT);
+        assert(token->type == PAD_TOK_TYPE__STRUCT);
         token = PadTkr_ToksGetc(tkr, 7);
-        assert(token->type == TOKEN_TYPE_IDENTIFIER);
+        assert(token->type == PAD_TOK_TYPE__IDENTIFIER);
         assert(strcmp(token->text, "S") == 0);
         token = PadTkr_ToksGetc(tkr, 8);
-        assert(token->type == TOKEN_TYPE_COLON);
+        assert(token->type == PAD_TOK_TYPE__COLON);
         token = PadTkr_ToksGetc(tkr, 9);
-        assert(token->type == TOKEN_TYPE_STMT_END);
+        assert(token->type == PAD_TOK_TYPE__STMT_END);
         token = PadTkr_ToksGetc(tkr, 10);
-        assert(token->type == TOKEN_TYPE_STMT_END);
+        assert(token->type == PAD_TOK_TYPE__STMT_END);
         token = PadTkr_ToksGetc(tkr, 11);
-        assert(token->type == TOKEN_TYPE_RBRACEAT);
+        assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
 
     PadTkr_Del(tkr);

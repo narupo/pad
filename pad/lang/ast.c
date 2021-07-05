@@ -512,7 +512,7 @@ PadAst_GetcRoot(const ast_t *self) {
 static void
 ast_show_debug(const ast_t *self, const char *funcname) {
     if (self->debug) {
-        token_t *t = *self->ref_ptr;
+        PadTok *t = *self->ref_ptr;
         printf("debug: %s: token type[%d]\n", funcname, (t ? t->type : -1));
     }
 }
@@ -588,7 +588,7 @@ PadAst_TraceErr_tokens(const ast_t *self, FILE *fout) {
         return;
     }
 
-    token_t *token = self->error_tokens[0];
+    PadTok *token = self->error_tokens[0];
     // TODO: fix me!
     fprintf(fout, "[%s] pos[%d]\n", token->program_source, token->program_source_pos);
 }
@@ -637,7 +637,7 @@ PadAst_SetRefGc(ast_t *ast, PadGc *ref_gc) {
     ast->ref_gc = ref_gc;
 }
 
-token_t *
+PadTok *
 PadAst_ReadTok(ast_t *self) {
     if (!self || !self->ref_ptr) {
         return NULL;
@@ -661,7 +661,7 @@ PadAst_GetRefGc(ast_t *self) {
 }
 
 ast_t *
-PadAst_PushBackErrTok(ast_t *self, token_t *ref_token) {
+PadAst_PushBackErrTok(ast_t *self, PadTok *ref_token) {
     if (!self || !ref_token) {
         return NULL;
     }

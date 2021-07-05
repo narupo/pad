@@ -131,7 +131,7 @@ typedef enum {
 struct PadNode {
     PadNodeType type;
     void *real;
-    const token_t *ref_token;
+    const PadTok *ref_token;
 };
 
 typedef struct {
@@ -477,7 +477,7 @@ PadNode_Del(PadNode *self);
  * @return pointer to dynamic allocate memory of PadNode
  */
 PadNode *
-PadNode_New(PadNodeType type, void *real, const token_t *ref_token);
+PadNode_New(PadNodeType type, void *real, const PadTok *ref_token);
 
 /**
  * Deep copy
@@ -542,5 +542,5 @@ PadNode_ToStr(const PadNode *self);
 void
 PadNode_Dump(const PadNode *self, FILE *fout);
 
-const token_t *
+const PadTok *
 PadNode_GetcRefTok(const PadNode *self);

@@ -125,10 +125,10 @@ PadTkr_ToksLen(const PadTkr *self);
  *
  * @param[in] self pointer to dynamic allocate memory of PadTkr
  *
- * @return found to pointer to token_t
+ * @return found to pointer to PadTok
  * @return not found to pointer to NULL
  */
-const token_t *
+const PadTok *
 PadTkr_ToksGetc(PadTkr *self, int32_t index);
 
 /**
@@ -168,7 +168,7 @@ PadTkr_GetcErrStack(const PadTkr *self);
  *
  * @return pointer to array of pointer to token
  */
-token_t **
+PadTok **
 PadTkr_GetToks(PadTkr *self);
 
 /**

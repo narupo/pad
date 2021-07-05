@@ -13,11 +13,11 @@ typedef struct {
     // s ... space (' ')
     char type;
     string_t *token;
-} err_token_t;
+} err_PadTok;
 
-static err_token_t *
+static err_PadTok *
 gen_token(char type, string_t *move_token) {
-    err_token_t *tok = mem_calloc(1, sizeof(*tok));
+    err_PadTok *tok = mem_calloc(1, sizeof(*tok));
     if (!tok) {
         return NULL;
     }
@@ -43,11 +43,11 @@ infer_type(const string_t *tok) {
     }
 }
 
-static err_token_t **
+static err_PadTok **
 tokenize(const char *src) {
     int32_t capa = 4;
     int32_t cursize = 0;
-    err_token_t **tokens = mem_calloc(capa + 1, sizeof(err_token_t *));
+    err_PadTok **tokens = mem_calloc(capa + 1, sizeof(err_PadTok *));
     if (!tokens) {
         return NULL;
     }
@@ -56,9 +56,9 @@ tokenize(const char *src) {
 
 #define push(t) \
     if (cursize >= capa) { \
-        int32_t nbyte = sizeof(err_token_t); \
+        int32_t nbyte = sizeof(err_PadTok); \
         capa *= 2; \
-        err_token_t **tmp = mem_realloc(tokens, capa * nbyte + nbyte); \
+        err_PadTok **tmp = mem_realloc(tokens, capa * nbyte + nbyte); \
         if (!tmp) { \
             free(tokens); \
             return NULL; \
@@ -71,7 +71,7 @@ tokenize(const char *src) {
 #define store \
     if (str_len(buf)) { \
         char type = infer_type(buf); \
-        err_token_t *tok = gen_token(type, mem_move(buf)); \
+        err_PadTok *tok = gen_token(type, mem_move(buf)); \
         if (!tok) { \
             return NULL; \
         } \
@@ -121,10 +121,10 @@ tokenize(const char *src) {
 }
 
 static bool
-look_fname_ext(err_token_t **p) {
+look_fname_ext(err_PadTok **p) {
     for (; *p; ++p) {
-        err_token_t *tok = *p;
-        err_token_t *second = *(p + 1);
+        err_PadTok *tok = *p;
+        err_PadTok *second = *(p + 1);
         char next = 0;
         if (second) {
             next = second->type;
@@ -145,13 +145,13 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src) {
     bool debug = deb && deb[0] == '1';
     int m = 0;
 
-    err_token_t **tokens = tokenize(src);
+    err_PadTok **tokens = tokenize(src);
     if (!tokens) {
         return;
     }
 
-    for (err_token_t **p = tokens; *p; ++p) {
-        err_token_t *tok = *p;
+    for (err_PadTok **p = tokens; *p; ++p) {
+        err_PadTok *tok = *p;
         if (debug) {
             printf("m[%d] type[%c] token[%s]\n", m, tok->type, str_getc(tok->token));
         }
@@ -205,7 +205,7 @@ err_fix_text(char *dst, uint32_t dstsz, const char *src) {
         cstr_app(dst, dstsz, ".");
     }
 
-    for (err_token_t **tok = tokens; *tok; ++tok) {
+    for (err_PadTok **tok = tokens; *tok; ++tok) {
         free(*tok);
     }
     free(tokens);
