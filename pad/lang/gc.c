@@ -48,12 +48,12 @@ PadGC_Del(PadGC *self) {
 
 PadGC *
 PadGC_New(void) {
-    PadGC *self = mem_calloc(1, sizeof(*self));
+    PadGC *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->pool = mem_calloc(INIT_CAPA_SIZE+1, sizeof(void *));
+    self->pool = PadMem_Calloc(INIT_CAPA_SIZE+1, sizeof(void *));
     if (!self->pool) {
         PadGC_Del(self);
         return NULL;
@@ -81,7 +81,7 @@ gc_resize(PadGC *self, int32_t newcapa) {
     }
 
     int32_t byte = sizeof(void *);
-    void **tmp = mem_realloc(self->pool, byte * newcapa + byte);
+    void **tmp = PadMem_Realloc(self->pool, byte * newcapa + byte);
     if (!tmp) {
         return NULL;
     }
@@ -105,7 +105,7 @@ PadGC_Alloc(PadGC *self, PadGCItem *item, int32_t size) {
         }
     }
 
-    void *p = mem_calloc(1, size);
+    void *p = PadMem_Calloc(1, size);
     if (!p) {
         return NULL;
     }

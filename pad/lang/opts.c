@@ -18,7 +18,7 @@ PadOpts_Del(PadOpts *self) {
 
 PadOpts *
 PadOpts_New(void) {
-    PadOpts *self = mem_calloc(1, sizeof(*self));
+    PadOpts *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -44,7 +44,7 @@ PadOpts_DeepCopy(const PadOpts *other) {
         return NULL;
     }
 
-    PadOpts *self = mem_calloc(1, sizeof(*self));
+    PadOpts *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -70,7 +70,7 @@ PadOpts_ShallowCopy(const PadOpts *other) {
         return NULL;
     }
 
-    PadOpts *self = mem_calloc(1, sizeof(*self));
+    PadOpts *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }

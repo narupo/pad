@@ -18,7 +18,7 @@ PadAliasInfo_Del(PadAliasInfo *self) {
 
 PadAliasInfo *
 PadAliasInfo_New(void) {
-    PadAliasInfo *self = mem_calloc(1, sizeof(*self));
+    PadAliasInfo *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -44,7 +44,7 @@ PadAliasInfo_DeepCopy(const PadAliasInfo *other) {
         return NULL;
     }
 
-    PadAliasInfo *self = mem_calloc(1, sizeof(*self));
+    PadAliasInfo *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -70,7 +70,7 @@ PadAliasInfo_ShallowCopy(const PadAliasInfo *other) {
         return NULL;
     }
 
-    PadAliasInfo *self = mem_calloc(1, sizeof(*self));
+    PadAliasInfo *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }

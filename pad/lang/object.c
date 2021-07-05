@@ -493,7 +493,7 @@ PadObj_NewIdent(
     }
 
     self->identifier.ref_context = ref_context;
-    self->identifier.name = mem_move(move_identifier);
+    self->identifier.name = PadMem_Move(move_identifier);
 
     return self;
 }
@@ -590,7 +590,7 @@ PadObj_NewAry(PadGC *ref_gc, PadObjAry *move_objarr) {
         return NULL;
     }
 
-    self->objarr = mem_move(move_objarr);
+    self->objarr = PadMem_Move(move_objarr);
 
     return self;
 }
@@ -606,7 +606,7 @@ PadObj_NewDict(PadGC *ref_gc, PadObjDict *move_objdict) {
         return NULL;
     }
 
-    self->objdict = mem_move(move_objdict);
+    self->objdict = PadMem_Move(move_objdict);
 
     return self;
 }
@@ -636,8 +636,8 @@ PadObj_NewFunc(
 
     self->func.ref_ast = ref_ast;  // do not delete
     self->func.ref_context = ref_context;
-    self->func.name = mem_move(move_name);
-    self->func.args = mem_move(move_args);
+    self->func.name = PadMem_Move(move_name);
+    self->func.args = PadMem_Move(move_args);
     self->func.ref_suites = ref_suites;
     self->func.ref_blocks = ref_blocks;
     self->func.extends_func = extends_func;
@@ -657,8 +657,8 @@ PadObj_NewRing(PadGC *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_obj
         return NULL;
     }
 
-    self->chain.operand = mem_move(move_operand);
-    self->chain.chain_objs = mem_move(move_chain_objs);
+    self->chain.operand = PadMem_Move(move_operand);
+    self->chain.chain_objs = PadMem_Move(move_chain_objs);
 
     return self;
 }
@@ -694,9 +694,9 @@ PadObj_NewDefStruct(
         return NULL;
     }
 
-    self->def_struct.identifier = mem_move(move_idn);
-    self->def_struct.ast = mem_move(move_ast);
-    self->def_struct.context = mem_move(move_context);
+    self->def_struct.identifier = PadMem_Move(move_idn);
+    self->def_struct.ast = PadMem_Move(move_ast);
+    self->def_struct.context = PadMem_Move(move_context);
 
     return self;    
 }
@@ -740,7 +740,7 @@ PadObj_NewOwnsMethod(
     }
 
     self->owners_method.owner = owner;  // can PadObj_Del
-    self->owners_method.method_name = mem_move(move_method_name);
+    self->owners_method.method_name = PadMem_Move(move_method_name);
 
     return self;
 }
@@ -780,10 +780,10 @@ PadObj_NewModBy(
             return NULL;
         }
     }
-    self->module.program_source = mem_move(move_program_source);
-    self->module.tokenizer = mem_move(move_tkr);
-    self->module.ast = mem_move(move_ast);
-    self->module.context = mem_move(move_context);
+    self->module.program_source = PadMem_Move(move_program_source);
+    self->module.tokenizer = PadMem_Move(move_tkr);
+    self->module.ast = PadMem_Move(move_ast);
+    self->module.context = PadMem_Move(move_context);
     self->module.builtin_func_infos = infos;
 
     return self;
@@ -978,7 +978,7 @@ PadObj_ToAry(const PadObj *obj) {
         if (!objarr) {
             return NULL;
         }
-        return PadObj_NewAry(obj->ref_gc, mem_move(objarr));
+        return PadObj_NewAry(obj->ref_gc, PadMem_Move(objarr));
     }
 
     switch (obj->type) {
@@ -992,11 +992,11 @@ PadObj_ToAry(const PadObj *obj) {
             PadObjAry_Del(objarr);
             return NULL;
         }
-        if (!PadObjAry_MoveBack(objarr, mem_move(copied))) {
+        if (!PadObjAry_MoveBack(objarr, PadMem_Move(copied))) {
             PadObjAry_Del(objarr);
             return NULL;
         }
-        return PadObj_NewAry(obj->ref_gc, mem_move(objarr));
+        return PadObj_NewAry(obj->ref_gc, PadMem_Move(objarr));
     } break;
     case PAD_OBJ_TYPE__ARRAY:
         return PadObj_DeepCopy(obj);

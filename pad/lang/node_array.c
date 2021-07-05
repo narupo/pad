@@ -43,12 +43,12 @@ PadNodeAry_DelWithoutNodes(PadNodeAry* self) {
 
 PadNodeAry*
 PadNodeAry_New(void) {
-    PadNodeAry *self = mem_calloc(1, sizeof(*self));
+    PadNodeAry *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(NODEARR_INIT_CAPA + 1, sizeof(PadNode *));
+    self->parray = PadMem_Calloc(NODEARR_INIT_CAPA + 1, sizeof(PadNode *));
     if (!self->parray) {
         PadNodeAry_Del(self);
         return NULL;
@@ -68,13 +68,13 @@ PadNodeAry_DeepCopy(const PadNodeAry *other) {
         return NULL;
     }
 
-    PadNodeAry *self = mem_calloc(1, sizeof(*self));
+    PadNodeAry *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
-    self->parray = mem_calloc(other->capa + 1, sizeof(PadNode *));
+    self->parray = PadMem_Calloc(other->capa + 1, sizeof(PadNode *));
     if (!self->parray) {
         PadNodeAry_Del(self);
         return NULL;
@@ -157,7 +157,7 @@ PadNodeAry_Resize(PadNodeAry* self, int32_t capa) {
     }
 
     int byte = sizeof(PadNode *);
-    PadNode **tmparr = mem_realloc(self->parray, capa * byte + byte);
+    PadNode **tmparr = PadMem_Realloc(self->parray, capa * byte + byte);
     if (!tmparr) {
         return NULL;
     }

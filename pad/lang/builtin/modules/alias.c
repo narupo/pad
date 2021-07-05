@@ -56,7 +56,7 @@ builtin_func_infos[] = {
 
 PadObj *
 Pad_NewBltAliasMod(const PadConfig *ref_config, PadGC *ref_gc) {
-    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadCtx *ctx = PadCtx_New(ref_gc);
     PadAST *ast = PadAst_New(ref_config);
     ast->ref_context = ctx;
@@ -66,9 +66,9 @@ Pad_NewBltAliasMod(const PadConfig *ref_config, PadGC *ref_gc) {
         "alias",
         NULL,
         NULL,
-        mem_move(tkr),
-        mem_move(ast),
-        mem_move(ctx),
+        PadMem_Move(tkr),
+        PadMem_Move(ast),
+        PadMem_Move(ctx),
         builtin_func_infos
     );
 }

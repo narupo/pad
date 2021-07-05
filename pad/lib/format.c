@@ -1,7 +1,7 @@
 #include <pad/lib/format.h>
 
 char *
-fmt_capitalize_text(char *dst, size_t dstsz, const char *text) {
+PadFmt_CapiTxt(char *dst, size_t dstsz, const char *text) {
     int m = 0;
     char *dp = dst;
     char *dpend = dst + (dstsz-1);

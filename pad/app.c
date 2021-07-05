@@ -136,7 +136,7 @@ app_deploy_env(const app_t *self) {
  */
 static app_t *
 app_new(void) {
-    app_t *self = mem_calloc(1, sizeof(*self));
+    app_t *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }

@@ -30,13 +30,13 @@ PadCStrAry_Del(PadCStrAry *arr) {
 
 PadCStrAry *
 PadCStrAry_New(void) {
-	PadCStrAry *self = mem_calloc(1, sizeof(PadCStrAry));
+	PadCStrAry *self = PadMem_Calloc(1, sizeof(PadCStrAry));
 	if (!self) {
 		return NULL;
 	}
 
 	self->capa = CAP_ARRINITCAPA;
-	self->arr = mem_calloc(self->capa + 1, sizeof(PadCStrAry *));
+	self->arr = PadMem_Calloc(self->capa + 1, sizeof(PadCStrAry *));
 	if (!self->arr) {
 		free(self);
 		return NULL;
@@ -51,13 +51,13 @@ PadCStrAry_DeepCopy(const PadCStrAry *other) {
 		return NULL;
 	}	
 
-	PadCStrAry *self = mem_calloc(1, sizeof(PadCStrAry));
+	PadCStrAry *self = PadMem_Calloc(1, sizeof(PadCStrAry));
 	if (!self) {
 		return NULL;
 	}
 
 	self->capa = other->capa;
-	self->arr = mem_calloc(other->capa + 1, sizeof(PadCStrAry *));
+	self->arr = PadMem_Calloc(other->capa + 1, sizeof(PadCStrAry *));
 	if (!self->arr) {
 		PadCStrAry_Del(self);
 		return NULL;
@@ -95,7 +95,7 @@ PadCStrAry_EscDel(PadCStrAry *self) {
 PadCStrAry *
 PadCStrAry_Resize(PadCStrAry *self, int32_t capa) {
 	int32_t size = sizeof(self->arr[0]);
-	char **tmp = mem_realloc(self->arr, size*capa + size);
+	char **tmp = PadMem_Realloc(self->arr, size*capa + size);
 	if (!tmp) {
 		return NULL;
 	}

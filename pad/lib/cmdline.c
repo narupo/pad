@@ -17,7 +17,7 @@ PadCmdlineObj_Del(PadCmdlineObj *self) {
 
 PadCmdlineObj *
 PadCmdlineObj_New(PadCmdlineObjType type) {
-    PadCmdlineObj *self = mem_calloc(1, sizeof(*self));
+    PadCmdlineObj *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -79,14 +79,14 @@ PadCmdline_Del(PadCmdline *self) {
 
 PadCmdline *
 PadCmdline_New(void) {
-    PadCmdline *self = mem_calloc(1, sizeof(*self));
+    PadCmdline *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     int32_t size = sizeof(PadCmdlineObj *);
     self->capa = CMDLINE_OBJS_SIZE;
-    self->objs = mem_calloc(self->capa + 1, size);
+    self->objs = PadMem_Calloc(self->capa + 1, size);
     if (!self->objs) {
         PadCmdline_Del(self);
         return NULL;
@@ -111,7 +111,7 @@ PadCmdline_Resize(PadCmdline *self, int32_t capa) {
 
     int32_t objsize = sizeof(PadCmdlineObj *);
     int32_t size = objsize * capa + objsize;
-    PadCmdlineObj **tmp = mem_realloc(self->objs, size);
+    PadCmdlineObj **tmp = PadMem_Realloc(self->objs, size);
     if (!tmp) {
         return NULL;
     }
@@ -133,7 +133,7 @@ PadCmdline_MoveBack(PadCmdline *self, PadCmdlineObj *move_obj) {
         }
     }
 
-    self->objs[self->len++] = mem_move(move_obj);
+    self->objs[self->len++] = PadMem_Move(move_obj);
 
     return self;
 }
@@ -224,7 +224,7 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
                 buf = copied;
 
                 str_del(obj->command);
-                obj->command = mem_move(buf);
+                obj->command = PadMem_Move(buf);
                 buf = str_new();
 
                 if (!PadCmdline_MoveBack(self, obj)) {
@@ -357,7 +357,7 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
         buf = copied;
         
         str_del(obj->command);
-        obj->command = mem_move(buf);
+        obj->command = PadMem_Move(buf);
         buf = NULL;
 
         if (!PadCmdline_MoveBack(self, obj)) {

@@ -61,13 +61,13 @@ PadChainObj_New(PadChainObjType type, PadObj *move_obj) {
         return NULL;
     }
 
-    PadChainObj *self = mem_calloc(1, sizeof(*self));
+    PadChainObj *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->type = type;
-    self->obj = mem_move(move_obj);
+    self->obj = PadMem_Move(move_obj);
 
     return self;
 }
@@ -92,7 +92,7 @@ _chain_obj_copy(const PadChainObj *other, bool deep) {
     }
 
     PadObj_IncRef(obj);
-    PadChainObj *self = PadChainObj_New(other->type, mem_move(obj));
+    PadChainObj *self = PadChainObj_New(other->type, PadMem_Move(obj));
     if (!self) {
         PadObj_Del(obj);
         return NULL;

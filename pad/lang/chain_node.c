@@ -45,13 +45,13 @@ PadChainNode_New(PadChainNodeType type, PadNode *move_node) {
         return NULL;
     }
 
-    PadChainNode *self = mem_calloc(1, sizeof(*self));
+    PadChainNode *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->type = type;
-    self->node = mem_move(move_node);
+    self->node = PadMem_Move(move_node);
 
     return self;
 }
@@ -62,7 +62,7 @@ PadChainNode_DeepCopy(const PadChainNode *other) {
         return NULL;
     }
 
-    PadChainNode *self = mem_calloc(1, sizeof(*self));
+    PadChainNode *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }

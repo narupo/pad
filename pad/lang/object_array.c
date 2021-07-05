@@ -43,12 +43,12 @@ PadObjAry_DelWithoutObjs(PadObjAry* self) {
 
 PadObjAry*
 PadObjAry_New(void) {
-    PadObjAry *self = mem_calloc(1, sizeof(*self));
+    PadObjAry *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(OBJARR_INIT_CAPA+1, sizeof(PadObj *));
+    self->parray = PadMem_Calloc(OBJARR_INIT_CAPA+1, sizeof(PadObj *));
     if (!self->parray) {
         PadObjAry_Del(self);
         return NULL;
@@ -64,12 +64,12 @@ PadObj_DeepCopy(const PadObj *other);
 
 PadObjAry*
 PadObjAry_DeepCopy(const PadObjAry *other) {
-    PadObjAry *self = mem_calloc(1, sizeof(*self));
+    PadObjAry *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(other->capa+1, sizeof(PadObj *));
+    self->parray = PadMem_Calloc(other->capa+1, sizeof(PadObj *));
     if (!self->parray) {
         PadObjAry_Del(self);
         return NULL;
@@ -94,12 +94,12 @@ PadObjAry_DeepCopy(const PadObjAry *other) {
 
 PadObjAry*
 PadObjAry_ShallowCopy(const PadObjAry *other) {
-    PadObjAry *self = mem_calloc(1, sizeof(*self));
+    PadObjAry *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->parray = mem_calloc(other->capa+1, sizeof(PadObj *));
+    self->parray = PadMem_Calloc(other->capa+1, sizeof(PadObj *));
     if (!self->parray) {
         PadObjAry_Del(self);
         return NULL;
@@ -163,7 +163,7 @@ PadObjAry_Resize(PadObjAry* self, int32_t capa) {
     }
 
     int byte = sizeof(PadObj *);
-    PadObj **tmparr = mem_realloc(self->parray, capa * byte + byte);
+    PadObj **tmparr = PadMem_Realloc(self->parray, capa * byte + byte);
     if (!tmparr) {
         return NULL;
     }

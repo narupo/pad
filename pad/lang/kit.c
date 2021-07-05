@@ -38,7 +38,7 @@ PadKit_Del(PadKit *self) {
 
 PadKit *
 PadKit_New(const PadConfig *config) {
-    PadKit *self = mem_calloc(1, sizeof(*self));
+    PadKit *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -79,7 +79,7 @@ PadKit_New(const PadConfig *config) {
 
 PadKit *
 PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc) {
-    PadKit *self = mem_calloc(1, sizeof(*self));
+    PadKit *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -184,7 +184,7 @@ PadKit_CompileFromStrArgs(
 
     PadAst_Clear(self->ast);
     if (opts) {
-        PadAst_MoveOpts(self->ast, mem_move(opts));
+        PadAst_MoveOpts(self->ast, PadMem_Move(opts));
         opts = NULL;
     }
 

@@ -54,12 +54,12 @@ PadChainObjs_Del(PadChainObjs *self) {
 
 PadChainObjs *
 PadChainObjs_New(void) {
-    PadChainObjs *self = mem_calloc(1, sizeof(*self));
+    PadChainObjs *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->chain_objs = mem_calloc(CHAIN_OBJS_INIT_CAPA+1, sizeof(PadChainObjs *));  // +1 for final null
+    self->chain_objs = PadMem_Calloc(CHAIN_OBJS_INIT_CAPA+1, sizeof(PadChainObjs *));  // +1 for final null
     if (!self->chain_objs) {
         PadChainObjs_Del(self);
         return NULL;
@@ -109,7 +109,7 @@ PadChainObjs *
 PadChainObjs_Resize(PadChainObjs *self, int32_t newcapa) {
     int32_t nbyte = sizeof(PadChainObjs *);
 
-    PadChainObj **tmp = mem_realloc(self->chain_objs, nbyte * newcapa + nbyte);  // +nbyte is final null
+    PadChainObj **tmp = PadMem_Realloc(self->chain_objs, nbyte * newcapa + nbyte);  // +nbyte is final null
     if (!tmp) {
         return NULL;
     }
@@ -134,7 +134,7 @@ PadChainObjs_MoveBack(
         }
     }
 
-    self->chain_objs[self->len++] = mem_move(move_chain_obj);
+    self->chain_objs[self->len++] = PadMem_Move(move_chain_obj);
     self->chain_objs[self->len] = NULL;
 
     return self;

@@ -364,7 +364,7 @@ Pad_PushFrontArgv(int argc, char *argv[], const char *front) {
         PadCStrAry_PushBack(arr, argv[i]);
     }
 
-    return mem_move(arr);
+    return PadMem_Move(arr);
 }
 
 char *

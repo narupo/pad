@@ -49,7 +49,7 @@ PadNodeDict_EscDel(PadNodeDict *self) {
         return NULL;
     }
 
-    PadNodeDictItem *map = mem_move(self->map);
+    PadNodeDictItem *map = PadMem_Move(self->map);
     self->map = NULL;
     free(self);
 
@@ -58,14 +58,14 @@ PadNodeDict_EscDel(PadNodeDict *self) {
 
 PadNodeDict *
 PadNodeDict_New(void) {
-    PadNodeDict *self = mem_calloc(1, sizeof(*self));
+    PadNodeDict *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = NODEDICT_INIT_CAPA;
     self->len = 0;
-    self->map = mem_calloc(self->capa+1, sizeof(PadNodeDictItem));
+    self->map = PadMem_Calloc(self->capa+1, sizeof(PadNodeDictItem));
     if (!self->map) {
         PadNodeDict_Del(self);
         return NULL;
@@ -80,14 +80,14 @@ PadNodeDict_DeepCopy(const PadNodeDict *other) {
         return NULL;
     }
 
-    PadNodeDict *self = mem_calloc(1, sizeof(*self));
+    PadNodeDict *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_calloc(self->capa + 1, sizeof(PadNodeDictItem));
+    self->map = PadMem_Calloc(self->capa + 1, sizeof(PadNodeDictItem));
     if (!self->map) {
         PadNodeDict_Del(self);
         return NULL;
@@ -113,14 +113,14 @@ PadNodeDict_ShallowCopy(const PadNodeDict *other) {
         return NULL;
     }
 
-    PadNodeDict *self = mem_calloc(1, sizeof(*self));
+    PadNodeDict *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
     self->len = other->len;
-    self->map = mem_calloc(self->capa + 1, sizeof(PadNodeDictItem));
+    self->map = PadMem_Calloc(self->capa + 1, sizeof(PadNodeDictItem));
     if (!self->map) {
         PadNodeDict_Del(self);
         return NULL;
@@ -147,7 +147,7 @@ PadNodeDict_Resize(PadNodeDict *self, int32_t newcapa) {
     }
 
     int32_t byte = sizeof(PadNodeDictItem);
-    PadNodeDictItem *tmpmap = mem_realloc(self->map, newcapa*byte + byte);
+    PadNodeDictItem *tmpmap = PadMem_Realloc(self->map, newcapa*byte + byte);
     if (!tmpmap) {
         return NULL;
     }
@@ -169,7 +169,7 @@ PadNodeDict_Move(PadNodeDict *self, const char *key, struct PadNode *move_value)
         if (PadCStr_Eq(self->map[i].key, key)) {
             // over write
             PadNode_Del(self->map[i].value);
-            self->map[i].value = mem_move(move_value);
+            self->map[i].value = PadMem_Move(move_value);
             return self;
         }
     }

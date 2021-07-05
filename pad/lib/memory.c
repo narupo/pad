@@ -1,7 +1,7 @@
 #include <pad/lib/memory.h>
 
 void *
-mem_ecalloc(size_t nelems, size_t size) {
+PadMem_ECalloc(size_t nelems, size_t size) {
     void *ptr = calloc(nelems, size);
     if (!ptr) {
         PadErr_Die("memory allocate failed");
@@ -11,7 +11,7 @@ mem_ecalloc(size_t nelems, size_t size) {
 }
 
 void *
-mem_erealloc(void *ptr, size_t size) {
+PadMem_ERealloc(void *ptr, size_t size) {
     void *re = realloc(ptr, size);
     if (!re) {
         PadErr_Die("memory re-allocate failed");
@@ -21,11 +21,11 @@ mem_erealloc(void *ptr, size_t size) {
 }
 
 void *
-mem_calloc(size_t nelems, size_t size) {
+PadMem_Calloc(size_t nelems, size_t size) {
     return calloc(nelems, size);
 }
 
 void *
-mem_realloc(void *ptr, size_t size) {
+PadMem_Realloc(void *ptr, size_t size) {
     return realloc(ptr, size);
 }

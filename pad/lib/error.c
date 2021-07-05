@@ -17,13 +17,13 @@ typedef struct {
 
 static err_PadTok *
 gen_token(char type, string_t *move_token) {
-    err_PadTok *tok = mem_calloc(1, sizeof(*tok));
+    err_PadTok *tok = PadMem_Calloc(1, sizeof(*tok));
     if (!tok) {
         return NULL;
     }
 
     tok->type = type;
-    tok->token = mem_move(move_token);
+    tok->token = PadMem_Move(move_token);
 
     return tok;
 }
@@ -47,7 +47,7 @@ static err_PadTok **
 tokenize(const char *src) {
     int32_t capa = 4;
     int32_t cursize = 0;
-    err_PadTok **tokens = mem_calloc(capa + 1, sizeof(err_PadTok *));
+    err_PadTok **tokens = PadMem_Calloc(capa + 1, sizeof(err_PadTok *));
     if (!tokens) {
         return NULL;
     }
@@ -58,7 +58,7 @@ tokenize(const char *src) {
     if (cursize >= capa) { \
         int32_t nbyte = sizeof(err_PadTok); \
         capa *= 2; \
-        err_PadTok **tmp = mem_realloc(tokens, capa * nbyte + nbyte); \
+        err_PadTok **tmp = PadMem_Realloc(tokens, capa * nbyte + nbyte); \
         if (!tmp) { \
             free(tokens); \
             return NULL; \
@@ -71,7 +71,7 @@ tokenize(const char *src) {
 #define store \
     if (str_len(buf)) { \
         char type = infer_type(buf); \
-        err_PadTok *tok = gen_token(type, mem_move(buf)); \
+        err_PadTok *tok = gen_token(type, PadMem_Move(buf)); \
         if (!tok) { \
             return NULL; \
         } \

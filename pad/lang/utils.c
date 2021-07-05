@@ -170,12 +170,12 @@ Pad_MoveObjAtCurVarmap(
     PadObjDict *varmap = PadCtx_GetVarmap(ctx);
     PadObj *popped = PadObjDict_Pop(varmap, identifier);
     if (popped == move_obj) {
-        PadObjDict_Move(varmap, identifier, mem_move(move_obj));        
+        PadObjDict_Move(varmap, identifier, PadMem_Move(move_obj));        
     } else {
         PadObj_IncRef(move_obj);
         PadObj_DecRef(popped);
         PadObj_Del(popped);
-        PadObjDict_Move(varmap, identifier, mem_move(move_obj));        
+        PadObjDict_Move(varmap, identifier, PadMem_Move(move_obj));        
     }
 
     return true;
@@ -284,7 +284,7 @@ again1:
         PadObj *owners_method = PadObj_NewOwnsMethod(
             ref_gc,
             own,
-            mem_move(methname)
+            PadMem_Move(methname)
         );
         return owners_method;
     } break;
@@ -602,7 +602,7 @@ copy_func_args(
         PadObjAry_PushBack(dstarr, savearg);
     }
 
-    return PadObj_NewAry(ref_gc, mem_move(dstarr));
+    return PadObj_NewAry(ref_gc, PadMem_Move(dstarr));
 }
 
 static PadObj *
@@ -664,7 +664,7 @@ copy_array_args(
         PadObjAry_PushBack(dstarr, savearg);
     }
 
-    return PadObj_NewAry(ref_gc, mem_move(dstarr));
+    return PadObj_NewAry(ref_gc, PadMem_Move(dstarr));
 }
 
 /**
@@ -995,7 +995,7 @@ gen_struct(
     return PadObj_NewObj(
         ref_gc,
         ref_ast,
-        mem_move(context),
+        PadMem_Move(context),
         own
     );
 }
@@ -1067,14 +1067,14 @@ invoke_type_obj(
                 return NULL;
             }
             ary = copy_array_args(ref_ast, err, ref_gc, ref_context, ref_node, ary);
-            dstargs = mem_move(ary->objarr);
+            dstargs = PadMem_Move(ary->objarr);
             ary->objarr = NULL;
             PadObj_Del(ary);
         } else {
             dstargs = PadObjAry_New();
         }
         
-        return PadObj_NewAry(ref_gc, mem_move(dstargs));
+        return PadObj_NewAry(ref_gc, PadMem_Move(dstargs));
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObjDict *dict;
@@ -1088,7 +1088,7 @@ invoke_type_obj(
         } else {
             dict = PadObjDict_New(ref_gc);
         }
-        PadObj *ret = PadObj_NewDict(ref_gc, mem_move(dict));
+        PadObj *ret = PadObj_NewDict(ref_gc, PadMem_Move(dict));
         return ret;
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
@@ -1109,7 +1109,7 @@ invoke_type_obj(
         } else {
             u = uni_new();
         }
-        PadObj *ret = PadObj_NewUnicode(ref_gc, mem_move(u));
+        PadObj *ret = PadObj_NewUnicode(ref_gc, PadMem_Move(u));
         return ret;
     } break;
     }
@@ -1288,7 +1288,7 @@ again:
 
     uni_pushb(dst, cps[index]);
 
-    return PadObj_NewUnicode(ref_gc, mem_move(dst));
+    return PadObj_NewUnicode(ref_gc, PadMem_Move(dst));
 }
 
 static PadObj *
@@ -1795,7 +1795,7 @@ Pad_ExtractCopyOfObj(
             assert(item);
             PadObj *el = item->value;
             PadObj *newel = Pad_ExtractCopyOfObj(ref_ast, err, ref_gc, ref_context, ref_node, el);
-            PadObjDict_Move(objdict, item->key, mem_move(newel));
+            PadObjDict_Move(objdict, item->key, PadMem_Move(newel));
         }
 
         return PadObj_NewDict(ref_gc, objdict);
@@ -1807,7 +1807,7 @@ Pad_ExtractCopyOfObj(
         for (int32_t i = 0; i < PadObjAry_Len(obj->objarr); ++i) {
             PadObj *el = PadObjAry_Get(obj->objarr, i);
             PadObj *newel = Pad_ExtractCopyOfObj(ref_ast, err, ref_gc, ref_context, ref_node, el);
-            PadObjAry_MoveBack(objarr, mem_move(newel));
+            PadObjAry_MoveBack(objarr, PadMem_Move(newel));
         }
 
         return PadObj_NewAry(ref_gc, objarr);

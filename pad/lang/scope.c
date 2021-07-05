@@ -27,7 +27,7 @@ PadScope_EscDelHeadVarmap(PadScope *self) {
         return NULL;
     }
 
-    PadObjDict *varmap = mem_move(self->varmap);
+    PadObjDict *varmap = PadMem_Move(self->varmap);
     self->varmap = NULL;
     PadScope_Del(self);
 
@@ -40,7 +40,7 @@ PadScope_New(PadGC *ref_gc) {
         return NULL;
     }
 
-    PadScope *self = mem_calloc(1, sizeof(*self));
+    PadScope *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -61,7 +61,7 @@ PadScope_DeepCopy_once(const PadScope *other) {
         return NULL;
     }
 
-    PadScope *self = mem_calloc(1, sizeof(*self));
+    PadScope *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -82,7 +82,7 @@ PadScope_DeepCopy(const PadScope *other) {
         return NULL;
     }
 
-    PadScope *self = mem_calloc(1, sizeof(*self));
+    PadScope *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -126,7 +126,7 @@ PadScope_ShallowCopy_once(const PadScope *other) {
         return NULL;
     }
 
-    PadScope *self = mem_calloc(1, sizeof(*self));
+    PadScope *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -147,7 +147,7 @@ PadScope_ShallowCopy(const PadScope *other) {
         return NULL;
     }
 
-    PadScope *self = mem_calloc(1, sizeof(*self));
+    PadScope *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }

@@ -132,7 +132,7 @@
 #define trv_ready \
     PadConfig *config = PadConfig_New(); \
     PadTkrOpt *opt = PadTkrOpt_New(); \
-    PadTkr *tkr = PadTkr_New(mem_move(opt)); \
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt)); \
     PadAST *ast = PadAst_New(config); \
     PadGC *gc = PadGC_New(); \
     PadCtx *ctx = PadCtx_New(gc); \
@@ -768,7 +768,7 @@ test_PadCmdline_MoveBack(void) {
 
     PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(PadCmdline_MoveBack(cmdline, mem_move(obj)));
+    assert(PadCmdline_MoveBack(cmdline, PadMem_Move(obj)));
 
     PadCmdline_Del(cmdline);
 }
@@ -785,10 +785,10 @@ test_PadCmdline_Len(void) {
     PadCmdlineObj *obj1 = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
     PadCmdlineObj *obj2 = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(PadCmdline_MoveBack(cmdline, mem_move(obj1)));
+    assert(PadCmdline_MoveBack(cmdline, PadMem_Move(obj1)));
     assert(PadCmdline_Len(cmdline) == 1);
 
-    assert(PadCmdline_MoveBack(cmdline, mem_move(obj2)));
+    assert(PadCmdline_MoveBack(cmdline, PadMem_Move(obj2)));
     assert(PadCmdline_Len(cmdline) == 2);
 
     PadCmdline_Del(cmdline);
@@ -803,7 +803,7 @@ test_PadCmdline_Clear(void) {
 
     PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(PadCmdline_MoveBack(cmdline, mem_move(obj)));
+    assert(PadCmdline_MoveBack(cmdline, PadMem_Move(obj)));
     assert(PadCmdline_Len(cmdline) == 1);
 
     PadCmdline_Clear(cmdline);
@@ -823,7 +823,7 @@ test_PadCmdline_Getc(void) {
 
     PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
 
-    assert(PadCmdline_MoveBack(cmdline, mem_move(obj)));
+    assert(PadCmdline_MoveBack(cmdline, PadMem_Move(obj)));
     assert(PadCmdline_Len(cmdline) == 1);
 
     assert(PadCmdline_Getc(cmdline, 0));
@@ -5444,7 +5444,7 @@ test_cc_long_code(void) {
 "@}\n";
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
 
@@ -5463,7 +5463,7 @@ static void
 test_cc_basic_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
 
@@ -5483,7 +5483,7 @@ static void
 test_cc_basic_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -5550,7 +5550,7 @@ static void
 test_cc_code_block(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -5576,7 +5576,7 @@ static void
 test_cc_code_block_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{@@}");
@@ -5592,7 +5592,7 @@ static void
 test_cc_ref_block(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -5759,7 +5759,7 @@ static void
 test_cc_ref_block_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{: nil :}");
@@ -5775,7 +5775,7 @@ static void
 test_cc_ref_block_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{: 1 :}");
@@ -5791,7 +5791,7 @@ static void
 test_cc_ref_block_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{: var :}");
@@ -5807,7 +5807,7 @@ static void
 test_cc_ref_block_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{: [1, 2] :}");
@@ -5823,7 +5823,7 @@ static void
 test_cc_formula(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -6115,7 +6115,7 @@ static void
 test_cc_dict(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -6288,7 +6288,7 @@ static void
 test_cc_dict_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{@ {} @}");
@@ -6304,7 +6304,7 @@ static void
 test_cc_dict_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{@ { \"key\" : \"value\", } @}");
@@ -6321,7 +6321,7 @@ static void
 test_cc_dict_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{@ { \"key1\" : \"value1\", \"key2\" : \"value2\" } @}");
@@ -6337,7 +6337,7 @@ static void
 test_cc_expr(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -7008,7 +7008,7 @@ static void
 test_cc_index(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -7109,7 +7109,7 @@ static void
 test_cc_dot(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -7223,7 +7223,7 @@ static void
 test_cc_call(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -7431,7 +7431,7 @@ static void
 test_cc_array(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -7692,7 +7692,7 @@ static void
 test_cc_asscalc(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -7985,7 +7985,7 @@ static void
 test_cc_atom(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -8286,7 +8286,7 @@ test_PadCc_Compile(void) {
     // head
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     const PadNode *root;
     PadProgramNode *program;
@@ -11934,7 +11934,7 @@ static void
 test_cc_import_stmt(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     const PadNode *root;
@@ -12647,7 +12647,7 @@ static void
 test_cc_func_def(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
 
     PadTkr_Parse(tkr, "{@ def func():\n"
@@ -13229,7 +13229,7 @@ static void
 test_trv_array_index(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -13345,7 +13345,7 @@ static void
 test_trv_text_block_old(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -13370,7 +13370,7 @@ static void
 test_trv_ref_block_old(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -13486,7 +13486,7 @@ static void
 test_trv_assign_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -13719,7 +13719,7 @@ static void
 test_trv_index(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -14106,7 +14106,7 @@ static void
 test_trv_string_index(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -14182,7 +14182,7 @@ static void
 test_trv_multi_assign(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -14242,7 +14242,7 @@ static void
 test_trv_and_test(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -15562,7 +15562,7 @@ static void
 test_trv_assign_list(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -15750,7 +15750,7 @@ static void
 test_trv_test_list(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -15794,7 +15794,7 @@ static void
 test_trv_negative_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -15884,7 +15884,7 @@ static void
 test_trv_dot_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -16052,7 +16052,7 @@ static void
 test_trv_builtin_string(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -16409,7 +16409,7 @@ static void
 test_trv_builtin_functions(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -16639,8 +16639,8 @@ extern const char *builtin_structs_source;
 static void
 test_trv_builtin_structs_error_0(void) {
     PadConfig *config = PadConfig_New();
-    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
-    PadTkr *s_tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
+    PadTkr *s_tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -16705,8 +16705,8 @@ test_trv_builtin_structs_error_0(void) {
 static void
 test_trv_builtin_structs_error_1(void) {
     PadConfig *config = PadConfig_New();
-    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
-    PadTkr *s_tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
+    PadTkr *s_tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -16786,7 +16786,7 @@ test_trv_builtin_modules_opts_0(void) {
         PadOpts *opts = PadOpts_New();
         PadOpts_Parse(opts, argc, argv);
         PadAst_Clear(ast);
-        PadAst_MoveOpts(ast, mem_move(opts));
+        PadAst_MoveOpts(ast, PadMem_Move(opts));
         PadCc_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
@@ -16903,7 +16903,7 @@ static void
 test_trv_builtin_functions_type_dict(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -17016,7 +17016,7 @@ static void
 test_trv_builtin_functions_len_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -17180,7 +17180,7 @@ static void
 test_PadTrv_Trav(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19197,7 +19197,7 @@ static void
 test_trv_assign_and_reference_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19250,7 +19250,7 @@ static void
 test_trv_assign_and_reference_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19278,7 +19278,7 @@ static void
 test_trv_assign_and_reference_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19307,7 +19307,7 @@ static void
 test_trv_assign_and_reference_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19335,7 +19335,7 @@ static void
 test_trv_assign_and_reference_4(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19364,7 +19364,7 @@ static void
 test_trv_assign_and_reference_5(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19393,7 +19393,7 @@ static void
 test_trv_assign_and_reference_6(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19423,7 +19423,7 @@ static void
 test_trv_assign_and_reference_7(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19451,7 +19451,7 @@ static void
 test_trv_assign_and_reference_8(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19479,7 +19479,7 @@ static void
 test_trv_assign_and_reference_9(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19522,7 +19522,7 @@ static void
 test_trv_assign_and_reference_11(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19643,7 +19643,7 @@ static void
 test_trv_assign_and_reference_13(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19884,7 +19884,7 @@ static void
 test_trv_ref_block(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -19993,7 +19993,7 @@ static void
 test_trv_text_block(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20059,7 +20059,7 @@ static void
 test_trv_import_stmt_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20415,7 +20415,7 @@ static void
 test_trv_from_import_stmt_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20443,7 +20443,7 @@ static void
 test_trv_from_import_stmt_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20473,7 +20473,7 @@ static void
 test_trv_from_import_stmt_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20502,7 +20502,7 @@ static void
 test_trv_if_stmt_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20598,7 +20598,7 @@ static void
 test_trv_if_stmt_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20664,7 +20664,7 @@ static void
 test_trv_if_stmt_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20729,7 +20729,7 @@ static void
 test_trv_if_stmt_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20835,7 +20835,7 @@ static void
 test_trv_if_stmt_4(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -20907,7 +20907,7 @@ static void
 test_trv_if_stmt_5(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -21467,7 +21467,7 @@ static void
 test_trv_elif_stmt_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -21563,7 +21563,7 @@ static void
 test_trv_elif_stmt_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -22002,7 +22002,7 @@ static void
 test_trv_else_stmt_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -22088,7 +22088,7 @@ static void
 test_trv_else_stmt_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -22184,7 +22184,7 @@ static void
 test_trv_else_stmt_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -22430,7 +22430,7 @@ static void
 test_trv_for_stmt_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -22566,7 +22566,7 @@ static void
 test_trv_for_stmt_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -22632,7 +22632,7 @@ static void
 test_trv_for_stmt_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -23344,7 +23344,7 @@ static void
 test_trv_return_stmt_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -23370,7 +23370,7 @@ static void
 test_trv_return_stmt_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25030,7 +25030,7 @@ static void
 test_trv_func_def_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25056,7 +25056,7 @@ static void
 test_trv_func_def_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25082,7 +25082,7 @@ static void
 test_trv_func_def_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25111,7 +25111,7 @@ static void
 test_trv_func_def_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25136,7 +25136,7 @@ static void
 test_trv_func_def_4(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25162,7 +25162,7 @@ static void
 test_trv_func_def_5(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -25188,7 +25188,7 @@ static void
 test_trv_func_def_6(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26604,7 +26604,7 @@ static void
 test_trv_assign_list_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26630,7 +26630,7 @@ static void
 test_trv_assign_list_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26656,7 +26656,7 @@ static void
 test_trv_assign_list_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26796,7 +26796,7 @@ static void
 test_trv_comparison_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26822,7 +26822,7 @@ static void
 test_trv_comparison_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26848,7 +26848,7 @@ static void
 test_trv_comparison_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26874,7 +26874,7 @@ static void
 test_trv_comparison_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26900,7 +26900,7 @@ static void
 test_trv_comparison_4(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26926,7 +26926,7 @@ static void
 test_trv_comparison_5(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -26974,7 +26974,7 @@ static void
 test_trv_asscalc_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -27042,7 +27042,7 @@ static void
 test_trv_asscalc_1(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -27136,7 +27136,7 @@ static void
 test_trv_asscalc_2(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -27280,7 +27280,7 @@ static void
 test_trv_asscalc_3(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29141,7 +29141,7 @@ static void
 test_trv_nil(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29167,7 +29167,7 @@ static void
 test_trv_false(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29193,7 +29193,7 @@ static void
 test_trv_true(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29219,7 +29219,7 @@ static void
 test_trv_digit(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29245,7 +29245,7 @@ static void
 test_trv_string(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29467,7 +29467,7 @@ static void
 test_trv_identifier(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29493,7 +29493,7 @@ static void
 test_trv_builtin_array_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
@@ -29559,7 +29559,7 @@ static void
 test_trv_builtin_dict_0(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(mem_move(opt));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAst_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);

@@ -22,14 +22,14 @@ PadDict_New(size_t capa) {
         return NULL;
     }
 
-    PadDict *self = mem_calloc(1, sizeof(*self));
+    PadDict *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = capa;
     self->len = 0;
-    self->map = mem_calloc(self->capa + 1, sizeof(PadDictItem));
+    self->map = PadMem_Calloc(self->capa + 1, sizeof(PadDictItem));
     if (!self->map) {
         free(self);
         return NULL;
@@ -44,14 +44,14 @@ PadDict_DeepCopy(const PadDict *other) {
         return NULL;
     }
 
-    PadDict *self = mem_calloc(1, sizeof(*self));
+    PadDict *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
     
     self->capa = other->capa;
     self->len = 0;
-    self->map = mem_calloc(other->capa + 1, sizeof(PadDictItem));
+    self->map = PadMem_Calloc(other->capa + 1, sizeof(PadDictItem));
     if (!self->map) {
         free(self);
         return NULL;
@@ -79,7 +79,7 @@ PadDict_Resize(PadDict *self, size_t newcapa) {
     }
 
     size_t byte = sizeof(PadDict);
-    PadDictItem *tmp = mem_realloc(self->map, newcapa*byte+byte);
+    PadDictItem *tmp = PadMem_Realloc(self->map, newcapa*byte+byte);
     if (!tmp) {
         return NULL;
     }

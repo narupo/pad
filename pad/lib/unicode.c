@@ -1001,7 +1001,7 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
 
     int32_t capa = 4;
     int32_t cursize = 0;
-    unicode_t **arr = mem_calloc(capa + 1, sizeof(unicode_t *));
+    unicode_t **arr = PadMem_Calloc(capa + 1, sizeof(unicode_t *));
     if (!arr) {
         return NULL;
     }
@@ -1013,13 +1013,13 @@ uni_split(const unicode_t *other, const unicode_type_t *sep) {
         if (capa >= cursize) { \
             capa *= 2; \
             int32_t nbyte = sizeof(unicode_t *); \
-            unicode_t **tmp = mem_realloc(arr, capa * nbyte + nbyte); \
+            unicode_t **tmp = PadMem_Realloc(arr, capa * nbyte + nbyte); \
             if (!tmp) { \
                 return NULL; \
             } \
             arr = tmp; \
         } \
-        arr[cursize++] = mem_move(u); \
+        arr[cursize++] = PadMem_Move(u); \
         arr[cursize] = NULL; \
         u = uni_new(); \
     } \

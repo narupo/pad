@@ -392,7 +392,7 @@ PadAst_Del(PadAST *self) {
 
 PadAST *
 PadAst_New(const PadConfig *ref_config) {
-    PadAST *self = mem_calloc(1, sizeof(*self));
+    PadAST *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -419,7 +419,7 @@ PadAst_DeepCopy(const PadAST *other) {
         return NULL;
     }
 
-    PadAST *self = mem_calloc(1, sizeof(*self));
+    PadAST *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -460,7 +460,7 @@ PadAst_ShallowCopy(const PadAST *other) {
         return NULL;
     }
 
-    PadAST *self = mem_calloc(1, sizeof(*self));
+    PadAST *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -501,7 +501,7 @@ PadAst_MoveOpts(PadAST *self, PadOpts *move_opts) {
         PadOpts_Del(self->opts);
     }
 
-    self->opts = mem_move(move_opts);
+    self->opts = PadMem_Move(move_opts);
 }
 
 const PadNode *

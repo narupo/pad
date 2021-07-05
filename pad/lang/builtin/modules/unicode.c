@@ -146,12 +146,12 @@ builtin_unicode_split(PadBltFuncArgs *fargs) {
 
     PadObjAry *toks = PadObjAry_New();
     for (unicode_t **p = arr; *p; ++p) {
-        PadObj *obj = PadObj_NewUnicode(fargs->ref_ast->ref_gc, mem_move(*p));
-        PadObjAry_MoveBack(toks, mem_move(obj));
+        PadObj *obj = PadObj_NewUnicode(fargs->ref_ast->ref_gc, PadMem_Move(*p));
+        PadObjAry_MoveBack(toks, PadMem_Move(obj));
     }
     free(arr);
 
-    PadObj *ret = PadObj_NewAry(fargs->ref_ast->ref_gc, mem_move(toks));
+    PadObj *ret = PadObj_NewAry(fargs->ref_ast->ref_gc, PadMem_Move(toks));
     return ret;
 }
 
@@ -203,7 +203,7 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    PadObj *ret = PadObj_NewUnicode(fargs->ref_ast->ref_gc, mem_move(result));
+    PadObj *ret = PadObj_NewUnicode(fargs->ref_ast->ref_gc, PadMem_Move(result));
     return ret;
 }
 
@@ -288,7 +288,7 @@ builtin_func_infos[] = {
 
 PadObj *
 Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGC *ref_gc) {
-    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
@@ -298,9 +298,9 @@ Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGC *ref_gc) {
         "__unicode__",
         NULL,
         NULL,
-        mem_move(tkr),
-        mem_move(ast),
-        mem_move(ctx),
+        PadMem_Move(tkr),
+        PadMem_Move(ast),
+        PadMem_Move(ctx),
         builtin_func_infos
     );
 }

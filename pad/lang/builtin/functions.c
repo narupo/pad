@@ -594,9 +594,9 @@ builtin_dance(PadBltFuncArgs *fargs) {
 #define return_fail(s) { \
         PadObjAry *ret = PadObjAry_New(); \
         PadObj *err = PadObj_NewUnicodeCStr(ref_gc, s); \
-        PadObjAry_MoveBack(ret, mem_move(PadObj_NewNil(ref_gc))); \
-        PadObjAry_MoveBack(ret, mem_move(err)); \
-        return PadObj_NewAry(ref_gc, mem_move(ret)); \
+        PadObjAry_MoveBack(ret, PadMem_Move(PadObj_NewNil(ref_gc))); \
+        PadObjAry_MoveBack(ret, PadMem_Move(err)); \
+        return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
     } \
 
 #undef return_fail_es
@@ -604,9 +604,9 @@ builtin_dance(PadBltFuncArgs *fargs) {
         PadObjAry *ret = PadObjAry_New(); \
         const PadErrElem *elem = PadErrStack_Getc(es, PadErrStack_Len(es) - 1); \
         PadObj *err = PadObj_NewUnicodeCStr(ref_gc, elem->message); \
-        PadObjAry_MoveBack(ret, mem_move(PadObj_NewNil(ref_gc))); \
-        PadObjAry_MoveBack(ret, mem_move(err)); \
-        return PadObj_NewAry(ref_gc, mem_move(ret)); \
+        PadObjAry_MoveBack(ret, PadMem_Move(PadObj_NewNil(ref_gc))); \
+        PadObjAry_MoveBack(ret, PadMem_Move(err)); \
+        return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
     } \
 
     if (PadObjAry_Len(args) < 1) {
@@ -647,7 +647,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
     }
 
     PadAst_Clear(ast);
-    PadAst_MoveOpts(ast, mem_move(opts));
+    PadAst_MoveOpts(ast, PadMem_Move(opts));
     opts = NULL;
 
     PadCc_Compile(ast, PadTkr_GetToks(tkr));
@@ -677,7 +677,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
 
     PadObjAry_MoveBack(retarr, retout);
     PadObjAry_MoveBack(retarr, reterr);
-    PadObj *ret = PadObj_NewAry(ref_ast->ref_gc, mem_move(retarr));
+    PadObj *ret = PadObj_NewAry(ref_ast->ref_gc, PadMem_Move(retarr));
 
     PadCtx_Del(ctx);
 
@@ -699,7 +699,7 @@ builtin_ord(PadBltFuncArgs *fargs) {
         PadObjAry *ret = PadObjAry_New(); \
         PadObjAry_MoveBack(ret, PadObj_NewNil(ref_gc)); \
         PadObjAry_MoveBack(ret, PadObj_NewUnicodeCStr(ref_gc, s)); \
-        return PadObj_NewAry(ref_gc, mem_move(ret)); \
+        return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
 
     if (PadObjAry_Len(args) < 1) {
         return_fail("need one argument");
@@ -717,9 +717,9 @@ builtin_ord(PadBltFuncArgs *fargs) {
     PadObj *i = PadObj_NewInt(ref_gc, (PadIntObj) c);
     PadObj *nil = PadObj_NewNil(ref_gc);
     PadObjAry *ret = PadObjAry_New();
-    PadObjAry_MoveBack(ret, mem_move(i));
-    PadObjAry_MoveBack(ret, mem_move(nil));
-    return PadObj_NewAry(ref_gc, mem_move(ret));
+    PadObjAry_MoveBack(ret, PadMem_Move(i));
+    PadObjAry_MoveBack(ret, PadMem_Move(nil));
+    return PadObj_NewAry(ref_gc, PadMem_Move(ret));
 }
 
 static PadObj *
@@ -736,7 +736,7 @@ builtin_chr(PadBltFuncArgs *fargs) {
         PadObjAry *ret = PadObjAry_New(); \
         PadObjAry_MoveBack(ret, PadObj_NewNil(ref_gc)); \
         PadObjAry_MoveBack(ret, PadObj_NewUnicodeCStr(ref_gc, s)); \
-        return PadObj_NewAry(ref_gc, mem_move(ret)); \
+        return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
 
     if (PadObjAry_Len(args) < 1) {
         return_fail("need one argument");
@@ -749,12 +749,12 @@ builtin_chr(PadBltFuncArgs *fargs) {
 
     unicode_t *u = uni_new();
     uni_pushb(u, i->lvalue);
-    PadObj *uni = PadObj_NewUnicode(ref_gc, mem_move(u));
+    PadObj *uni = PadObj_NewUnicode(ref_gc, PadMem_Move(u));
     PadObj *nil = PadObj_NewNil(ref_gc);
     PadObjAry *ret = PadObjAry_New();
-    PadObjAry_MoveBack(ret, mem_move(uni));
-    PadObjAry_MoveBack(ret, mem_move(nil));
-    return PadObj_NewAry(ref_gc, mem_move(ret));
+    PadObjAry_MoveBack(ret, PadMem_Move(uni));
+    PadObjAry_MoveBack(ret, PadMem_Move(nil));
+    return PadObj_NewAry(ref_gc, PadMem_Move(ret));
 }
 
 static PadBltFuncInfo
@@ -780,7 +780,7 @@ builtin_func_infos[] = {
 
 PadObj *
 Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc) {
-    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
@@ -790,9 +790,9 @@ Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc) {
         "__builtin__",
         NULL,
         NULL,
-        mem_move(tkr),
-        mem_move(ast),
-        mem_move(ctx),
+        PadMem_Move(tkr),
+        PadMem_Move(ast),
+        PadMem_Move(ctx),
         builtin_func_infos
     );
 }

@@ -64,12 +64,12 @@ PadErrStack_Del(PadErrStack *self) {
 
 PadErrStack *
 PadErrStack_New(void) {
-    PadErrStack *self = mem_calloc(1, sizeof(*self));
+    PadErrStack *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->stack = mem_calloc(ERRSTACK_INIT_CAPA, sizeof(PadErrElem));
+    self->stack = PadMem_Calloc(ERRSTACK_INIT_CAPA, sizeof(PadErrElem));
     if (!self->stack) {
         PadErrStack_Del(self);
         return NULL;
@@ -116,7 +116,7 @@ static PadErrStack *
 errstack_resize(PadErrStack *self, int32_t newcapa) {
     int32_t byte = sizeof(PadErrElem);
 
-    PadErrElem *tmp = mem_realloc(self->stack, newcapa*byte);
+    PadErrElem *tmp = PadMem_Realloc(self->stack, newcapa*byte);
     if (!tmp) {
         return NULL;
     }
@@ -338,7 +338,7 @@ PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *_other) {
     // copy stack
     int32_t save_len = self->len;
     int32_t save_capa = self->capa;
-    PadErrElem *save_stack = mem_calloc(save_capa+1, sizeof(PadErrElem));
+    PadErrElem *save_stack = PadMem_Calloc(save_capa+1, sizeof(PadErrElem));
     if (!save_stack) {
         return NULL;
     }

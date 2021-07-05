@@ -45,12 +45,12 @@ PadChainNodes_Del(PadChainNodes *self) {
 
 PadChainNodes *
 PadChainNodes_New(void) {
-    PadChainNodes *self = mem_calloc(1, sizeof(*self));
+    PadChainNodes *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
-    self->chain_nodes = mem_calloc(CHAIN_NODES_INIT_CAPA+1, sizeof(PadChainNode *));  // +1 for final null
+    self->chain_nodes = PadMem_Calloc(CHAIN_NODES_INIT_CAPA+1, sizeof(PadChainNode *));  // +1 for final null
     if (!self->chain_nodes) {
         PadChainNodes_Del(self);
         return NULL;
@@ -63,13 +63,13 @@ PadChainNodes_New(void) {
 
 PadChainNodes *
 PadChainNodes_DeepCopy(const PadChainNodes *other) {
-    PadChainNodes *self = mem_calloc(1, sizeof(*self));
+    PadChainNodes *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->capa = other->capa;
-    self->chain_nodes = mem_calloc(other->capa + 1, sizeof(PadChainNode *));
+    self->chain_nodes = PadMem_Calloc(other->capa + 1, sizeof(PadChainNode *));
     if (!self->chain_nodes) {
         PadChainNodes_Del(self);
         return NULL;
@@ -92,7 +92,7 @@ PadChainNodes *
 PadChainNodes_Resize(PadChainNodes *self, int32_t newcapa) {
     int32_t nbyte = sizeof(PadChainNode *);
 
-    PadChainNode **tmp = mem_realloc(self->chain_nodes, nbyte * newcapa + nbyte);  // +nbyte is final null
+    PadChainNode **tmp = PadMem_Realloc(self->chain_nodes, nbyte * newcapa + nbyte);  // +nbyte is final null
     if (!tmp) {
         return NULL;
     }
@@ -117,7 +117,7 @@ PadChainNodes_MoveBack(
         }
     }
 
-    self->chain_nodes[self->len++] = mem_move(move_chain_node);
+    self->chain_nodes[self->len++] = PadMem_Move(move_chain_node);
     self->chain_nodes[self->len] = NULL;
 
     return self;

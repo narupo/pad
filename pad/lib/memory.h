@@ -9,21 +9,21 @@
 * move *
 *******/
 
-#undef mem_move
-#define mem_move(val) val
+#undef PadMem_Move
+#define PadMem_Move(val) val
 
 /*************
 * prototypes *
 *************/
 
 void *
-mem_ecalloc(size_t nelems, size_t size);
+PadMem_ECalloc(size_t nelems, size_t size);
 
 void *
-mem_erealloc(void *ptr, size_t size);
+PadMem_ERealloc(void *ptr, size_t size);
 
 void *
-mem_calloc(size_t nelems, size_t size);
+PadMem_Calloc(size_t nelems, size_t size);
 
 void *
-mem_realloc(void *ptr, size_t size);
+PadMem_Realloc(void *ptr, size_t size);

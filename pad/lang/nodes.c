@@ -21,7 +21,7 @@ PadNode_New(PadNodeType type, void *real, const PadTok *ref_token) {
         return NULL;
     }
 
-    PadNode *self = mem_calloc(1, sizeof(*self));
+    PadNode *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -36,13 +36,13 @@ PadNode_New(PadNodeType type, void *real, const PadTok *ref_token) {
 PadNode *
 PadNode_DeepCopy(const PadNode *other) {
 #define declare_first(T, name) \
-    T *name = mem_calloc(1, sizeof(*name)); \
+    T *name = PadMem_Calloc(1, sizeof(*name)); \
     if (!name) { \
         return NULL; \
     } \
 
 #define declare(T, name) \
-    T *name = mem_calloc(1, sizeof(*name)); \
+    T *name = PadMem_Calloc(1, sizeof(*name)); \
     if (!name) { \
         PadNode_Del(self); \
         return NULL; \
@@ -74,7 +74,7 @@ PadNode_DeepCopy(const PadNode *other) {
             PadNode_Del(self); \
             return NULL; \
         } \
-        PadNodeDict_Move(dst->member, item->key, mem_move(node)); \
+        PadNodeDict_Move(dst->member, item->key, PadMem_Move(node)); \
     } \
 
     if (!other) {

@@ -15,7 +15,7 @@ PadImporter_Del(PadImporter *self) {
 
 PadImporter *
 PadImporter_New(const PadConfig *ref_config) {
-    PadImporter *self = mem_calloc(1, sizeof(*self));
+    PadImporter *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
@@ -86,7 +86,7 @@ create_modobj(
     }
 
     // compile source
-    PadTkr *tkr = PadTkr_New(mem_move(PadTkrOpt_New()));
+    PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAst_New(self->ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
     PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
@@ -121,10 +121,10 @@ create_modobj(
         ref_gc,
         path,  // module name
         path,  // program_filename
-        mem_move(src),  // program_source
-        mem_move(tkr),
-        mem_move(ast),
-        mem_move(ctx),
+        PadMem_Move(src),  // program_source
+        PadMem_Move(tkr),
+        PadMem_Move(ast),
+        PadMem_Move(ctx),
         NULL
     );
 
@@ -154,7 +154,7 @@ PadImporter_ImportAs(
 
     PadObjDict *dst_varmap = PadCtx_GetVarmap(dstctx);
     PadObj_IncRef(modobj);
-    PadObjDict_Move(dst_varmap, alias, mem_move(modobj));
+    PadObjDict_Move(dst_varmap, alias, PadMem_Move(modobj));
 
     return self;
 }
@@ -233,7 +233,7 @@ PadImporter_FromImport(
 
     // assign imported module at global varmap of current context
     PadObj_IncRef(modobj);
-    PadObjDict_Move(dst_varmap, modobj->module.name, mem_move(modobj));
+    PadObjDict_Move(dst_varmap, modobj->module.name, PadMem_Move(modobj));
 
     return self;
 }
