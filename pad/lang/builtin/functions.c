@@ -258,7 +258,7 @@ again:
         goto again;
     } break;
     case PAD_OBJ_TYPE__UNICODE:
-        len = uni_len(arg->unicode);
+        len = PadUni_Len(arg->unicode);
         break;
     case PAD_OBJ_TYPE__ARRAY:
         len = PadObjAry_Len(arg->objarr);
@@ -465,7 +465,7 @@ again:
         return NULL;
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        return uni_getc_mb(obj->unicode);
+        return PadUni_GetcMB(obj->unicode);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         obj = Pad_PullRef(obj);
@@ -709,11 +709,11 @@ builtin_ord(PadBltFuncArgs *fargs) {
     if (u->type != PAD_OBJ_TYPE__UNICODE) {
         return_fail("invalid type");
     }
-    if (!uni_len(u->unicode)) {
+    if (!PadUni_Len(u->unicode)) {
         return_fail("empty strings");
     }
 
-    const unicode_type_t c = uni_getc(u->unicode)[0];
+    const PadUniType c = PadUni_Getc(u->unicode)[0];
     PadObj *i = PadObj_NewInt(ref_gc, (PadIntObj) c);
     PadObj *nil = PadObj_NewNil(ref_gc);
     PadObjAry *ret = PadObjAry_New();
@@ -747,8 +747,8 @@ builtin_chr(PadBltFuncArgs *fargs) {
         return_fail("invalid type");
     }
 
-    unicode_t *u = uni_new();
-    uni_pushb(u, i->lvalue);
+    PadUni *u = PadUni_New();
+    PadUni_PushBack(u, i->lvalue);
     PadObj *uni = PadObj_NewUnicode(ref_gc, PadMem_Move(u));
     PadObj *nil = PadObj_NewNil(ref_gc);
     PadObjAry *ret = PadObjAry_New();

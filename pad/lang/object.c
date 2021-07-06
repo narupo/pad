@@ -62,7 +62,7 @@ PadObj_Del(PadObj *self) {
         self->identifier.name = NULL;
         break;
     case PAD_OBJ_TYPE__UNICODE:
-        uni_del(self->unicode);
+        PadUni_Del(self->unicode);
         self->unicode = NULL;
         break;
     case PAD_OBJ_TYPE__ARRAY:
@@ -200,7 +200,7 @@ PadObj_DeepCopy(const PadObj *other) {
         self->identifier.name = PadStr_DeepCopy(other->identifier.name);
         break;
     case PAD_OBJ_TYPE__UNICODE:
-        self->unicode = uni_deep_copy(other->unicode);
+        self->unicode = PadUni_DeepCopy(other->unicode);
         break;
     case PAD_OBJ_TYPE__ARRAY:
         self->objarr = PadObjAry_DeepCopy(other->objarr);
@@ -316,7 +316,7 @@ PadObj_ShallowCopy(const PadObj *other) {
         self->identifier.name = PadStr_ShallowCopy(other->identifier.name);
         break;
     case PAD_OBJ_TYPE__UNICODE:
-        self->unicode = uni_shallow_copy(other->unicode);
+        self->unicode = PadUni_ShallowCopy(other->unicode);
         break;
     case PAD_OBJ_TYPE__ARRAY:
         self->objarr = PadObjAry_ShallowCopy(other->objarr);
@@ -509,14 +509,14 @@ PadObj_NewUnicodeCStr(PadGC *ref_gc, const char *str) {
         return NULL;
     }
 
-    self->unicode = uni_new();
-    uni_set_mb(self->unicode, str);
+    self->unicode = PadUni_New();
+    PadUni_SetMB(self->unicode, str);
 
     return self;
 }
 
 PadObj *
-PadObj_NewUnicode(PadGC *ref_gc, unicode_t *move_unicode) {
+PadObj_NewUnicode(PadGC *ref_gc, PadUni *move_unicode) {
     if (!ref_gc || !move_unicode) {
         return NULL;
     }
@@ -877,7 +877,7 @@ PadObj_ToStr(const PadObj *self) {
         if (!str) {
             return NULL;
         }
-        const char *s = uni_getc_mb(self->unicode);
+        const char *s = PadUni_GetcMB(self->unicode);
         PadStr_Set(str, s);
         return str;
     } break;
@@ -1218,12 +1218,12 @@ PadObj_GetcDict(const PadObj *self) {
     return self->objdict;
 }
 
-unicode_t *
+PadUni *
 PadObj_GetUnicode(PadObj *self) {
     return self->unicode;
 }
 
-const unicode_t *
+const PadUni *
 PadObj_GetcUnicode(const PadObj *self) {
     return self->unicode;
 }

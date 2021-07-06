@@ -1743,196 +1743,196 @@ PadStrests[] = {
 **********/
 
 static void
-test_uni_del(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Del(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    uni_del(NULL);
-    uni_del(u);
+    PadUni_Del(NULL);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_esc_del(void) {
-    unicode_t *u = uni_new();
+test_PadUni_EscDel(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_esc_del(NULL) == NULL);
-    unicode_type_t *ptr = uni_esc_del(u);
+    assert(PadUni_EscDel(NULL) == NULL);
+    PadUniType *ptr = PadUni_EscDel(u);
     assert(ptr != NULL);
     free(ptr);
 }
 
 static void
-test_uni_new(void) {
-    unicode_t *u = uni_new();
+test_PadUni_New(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_deep_copy(void) {
-    unicode_t *u = uni_new();
+test_PadUni_DeepCopy(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set_mb(u, "1234") != NULL);
-    assert(uni_deep_copy(NULL) == NULL);
-    unicode_t *o = uni_deep_copy(u);
+    assert(PadUni_SetMB(u, "1234") != NULL);
+    assert(PadUni_DeepCopy(NULL) == NULL);
+    PadUni *o = PadUni_DeepCopy(u);
     assert(o != NULL);
-    assert(u_strcmp(uni_getc(o), UNI_STR("1234")) == 0);
-    uni_del(o);
-    uni_del(u);
+    assert(PadU_StrCmp(PadUni_Getc(o), PAD_UNI__STR("1234")) == 0);
+    PadUni_Del(o);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_len(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Len(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_len(NULL) == -1);
-    assert(uni_len(u) == 0);
-    assert(uni_app(u, UNI_STR("abc")) != NULL);
-    assert(uni_len(u) == 3);
-    uni_del(u);
+    assert(PadUni_Len(NULL) == -1);
+    assert(PadUni_Len(u) == 0);
+    assert(PadUni_App(u, PAD_UNI__STR("abc")) != NULL);
+    assert(PadUni_Len(u) == 3);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_capa(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Capa(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_capa(NULL) == -1);
-    assert(uni_capa(u) == 4);
-    assert(uni_app(u, UNI_STR("1234")) != NULL);
-    assert(uni_capa(u) == 8);
-    uni_del(u);
+    assert(PadUni_Capa(NULL) == -1);
+    assert(PadUni_Capa(u) == 4);
+    assert(PadUni_App(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_Capa(u) == 8);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_getc(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Getc(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_getc(NULL) == NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("")) == 0);
-    assert(uni_app(u, UNI_STR("1234")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
-    uni_del(u);
+    assert(PadUni_Getc(NULL) == NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("")) == 0);
+    assert(PadUni_App(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("1234")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_empty(void) {
-    unicode_t *s = uni_new();
+test_PadUni_Empty(void) {
+    PadUni *s = PadUni_New();
     assert(s != NULL);
-    assert(uni_empty(NULL) == 0);
-    assert(uni_empty(s) == 1);
-    assert(uni_app(s, UNI_STR("1234")) != NULL);
-    assert(uni_empty(s) == 0);
-    uni_del(s);
+    assert(PadUni_Empty(NULL) == 0);
+    assert(PadUni_Empty(s) == 1);
+    assert(PadUni_App(s, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_Empty(s) == 0);
+    PadUni_Del(s);
 }
 
 static void
-test_uni_clear(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Clear(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_app(NULL, UNI_STR("1234")) == NULL);
-    assert(uni_app(u, NULL) == NULL);
-    assert(uni_app(u, UNI_STR("1234")) != NULL);
-    assert(uni_len(u) == 4);
-    uni_clear(u);
-    assert(uni_len(u) == 0);
-    uni_del(u);
+    assert(PadUni_App(NULL, PAD_UNI__STR("1234")) == NULL);
+    assert(PadUni_App(u, NULL) == NULL);
+    assert(PadUni_App(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_Len(u) == 4);
+    PadUni_Clear(u);
+    assert(PadUni_Len(u) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_set(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Set(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(NULL, UNI_STR("1234")) == NULL);
-    assert(uni_set(u, NULL) == NULL);
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
-    assert(uni_set(u, UNI_STR("12")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
-    uni_del(u);
+    assert(PadUni_Set(NULL, PAD_UNI__STR("1234")) == NULL);
+    assert(PadUni_Set(u, NULL) == NULL);
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("1234")) == 0);
+    assert(PadUni_Set(u, PAD_UNI__STR("12")) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("12")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_resize(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Resize(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_capa(NULL) == -1);
-    assert(uni_capa(u) == 4);
-    assert(uni_resize(u, 4 * 2) != NULL);
-    assert(uni_capa(u) == 8);
-    uni_del(u);
+    assert(PadUni_Capa(NULL) == -1);
+    assert(PadUni_Capa(u) == 4);
+    assert(PadUni_Resize(u, 4 * 2) != NULL);
+    assert(PadUni_Capa(u) == 8);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_pushb(void) {
-    unicode_t *u = uni_new();
+test_PadUni_PushBack(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
 
-    assert(uni_pushb(NULL, UNI_CHAR('1')) == NULL);
-    assert(uni_pushb(u, 0) == NULL);
-    assert(uni_pushb(u, UNI_CHAR('\0')) == NULL);
-    assert(uni_pushb(u, UNI_CHAR('1')) != NULL);
-    assert(uni_pushb(u, UNI_CHAR('2')) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
+    assert(PadUni_PushBack(NULL, PAD_UNI__CH('1')) == NULL);
+    assert(PadUni_PushBack(u, 0) == NULL);
+    assert(PadUni_PushBack(u, PAD_UNI__CH('\0')) == NULL);
+    assert(PadUni_PushBack(u, PAD_UNI__CH('1')) != NULL);
+    assert(PadUni_PushBack(u, PAD_UNI__CH('2')) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("12")) == 0);
     
-    uni_clear(u);
-    assert(uni_pushb(u, UNI_CHAR('あ')) != NULL);
-    assert(uni_pushb(u, UNI_CHAR('い')) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("あい")) == 0);
+    PadUni_Clear(u);
+    assert(PadUni_PushBack(u, PAD_UNI__CH('あ')) != NULL);
+    assert(PadUni_PushBack(u, PAD_UNI__CH('い')) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("あい")) == 0);
 
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_popb(void) {
-    unicode_t *u = uni_new();
+test_PadUni_PopBack(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_popb(NULL) == UNI_CHAR('\0'));
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
-    assert(uni_popb(u) == UNI_CHAR('4'));
-    assert(uni_popb(u) == UNI_CHAR('3'));
-    assert(u_strcmp(uni_getc(u), UNI_STR("12")) == 0);
-    uni_del(u);
+    assert(PadUni_PopBack(NULL) == PAD_UNI__CH('\0'));
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("1234")) == 0);
+    assert(PadUni_PopBack(u) == PAD_UNI__CH('4'));
+    assert(PadUni_PopBack(u) == PAD_UNI__CH('3'));
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("12")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_pushf(void) {
-    unicode_t *u = uni_new();
+test_PadUni_PushFront(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_pushf(NULL, UNI_CHAR('1')) == NULL);
-    assert(uni_pushf(u, 0) == NULL);
-    assert(uni_pushf(u, UNI_CHAR('\0')) == NULL);
-    assert(uni_pushf(u, UNI_CHAR('1')) != NULL);
-    assert(uni_pushf(u, UNI_CHAR('2')) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("21")) == 0);
-    uni_del(u);
+    assert(PadUni_PushFront(NULL, PAD_UNI__CH('1')) == NULL);
+    assert(PadUni_PushFront(u, 0) == NULL);
+    assert(PadUni_PushFront(u, PAD_UNI__CH('\0')) == NULL);
+    assert(PadUni_PushFront(u, PAD_UNI__CH('1')) != NULL);
+    assert(PadUni_PushFront(u, PAD_UNI__CH('2')) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("21")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_popf(void) {
-    unicode_t *u = uni_new();
+test_PadUni_PopFront(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_popf(NULL) == '\0');
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    assert(uni_popf(u) == UNI_CHAR('1'));
-    assert(uni_popf(u) == UNI_CHAR('2'));
-    assert(u_strcmp(uni_getc(u), UNI_STR("34")) == 0);
-    uni_del(u);
+    assert(PadUni_PopFront(NULL) == '\0');
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_PopFront(u) == PAD_UNI__CH('1'));
+    assert(PadUni_PopFront(u) == PAD_UNI__CH('2'));
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("34")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_app(void) {
-    unicode_t *u = uni_new();
+test_PadUni_App(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_app(NULL, UNI_STR("1234")) == NULL);
-    assert(uni_app(u, NULL) == NULL);
-    assert(uni_app(u, UNI_STR("1234")) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("1234")) == 0);
-    uni_del(u);
+    assert(PadUni_App(NULL, PAD_UNI__STR("1234")) == NULL);
+    assert(PadUni_App(u, NULL) == NULL);
+    assert(PadUni_App(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("1234")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_app_stream(void) {
-    unicode_t *s = uni_new();
+test_PadUni_AppStream(void) {
+    PadUni *s = PadUni_New();
     assert(s != NULL);
 
     char curdir[1024];
@@ -1942,685 +1942,685 @@ test_uni_app_stream(void) {
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
-    assert(uni_app_stream(NULL, fin) == NULL);
-    assert(uni_app_stream(s, NULL) == NULL);
-    assert(uni_app_stream(s, fin) != NULL);
+    assert(PadUni_AppStream(NULL, fin) == NULL);
+    assert(PadUni_AppStream(s, NULL) == NULL);
+    assert(PadUni_AppStream(s, fin) != NULL);
     assert(fclose(fin) == 0);
 
-    uni_del(s);
+    PadUni_Del(s);
 }
 
 static void
-test_uni_app_other(void) {
-    unicode_t *u = uni_new();
+test_PadUni_AppOther(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    unicode_t *o = uni_new();
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    PadUni *o = PadUni_New();
     assert(o != NULL);
-    assert(uni_set(o, UNI_STR("1234")) != NULL);
-    assert(uni_app_other(NULL, o) == NULL);
-    assert(uni_app_other(u, NULL) == NULL);
-    assert(uni_app_other(u, o) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("12341234")) == 0);
-    uni_del(o);
-    uni_del(u);
+    assert(PadUni_Set(o, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_AppOther(NULL, o) == NULL);
+    assert(PadUni_AppOther(u, NULL) == NULL);
+    assert(PadUni_AppOther(u, o) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("12341234")) == 0);
+    PadUni_Del(o);
+    PadUni_Del(u);
 
-    u = uni_new();
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    assert(uni_app_other(u, u) != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("12341234")) == 0);
-    uni_del(u);
+    u = PadUni_New();
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_AppOther(u, u) != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("12341234")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_app_fmt(void) {
-    unicode_t *u = uni_new();
+test_PadUni_AppFmt(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
     char buf[1024];
-    assert(uni_app_fmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
-    assert(uni_app_fmt(u, NULL, sizeof buf, "%s", "test") == NULL);
-    assert(uni_app_fmt(u, buf, 0, "%s", "test") == NULL);
-    assert(uni_app_fmt(u, buf, sizeof buf, NULL, "test") == NULL);
-    assert(uni_app_fmt(u, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
-    assert(u_strcmp(uni_getc(u), UNI_STR("1234 1 2")) == 0);
-    uni_del(u);
+    assert(PadUni_AppFmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
+    assert(PadUni_AppFmt(u, NULL, sizeof buf, "%s", "test") == NULL);
+    assert(PadUni_AppFmt(u, buf, 0, "%s", "test") == NULL);
+    assert(PadUni_AppFmt(u, buf, sizeof buf, NULL, "test") == NULL);
+    assert(PadUni_AppFmt(u, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
+    assert(PadU_StrCmp(PadUni_Getc(u), PAD_UNI__STR("1234 1 2")) == 0);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_rstrip(void) {
-    unicode_t *u = uni_new();
+test_PadUni_RStrip(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    assert(uni_rstrip(NULL, UNI_STR("34")) == NULL);
-    assert(uni_rstrip(u, NULL) == NULL);
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_RStrip(NULL, PAD_UNI__STR("34")) == NULL);
+    assert(PadUni_RStrip(u, NULL) == NULL);
 
-    unicode_t *o = uni_rstrip(u, UNI_STR("34"));
+    PadUni *o = PadUni_RStrip(u, PAD_UNI__STR("34"));
     assert(o);
-    assert(u_strcmp(uni_getc(o), UNI_STR("12")) == 0);
+    assert(PadU_StrCmp(PadUni_Getc(o), PAD_UNI__STR("12")) == 0);
 
-    uni_del(o);
-    uni_del(u);
+    PadUni_Del(o);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_lstrip(void) {
-    unicode_t *u = uni_new();
+test_PadUni_LStrip(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("1234")) != NULL);
-    assert(uni_lstrip(NULL, UNI_STR("12")) == NULL);
-    assert(uni_lstrip(u, NULL) == NULL);
+    assert(PadUni_Set(u, PAD_UNI__STR("1234")) != NULL);
+    assert(PadUni_LStrip(NULL, PAD_UNI__STR("12")) == NULL);
+    assert(PadUni_LStrip(u, NULL) == NULL);
 
-    unicode_t *o = uni_lstrip(u, UNI_STR("12"));
+    PadUni *o = PadUni_LStrip(u, PAD_UNI__STR("12"));
     assert(o);
-    assert(u_strcmp(uni_getc(o), UNI_STR("34")) == 0);
+    assert(PadU_StrCmp(PadUni_Getc(o), PAD_UNI__STR("34")) == 0);
 
-    uni_del(o);
-    uni_del(u);
+    PadUni_Del(o);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_strip(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Strip(void) {
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("--1234--")) != NULL);
-    assert(uni_strip(NULL, UNI_STR("-")) == NULL);
-    assert(uni_strip(u, NULL) == NULL);
+    assert(PadUni_Set(u, PAD_UNI__STR("--1234--")) != NULL);
+    assert(PadUni_Strip(NULL, PAD_UNI__STR("-")) == NULL);
+    assert(PadUni_Strip(u, NULL) == NULL);
 
-    unicode_t *o = uni_strip(u, UNI_STR("-"));
+    PadUni *o = PadUni_Strip(u, PAD_UNI__STR("-"));
     assert(o);
-    assert(u_strcmp(uni_getc(o), UNI_STR("1234")) == 0);
+    assert(PadU_StrCmp(PadUni_Getc(o), PAD_UNI__STR("1234")) == 0);
 
-    uni_del(o);
-    uni_del(u);
+    PadUni_Del(o);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_lower(void) {
-    assert(uni_lower(NULL) == NULL);
-    unicode_t *u = uni_new();
+test_PadUni_Lower(void) {
+    assert(PadUni_Lower(NULL) == NULL);
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("ABC")) != NULL);
-    unicode_t *cp = uni_lower(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("ABC")) != NULL);
+    PadUni *cp = PadUni_Lower(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
-    uni_del(cp);
-    uni_del(u);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc")));
+    PadUni_Del(cp);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_upper(void) {
-    assert(uni_upper(NULL) == NULL);
-    unicode_t *u = uni_new();
+test_PadUni_Upper(void) {
+    assert(PadUni_Upper(NULL) == NULL);
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("abc")) != NULL);
-    unicode_t *cp = uni_upper(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abc")) != NULL);
+    PadUni *cp = PadUni_Upper(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("ABC")));
-    uni_del(cp);
-    uni_del(u);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("ABC")));
+    PadUni_Del(cp);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_capitalize(void) {
-    assert(uni_capitalize(NULL) == NULL);
-    unicode_t *u = uni_new();
+test_PadUni_Capi(void) {
+    assert(PadUni_Capi(NULL) == NULL);
+    PadUni *u = PadUni_New();
     assert(u != NULL);
-    assert(uni_set(u, UNI_STR("abc")) != NULL);
-    unicode_t *cp = uni_capitalize(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abc")) != NULL);
+    PadUni *cp = PadUni_Capi(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("Abc")));
-    uni_del(cp);
-    uni_del(u);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("Abc")));
+    PadUni_Del(cp);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_snake(void) {
-    assert(uni_snake(NULL) == NULL);
-    unicode_t *u = uni_new();
-    assert(u != NULL);
-
-    assert(uni_set(u, UNI_STR("abc")) != NULL);
-    unicode_t *cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abcDefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("AbcDefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abc-def-ghi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("_abcDefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("-abcDefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("_-abcDefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abcDefGhi_abc-DefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi_abc_def_ghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
-    cp = uni_snake(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc_def_ghi_abc_def_ghi")));
-    uni_del(cp);
-
-    uni_del(u);
-}
-
-static void
-test_uni_camel(void) {
-    assert(uni_camel(NULL) == NULL);
-    unicode_t *u = uni_new();
+test_PadUni_Snake(void) {
+    assert(PadUni_Snake(NULL) == NULL);
+    PadUni *u = PadUni_New();
     assert(u != NULL);
 
-    assert(uni_set(u, UNI_STR("abc")) != NULL);
-    unicode_t *cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abc")) != NULL);
+    PadUni *cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("ABC")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("aBC")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("AFormatB")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("AbcDefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("aFormatB")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("ABFormat")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abc-def-ghi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("aBFormat")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abcDefGhi")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("_abcDefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("AbcDefGhi")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("-abcDefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abc-def-ghi")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("_-abcDefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("_abcDefGhi")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi_abc-DefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi_abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("-abcDefGhi")) != NULL);
-    cp = uni_camel(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = PadUni_Snake(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc_def_ghi_abc_def_ghi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("_-abcDefGhi")) != NULL);
-    cp = uni_camel(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abcDefGhi_abc-DefGhi")) != NULL);
-    cp = uni_camel(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhiAbcDefGhi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
-    cp = uni_camel(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcDefGhiAbcDefGhi")));
-    uni_del(cp);
-
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_hacker(void) {
-    assert(uni_hacker(NULL) == NULL);
-    unicode_t *u = uni_new();
+test_PadUni_Camel(void) {
+    assert(PadUni_Camel(NULL) == NULL);
+    PadUni *u = PadUni_New();
     assert(u != NULL);
 
-    assert(uni_set(u, UNI_STR("abc")) != NULL);
-    unicode_t *cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abc")) != NULL);
+    PadUni *cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("ABC")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("ABC")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("aBC")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("AFormatB")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("AFormatB")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("aformatb")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("aFormatB")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("ABFormat")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("ABFormat")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abformat")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("aBFormat")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abcDefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("AbcDefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("AbcDefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abc-def-ghi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abc-def-ghi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("_abcDefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("_abcDefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("-abcDefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("-abcDefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("_-abcDefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("_-abcDefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abcDefGhi_abc-DefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi_abc-DefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghiabcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhiAbcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
-    cp = uni_hacker(u);
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = PadUni_Camel(u);
     assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghiabcdefghi")));
-    uni_del(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcDefGhiAbcDefGhi")));
+    PadUni_Del(cp);
 
-    assert(uni_set(u, UNI_STR("abcDefGhi__abc--DefGhi")) != NULL);
-    cp = uni_hacker(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abcdefghiabcdefghi")));
-    uni_del(cp);
-
-    assert(uni_set(u, UNI_STR("abc0_12def_gh34i")) != NULL);
-    cp = uni_hacker(u);
-    assert(cp);
-    assert(!u_strcmp(uni_getc(cp), UNI_STR("abc012defgh34i")));
-    uni_del(cp);
-
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_get(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Hacker(void) {
+    assert(PadUni_Hacker(NULL) == NULL);
+    PadUni *u = PadUni_New();
+    assert(u != NULL);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abc")) != NULL);
+    PadUni *cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("ABC")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("AFormatB")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("aformatb")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("ABFormat")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abformat")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("AbcDefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abc-def-ghi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("_abcDefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("-abcDefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("_-abcDefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi_abc-DefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghiabcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghiabcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abcDefGhi__abc--DefGhi")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abcdefghiabcdefghi")));
+    PadUni_Del(cp);
+
+    assert(PadUni_Set(u, PAD_UNI__STR("abc0_12def_gh34i")) != NULL);
+    cp = PadUni_Hacker(u);
+    assert(cp);
+    assert(!PadU_StrCmp(PadUni_Getc(cp), PAD_UNI__STR("abc012defgh34i")));
+    PadUni_Del(cp);
+
+    PadUni_Del(u);
+}
+
+static void
+test_PadUni_Get(void) {
+    PadUni *u = PadUni_New();
     assert(u);
 
-    assert(uni_get(NULL) == NULL);
+    assert(PadUni_Get(NULL) == NULL);
 
-    uni_set_mb(u, "abc");
+    PadUni_SetMB(u, "abc");
 
-    unicode_type_t *s = uni_get(u);
-    assert(u_strcmp(s, U"abc") == 0);
+    PadUniType *s = PadUni_Get(u);
+    assert(PadU_StrCmp(s, U"abc") == 0);
 
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_to_mb(void) {
-    unicode_t *u = uni_new();
+test_PadUni_ToMB(void) {
+    PadUni *u = PadUni_New();
     assert(u);
 
-    assert(uni_to_mb(NULL) == NULL);
+    assert(PadUni_ToMB(NULL) == NULL);
 
-    uni_set_mb(u, "abc");
+    PadUni_SetMB(u, "abc");
 
-    char *s = uni_to_mb(u);
+    char *s = PadUni_ToMB(u);
     assert(strcmp(s, "abc") == 0);
 
     free(s);
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_set_mb(void) {
-    unicode_t *u = uni_new();
+test_PadUni_SetMB(void) {
+    PadUni *u = PadUni_New();
     assert(u);
 
-    assert(uni_set_mb(NULL, NULL) == NULL);
-    assert(uni_set_mb(u, NULL) == NULL);
+    assert(PadUni_SetMB(NULL, NULL) == NULL);
+    assert(PadUni_SetMB(u, NULL) == NULL);
 
-    uni_set_mb(u, "abc");
+    PadUni_SetMB(u, "abc");
 
-    unicode_type_t *s = uni_get(u);
-    assert(u_strcmp(s, U"abc") == 0);
+    PadUniType *s = PadUni_Get(u);
+    assert(PadU_StrCmp(s, U"abc") == 0);
 
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_getc_mb(void) {
-    unicode_t *u = uni_new();
+test_PadUni_GetcMB(void) {
+    PadUni *u = PadUni_New();
     assert(u);
 
-    assert(uni_getc_mb(NULL) == NULL);
+    assert(PadUni_GetcMB(NULL) == NULL);
 
-    uni_set_mb(u, "abc");
+    PadUni_SetMB(u, "abc");
 
-    const char *s = uni_getc_mb(u);
+    const char *s = PadUni_GetcMB(u);
     assert(strcmp(s, "abc") == 0);
 
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_mul(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Mul(void) {
+    PadUni *u = PadUni_New();
     assert(u);
 
-    assert(uni_mul(NULL, 0) == NULL);
+    assert(PadUni_Mul(NULL, 0) == NULL);
 
-    uni_set_mb(u, "abc");
+    PadUni_SetMB(u, "abc");
 
-    unicode_t *o = uni_mul(u, 3);
-    const char *s = uni_getc_mb(o);
+    PadUni *o = PadUni_Mul(u, 3);
+    const char *s = PadUni_GetcMB(o);
     assert(strcmp(s, "abcabcabc") == 0);
 
-    uni_del(u);
+    PadUni_Del(u);
 }
 
 static void
-test_uni_split(void) {
-    unicode_t *u = uni_new();
+test_PadUni_Split(void) {
+    PadUni *u = PadUni_New();
     assert(u);
 
-    uni_set_mb(u, "あいう\nかきく\nさしす");
-    unicode_t **arr = uni_split(u, UNI_STR("\n"));
-    printf("arr[0] = [%s]\n", uni_getc_mb(arr[0]));
-    assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
-    assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
-    assert(!u_strcmp(uni_getc(arr[2]), UNI_STR("さしす")));
+    PadUni_SetMB(u, "あいう\nかきく\nさしす");
+    PadUni **arr = PadUni_Split(u, PAD_UNI__STR("\n"));
+    printf("arr[0] = [%s]\n", PadUni_GetcMB(arr[0]));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[0]), PAD_UNI__STR("あいう")));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[1]), PAD_UNI__STR("かきく")));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[2]), PAD_UNI__STR("さしす")));
     assert(arr[3] == NULL);
 
-    for (unicode_t **p = arr; *p; ++p) {
-        uni_del(*p);
+    for (PadUni **p = arr; *p; ++p) {
+        PadUni_Del(*p);
     }
     free(arr);
 
-    uni_set_mb(u, "あいう\nかきく\n");
-    arr = uni_split(u, UNI_STR("\n"));
-    assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
-    assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
+    PadUni_SetMB(u, "あいう\nかきく\n");
+    arr = PadUni_Split(u, PAD_UNI__STR("\n"));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[0]), PAD_UNI__STR("あいう")));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[1]), PAD_UNI__STR("かきく")));
     assert(arr[3] == NULL);
 
-    for (unicode_t **p = arr; *p; ++p) {
-        uni_del(*p);
+    for (PadUni **p = arr; *p; ++p) {
+        PadUni_Del(*p);
     }
     free(arr);
 
-    uni_set_mb(u, "あいうアイウかきくアイウ");
-    arr = uni_split(u, UNI_STR("アイウ"));
-    assert(!u_strcmp(uni_getc(arr[0]), UNI_STR("あいう")));
-    assert(!u_strcmp(uni_getc(arr[1]), UNI_STR("かきく")));
+    PadUni_SetMB(u, "あいうアイウかきくアイウ");
+    arr = PadUni_Split(u, PAD_UNI__STR("アイウ"));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[0]), PAD_UNI__STR("あいう")));
+    assert(!PadU_StrCmp(PadUni_Getc(arr[1]), PAD_UNI__STR("かきく")));
     assert(arr[3] == NULL);
 
-    for (unicode_t **p = arr; *p; ++p) {
-        uni_del(*p);
+    for (PadUni **p = arr; *p; ++p) {
+        PadUni_Del(*p);
     }
     free(arr);
 }
 
 static void
-test_uni_isdigit(void) {
-    unicode_t *u = uni_new();
-    uni_set_mb(u, "123");
-    assert(uni_isdigit(u));
-    uni_set_mb(u, "abc");
-    assert(!uni_isdigit(u));
-    uni_set_mb(u, "12ab");
-    assert(!uni_isdigit(u));
-    uni_del(u);
+test_PadUni_IsDigit(void) {
+    PadUni *u = PadUni_New();
+    PadUni_SetMB(u, "123");
+    assert(PadUni_IsDigit(u));
+    PadUni_SetMB(u, "abc");
+    assert(!PadUni_IsDigit(u));
+    PadUni_SetMB(u, "12ab");
+    assert(!PadUni_IsDigit(u));
+    PadUni_Del(u);
 }
 
 static void
-test_uni_isalpha(void) {
-    unicode_t *u = uni_new();
-    uni_set_mb(u, "123");
-    assert(!uni_isalpha(u));
-    uni_set_mb(u, "abc");
-    assert(uni_isalpha(u));
-    uni_set_mb(u, "12ab");
-    assert(!uni_isalpha(u));
-    uni_del(u);
+test_PadUni_IsAlpha(void) {
+    PadUni *u = PadUni_New();
+    PadUni_SetMB(u, "123");
+    assert(!PadUni_IsAlpha(u));
+    PadUni_SetMB(u, "abc");
+    assert(PadUni_IsAlpha(u));
+    PadUni_SetMB(u, "12ab");
+    assert(!PadUni_IsAlpha(u));
+    PadUni_Del(u);
 }
 
 static void
-test_char32_len(void) {
+test_PadChar32_Len(void) {
     const char32_t *s = U"abc";
-    assert(char32_len(s) == 3);
+    assert(PadChar32_Len(s) == 3);
 }
 
 static void
-test_char16_len(void) {
+test_PadChar16_Len(void) {
     const char16_t *s = u"abc";
-    assert(char16_len(s) == 3);
+    assert(PadChar16_Len(s) == 3);
 }
 
 static void
-test_char32_dup(void) {
+test_PadChar32_Dup(void) {
     const char32_t *s = U"abc";
-    char32_t *o = char32_dup(s);
-    assert(char32_strcmp(s, o) == 0);
+    char32_t *o = PadChar32_Dup(s);
+    assert(PadChar32_StrCmp(s, o) == 0);
     free(o);
 }
 
 static void
-test_char16_dup(void) {
+test_PadChar16_Dup(void) {
     const char16_t *s = u"abc";
-    char16_t *o = char16_dup(s);
-    assert(char16_strcmp(s, o) == 0);
+    char16_t *o = PadChar16_Dup(s);
+    assert(PadChar16_StrCmp(s, o) == 0);
     free(o);
 }
 
 static void
-test_char32_isalpha(void) {
-    assert(char32_isalpha(U'a'));
+test_PadChar32_IsAlpha(void) {
+    assert(PadChar32_IsAlpha(U'a'));
 }
 
 static void
-test_char16_isalpha(void) {
-    assert(char16_isalpha(u'a'));
+test_PadChar16_IsAlpha(void) {
+    assert(PadChar16_IsAlpha(u'a'));
 }
 
 static void
-test_char32_islower(void) {
-    assert(char32_islower(U'a'));
-    assert(!char32_islower(U'A'));
+test_PadChar32_IsLower(void) {
+    assert(PadChar32_IsLower(U'a'));
+    assert(!PadChar32_IsLower(U'A'));
 }
 
 static void
-test_char16_islower(void) {
-    assert(char16_islower(u'a'));
-    assert(!char16_islower(u'A'));
+test_PadChar16_IsLower(void) {
+    assert(PadChar16_IsLower(u'a'));
+    assert(!PadChar16_IsLower(u'A'));
 }
 
 static void
-test_char32_isupper(void) {
-    assert(char32_isupper(U'A'));
-    assert(!char32_isupper(U'a'));
+test_PadChar32_IsUpper(void) {
+    assert(PadChar32_IsUpper(U'A'));
+    assert(!PadChar32_IsUpper(U'a'));
 }
 
 static void
-test_char16_isupper(void) {
-    assert(char16_isupper(u'A'));
-    assert(!char16_isupper(u'a'));
+test_PadChar16_IsUpper(void) {
+    assert(PadChar16_IsUpper(u'A'));
+    assert(!PadChar16_IsUpper(u'a'));
 }
 
 static void
-test_char32_tolower(void) {
-    assert(char32_tolower(U'A') == U'a');
-    assert(char32_tolower(U'a') == U'a');
+test_PadChar32_ToLower(void) {
+    assert(PadChar32_ToLower(U'A') == U'a');
+    assert(PadChar32_ToLower(U'a') == U'a');
 }
 
 static void
-test_char16_tolower(void) {
-    assert(char16_tolower(u'A') == u'a');
-    assert(char16_tolower(u'a') == u'a');
+test_PadChar16_ToLower(void) {
+    assert(PadChar16_ToLower(u'A') == u'a');
+    assert(PadChar16_ToLower(u'a') == u'a');
 }
 
 static void
-test_char32_toupper(void) {
-    assert(char32_toupper(U'A') == U'A');
-    assert(char32_toupper(U'a') == U'A');
+test_PadChar32_ToUpper(void) {
+    assert(PadChar32_ToUpper(U'A') == U'A');
+    assert(PadChar32_ToUpper(U'a') == U'A');
 }
 
 static void
-test_char16_toupper(void) {
-    assert(char16_toupper(u'A') == u'A');
-    assert(char16_toupper(u'a') == u'A');
+test_PadChar16_ToUpper(void) {
+    assert(PadChar16_ToUpper(u'A') == u'A');
+    assert(PadChar16_ToUpper(u'a') == u'A');
 }
 
 static void
-test_char32_isdigit(void) {
-    assert(!char32_isdigit(U'A'));
-    assert(char32_isdigit(U'1'));
+test_PadChar32_IsDigit(void) {
+    assert(!PadChar32_IsDigit(U'A'));
+    assert(PadChar32_IsDigit(U'1'));
 }
 
 static void
-test_char16_isdigit(void) {
-    assert(!char16_isdigit(u'A'));
-    assert(char16_isdigit(u'1'));
+test_PadChar16_IsDigit(void) {
+    assert(!PadChar16_IsDigit(u'A'));
+    assert(PadChar16_IsDigit(u'1'));
 }
 
 static void
-test_char32_strcmp(void) {
-    assert(char32_strcmp(U"abc", U"abc") == 0);
-    assert(char32_strcmp(U"abc", U"def") != 0);
+test_PadChar32_StrCmp(void) {
+    assert(PadChar32_StrCmp(U"abc", U"abc") == 0);
+    assert(PadChar32_StrCmp(U"abc", U"def") != 0);
 }
 
 static void
-test_char16_strcmp(void) {
-    assert(char16_strcmp(u"abc", u"abc") == 0);
-    assert(char16_strcmp(u"abc", u"def") != 0);
+test_PadChar16_StrCmp(void) {
+    assert(PadChar16_StrCmp(u"abc", u"abc") == 0);
+    assert(PadChar16_StrCmp(u"abc", u"def") != 0);
 }
 
 static const struct testcase
-unicode_tests[] = {
-    {"uni_del", test_PadStr_Del},
-    {"uni_esc_del", test_PadStr_EscDel},
-    {"uni_new", test_uni_new},
-    {"uni_deep_copy", test_uni_deep_copy},
-    {"uni_deep_copy", test_uni_deep_copy},
-    {"uni_len", test_uni_len},
-    {"uni_capa", test_uni_capa},
-    {"uni_getc", test_uni_getc},
-    {"uni_empty", test_uni_empty},
-    {"uni_clear", test_uni_clear},
-    {"uni_set", test_uni_set},
-    {"uni_resize", test_uni_resize},
-    {"uni_pushb", test_uni_pushb},
-    {"uni_popb", test_uni_popb},
-    {"uni_pushf", test_uni_pushf},
-    {"uni_popf", test_uni_popf},
-    {"uni_app", test_uni_app},
-    {"uni_app_stream", test_uni_app_stream},
-    {"uni_app_other", test_uni_app_other},
-    {"uni_app_fmt", test_uni_app_fmt},
-    {"uni_rstrip", test_uni_rstrip},
-    {"uni_lstrip", test_uni_lstrip},
-    {"uni_strip", test_uni_strip},
+PadUniests[] = {
+    {"PadUni_Del", test_PadStr_Del},
+    {"PadUni_EscDel", test_PadStr_EscDel},
+    {"PadUni_New", test_PadUni_New},
+    {"PadUni_DeepCopy", test_PadUni_DeepCopy},
+    {"PadUni_DeepCopy", test_PadUni_DeepCopy},
+    {"PadUni_Len", test_PadUni_Len},
+    {"PadUni_Capa", test_PadUni_Capa},
+    {"PadUni_Getc", test_PadUni_Getc},
+    {"PadUni_Empty", test_PadUni_Empty},
+    {"PadUni_Clear", test_PadUni_Clear},
+    {"PadUni_Set", test_PadUni_Set},
+    {"PadUni_Resize", test_PadUni_Resize},
+    {"PadUni_PushBack", test_PadUni_PushBack},
+    {"PadUni_PopBack", test_PadUni_PopBack},
+    {"PadUni_PushFront", test_PadUni_PushFront},
+    {"PadUni_PopFront", test_PadUni_PopFront},
+    {"PadUni_App", test_PadUni_App},
+    {"PadUni_AppStream", test_PadUni_AppStream},
+    {"PadUni_AppOther", test_PadUni_AppOther},
+    {"PadUni_AppFmt", test_PadUni_AppFmt},
+    {"PadUni_RStrip", test_PadUni_RStrip},
+    {"PadUni_LStrip", test_PadUni_LStrip},
+    {"PadUni_Strip", test_PadUni_Strip},
     // {"uni_findc", test_uni_findc},
-    {"uni_lower", test_uni_lower},
-    {"uni_upper", test_uni_upper},
-    {"uni_capitalize", test_uni_capitalize},
-    {"uni_snake", test_uni_snake},
-    {"uni_camel", test_uni_camel},
-    {"uni_hacker", test_uni_hacker},
-    {"uni_get", test_uni_get},
-    {"uni_to_mb", test_uni_to_mb},
-    {"uni_set_mb", test_uni_set_mb},
-    {"uni_getc_mb", test_uni_getc_mb},
-    {"uni_mul", test_uni_mul},
-    {"uni_split", test_uni_split},
-    {"uni_isdigit", test_uni_isdigit},
-    {"uni_isalpha", test_uni_isalpha},
-    {"char32_len", test_char32_len},
-    {"char16_len", test_char16_len},
-    {"char32_dup", test_char32_dup},
-    {"char16_dup", test_char16_dup},
-    {"char32_isalpha", test_char32_isalpha},
-    {"char16_isalpha", test_char16_isalpha},
-    {"char32_islower", test_char32_islower},
-    {"char16_islower", test_char16_islower},
-    {"char32_isupper", test_char32_isupper},
-    {"char16_isupper", test_char16_isupper},
-    {"char32_toupper", test_char32_toupper},
-    {"char16_toupper", test_char16_toupper},
-    {"char32_tolower", test_char32_tolower},
-    {"char16_tolower", test_char16_tolower},
-    {"char32_isdigit", test_char32_isdigit},
-    {"char16_isdigit", test_char16_isdigit},
-    {"char32_strcmp", test_char32_strcmp},
-    {"char16_strcmp", test_char16_strcmp},
+    {"PadUni_Lower", test_PadUni_Lower},
+    {"PadUni_Upper", test_PadUni_Upper},
+    {"PadUni_Capi", test_PadUni_Capi},
+    {"PadUni_Snake", test_PadUni_Snake},
+    {"PadUni_Camel", test_PadUni_Camel},
+    {"PadUni_Hacker", test_PadUni_Hacker},
+    {"PadUni_Get", test_PadUni_Get},
+    {"PadUni_ToMB", test_PadUni_ToMB},
+    {"PadUni_SetMB", test_PadUni_SetMB},
+    {"PadUni_GetcMB", test_PadUni_GetcMB},
+    {"PadUni_Mul", test_PadUni_Mul},
+    {"PadUni_Split", test_PadUni_Split},
+    {"PadUni_IsDigit", test_PadUni_IsDigit},
+    {"PadUni_IsAlpha", test_PadUni_IsAlpha},
+    {"PadChar32_Len", test_PadChar32_Len},
+    {"PadChar16_Len", test_PadChar16_Len},
+    {"PadChar32_Dup", test_PadChar32_Dup},
+    {"PadChar16_Dup", test_PadChar16_Dup},
+    {"PadChar32_IsAlpha", test_PadChar32_IsAlpha},
+    {"PadChar16_IsAlpha", test_PadChar16_IsAlpha},
+    {"PadChar32_IsLower", test_PadChar32_IsLower},
+    {"PadChar16_IsLower", test_PadChar16_IsLower},
+    {"PadChar32_IsUpper", test_PadChar32_IsUpper},
+    {"PadChar16_IsUpper", test_PadChar16_IsUpper},
+    {"PadChar32_ToUpper", test_PadChar32_ToUpper},
+    {"PadChar16_ToUpper", test_PadChar16_ToUpper},
+    {"PadChar32_ToLower", test_PadChar32_ToLower},
+    {"PadChar16_ToLower", test_PadChar16_ToLower},
+    {"PadChar32_IsDigit", test_PadChar32_IsDigit},
+    {"PadChar16_IsDigit", test_PadChar16_IsDigit},
+    {"PadChar32_StrCmp", test_PadChar32_StrCmp},
+    {"PadChar16_StrCmp", test_PadChar16_StrCmp},
     {0},
 };
 
@@ -31521,7 +31521,7 @@ testmodules[] = {
     {"cstring_array", cstrarr_tests},
     {"cstring", cPadStrests},
     {"string", PadStrests},
-    {"unicode", unicode_tests},
+    {"unicode", PadUniests},
     {"file", file_tests},
     {"cl", PadCLests},
     {"cmdline", PadCmdlineests},

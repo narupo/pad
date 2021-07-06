@@ -23,8 +23,8 @@ builtin_opts_get(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    unicode_t *optname = objname->unicode;
-    const char *optval = PadOpts_Getc(ref_ast->opts, uni_getc_mb(optname));
+    PadUni *optname = objname->unicode;
+    const char *optval = PadOpts_Getc(ref_ast->opts, PadUni_GetcMB(optname));
     if (!optval) {
         return PadObj_NewNil(ref_ast->ref_gc);
     }
@@ -55,8 +55,8 @@ builtin_PadOpts_Has(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    unicode_t *optname = objname->unicode;
-    bool has = PadOpts_Has(ref_ast->opts, uni_getc_mb(optname));
+    PadUni *optname = objname->unicode;
+    bool has = PadOpts_Has(ref_ast->opts, PadUni_GetcMB(optname));
     return PadObj_NewBool(ref_ast->ref_gc, has);
 }
 

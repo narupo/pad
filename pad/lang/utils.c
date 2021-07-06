@@ -1092,7 +1092,7 @@ invoke_type_obj(
         return ret;
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        unicode_t *u;
+        PadUni *u;
         if (PadObjAry_Len(args)) {
             PadObj *obj = PadObjAry_Get(args, 0);
             if (obj->type != PAD_OBJ_TYPE__UNICODE) {
@@ -1101,13 +1101,13 @@ invoke_type_obj(
                     pushb_error("failed to convert to string");
                     return NULL;
                 }
-                u = uni_new();
-                uni_set_mb(u, PadStr_Getc(s));
+                u = PadUni_New();
+                PadUni_SetMB(u, PadStr_Getc(s));
             } else {
-                u = uni_shallow_copy(obj->unicode);
+                u = PadUni_ShallowCopy(obj->unicode);
             }
         } else {
-            u = uni_new();
+            u = PadUni_New();
         }
         PadObj *ret = PadObj_NewUnicode(ref_gc, PadMem_Move(u));
         return ret;
@@ -1277,16 +1277,16 @@ again:
     }
 
     PadIntObj index = indexobj->lvalue;
-    unicode_t *uni = PadObj_GetUnicode(owner);
-    const unicode_type_t *cps = uni_getc(uni);
-    unicode_t *dst = uni_new();
+    PadUni *uni = PadObj_GetUnicode(owner);
+    const PadUniType *cps = PadUni_Getc(uni);
+    PadUni *dst = PadUni_New();
 
-    if (index < 0 || index >= u_len(cps)) {
+    if (index < 0 || index >= PadU_Len(cps)) {
         pushb_error("index out of range");
         return NULL;
     }
 
-    uni_pushb(dst, cps[index]);
+    PadUni_PushBack(dst, cps[index]);
 
     return PadObj_NewUnicode(ref_gc, PadMem_Move(dst));
 }
@@ -1408,8 +1408,8 @@ again:
 
     PadObjDict *objdict = PadObj_GetDict(owner);
     assert(objdict);
-    unicode_t *key = PadObj_GetUnicode(indexobj);
-    const char *ckey = uni_getc_mb(key);
+    PadUni *key = PadObj_GetUnicode(indexobj);
+    const char *ckey = PadUni_GetcMB(key);
 
     PadObjDictItem *item = PadObjDict_Get(objdict, ckey);
     if (!item) {
@@ -1451,8 +1451,8 @@ again:
 
     PadObjDict *objdict = PadObj_GetDict(owner);
     assert(objdict);
-    unicode_t *key = PadObj_GetUnicode(indexobj);
-    const char *ckey = uni_getc_mb(key);
+    PadUni *key = PadObj_GetUnicode(indexobj);
+    const char *ckey = PadUni_GetcMB(key);
 
     if (!PadObjDict_Move(objdict, ckey, ref)) {
         pushb_error("failed to move element at dict");
@@ -1957,7 +1957,7 @@ Pad_ParseBool(
 
         return Pad_ParseBool(ref_ast, err, ref_gc, ref_context, ref_node, obj);
     } break;
-    case PAD_OBJ_TYPE__UNICODE: return uni_len(obj->unicode); break;
+    case PAD_OBJ_TYPE__UNICODE: return PadUni_Len(obj->unicode); break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
     case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
     case PAD_OBJ_TYPE__CHAIN: {
@@ -2013,7 +2013,7 @@ Pad_ParseInt(
         return Pad_ParseInt(ref_ast, err, ref_gc, ref_context, ref_node, obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        const char *s = uni_getc_mb(obj->unicode);
+        const char *s = PadUni_GetcMB(obj->unicode);
         return atoll(s);
     } break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
@@ -2071,7 +2071,7 @@ Pad_ParseFloat(
         return Pad_ParseFloat(ref_ast, err, ref_gc, ref_context, ref_node, obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        const char *s = uni_getc_mb(obj->unicode);
+        const char *s = PadUni_GetcMB(obj->unicode);
         return atof(s);
     } break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;

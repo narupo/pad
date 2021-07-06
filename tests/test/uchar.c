@@ -11,55 +11,55 @@
 #define NIL U'\0'
 
 bool
-char32_isalpha(char32_t ch) {
+PadChar32_IsAlpha(char32_t ch) {
     return ch >= 65 && ch <= 90 ||
            ch >= 97 && ch <= 122;
 }
 
 bool
-char16_isalpha(char16_t ch) {
+PadChar16_IsAlpha(char16_t ch) {
     return ch >= 65 && ch <= 90 ||
            ch >= 97 && ch <= 122;
 }
 
 #define _isalpha(ch) _Generic((ch), \
-    char32_t: char32_isalpha, \
-    char16_t: char16_isalpha \
+    char32_t: PadChar32_IsAlpha, \
+    char16_t: PadChar16_IsAlpha \
 )(ch)
 
 bool
-char32_islower(char32_t ch) {
+PadChar32_IsLower(char32_t ch) {
     return ch >= 65 && ch <= 90;
 }
 
 bool
-char16_islower(char16_t ch) {
+PadChar16_IsLower(char16_t ch) {
     return ch >= 65 && ch <= 90;
 }
 
 #define _islower(ch) _Generic((ch), \
-    char32_t: char32_islower, \
-    char16_t: char16_islower \
+    char32_t: PadChar32_IsLower, \
+    char16_t: PadChar16_IsLower \
 )(ch)
 
 bool
-char32_isupper(char32_t ch) {
+PadChar32_IsUpper(char32_t ch) {
     return ch >= 97 && ch <= 122;
 }
 
 bool
-char16_isupper(char16_t ch) {
+PadChar16_IsUpper(char16_t ch) {
     return ch >= 97 && ch <= 122;
 }
 
 #define _isupper(ch) _Generic((ch), \
-    char32_t: char32_isupper, \
-    char16_t: char16_isupper \
+    char32_t: PadChar32_IsUpper, \
+    char16_t: PadChar16_IsUpper \
 )(ch)
 
 char32_t
-char32_tolower(char32_t ch) {
-    if (char32_isupper(ch)) {
+PadChar32_ToLower(char32_t ch) {
+    if (PadChar32_IsUpper(ch)) {
         return ch - 32;
     }
 
@@ -67,8 +67,8 @@ char32_tolower(char32_t ch) {
 }
 
 char16_t
-char16_tolower(char16_t ch) {
-    if (char16_isupper(ch)) {
+PadChar16_ToLower(char16_t ch) {
+    if (PadChar16_IsUpper(ch)) {
         return ch - 32;
     }
 
@@ -76,13 +76,13 @@ char16_tolower(char16_t ch) {
 }
 
 #define _tolower(ch) _Generic((ch), \
-    char32_t: char32_tolower, \
-    char16_t: char16_tolower \
+    char32_t: PadChar32_ToLower, \
+    char16_t: PadChar16_ToLower \
 )(ch)
 
 char32_t
-char32_toupper(char32_t ch) {
-    if (char32_islower(ch)) {
+PadChar32_ToUpper(char32_t ch) {
+    if (PadChar32_IsLower(ch)) {
         return ch + 32;
     }
 
@@ -90,8 +90,8 @@ char32_toupper(char32_t ch) {
 }
 
 char16_t
-char16_toupper(char16_t ch) {
-    if (char16_islower(ch)) {
+PadChar16_ToUpper(char16_t ch) {
+    if (PadChar16_IsLower(ch)) {
         return ch + 32;
     }
 
@@ -99,12 +99,12 @@ char16_toupper(char16_t ch) {
 }
 
 #define _toupper(ch) _Generic((ch), \
-    char32_t: char32_toupper, \
-    char16_t: char16_toupper \
+    char32_t: PadChar32_ToUpper, \
+    char16_t: PadChar16_ToUpper \
 )(ch)
 
 static int32_t
-char32_len(const char32_t *str) {
+PadChar32_Len(const char32_t *str) {
     int32_t len = 0;
     for (const char32_t *p = str; *p; ++p, ++len) {
     }
@@ -112,7 +112,7 @@ char32_len(const char32_t *str) {
 }
 
 static int32_t
-char16_len(const char16_t *str) {
+PadChar16_Len(const char16_t *str) {
     int32_t len = 0;
     for (const char16_t *p = str; *p; ++p, ++len) {
     }
@@ -120,13 +120,13 @@ char16_len(const char16_t *str) {
 }
 
 #define _len(str) _Generic((str[0]), \
-    char32_t: char32_len, \
-    char16_t: char16_len \
+    char32_t: PadChar32_Len, \
+    char16_t: PadChar16_Len \
 )(str)
 
 static char32_t *
-char32_dup(const char32_t *str) {
-    int32_t len = char32_len(str);
+PadChar32_Dup(const char32_t *str) {
+    int32_t len = PadChar32_Len(str);
     int32_t byte = sizeof(char32_t);
 
     char32_t *dst = calloc(len + 1, byte);
@@ -143,8 +143,8 @@ char32_dup(const char32_t *str) {
 }
 
 static char16_t *
-char16_dup(const char16_t *str) {
-    int32_t len = char16_len(str);
+PadChar16_Dup(const char16_t *str) {
+    int32_t len = PadChar16_Len(str);
     int32_t byte = sizeof(char16_t);
 
     char16_t *dst = calloc(len + 1, byte);
@@ -161,23 +161,23 @@ char16_dup(const char16_t *str) {
 }
 
 #define _strdup(str) _Generic((str[0]), \
-    char32_t: char32_dup, \
-    char16_t: char16_dup \
+    char32_t: PadChar32_Dup, \
+    char16_t: PadChar16_Dup \
 )(str)
 
 bool
-char32_isdigit(char32_t ch) {
+PadChar32_IsDigit(char32_t ch) {
     return ch >= 48 && ch <= 57;
 }
 
 bool
-char16_isdigit(char16_t ch) {
+PadChar16_IsDigit(char16_t ch) {
     return ch >= 48 && ch <= 57;
 }
 
 #define _isdigit(ch) _Generic((ch), \
-    char32_t: char32_isdigit, \
-    char16_t: char16_isdigit, \
+    char32_t: PadChar32_IsDigit, \
+    char16_t: PadChar16_IsDigit, \
 )(ch)
 
 void

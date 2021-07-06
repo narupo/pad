@@ -39,9 +39,9 @@ builtin_alias_set(PadBltFuncArgs *fargs) {
         }
     }
 
-    const char *key = uni_getc_mb(keyobj->unicode);
-    const char *val = uni_getc_mb(valobj->unicode);
-    const char *desc = descobj ? uni_getc_mb(descobj->unicode) : NULL;
+    const char *key = PadUni_GetcMB(keyobj->unicode);
+    const char *val = PadUni_GetcMB(valobj->unicode);
+    const char *desc = descobj ? PadUni_GetcMB(descobj->unicode) : NULL;
 
     PadCtx_SetAlias(ref_ast->ref_context, key, val, desc);
 

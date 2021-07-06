@@ -179,7 +179,7 @@ struct PadObj {
     PadGC *ref_gc;  // reference to gc (DO NOT DELETE)
     PadGCItem gc_item;  // gc item for memory management
     PadIdentObj identifier;  // value of identifier (type == PAD_OBJ_TYPE__IDENT)
-    unicode_t *unicode;  // value of unicode (type == PAD_OBJ_TYPE__UNICODE)
+    PadUni *unicode;  // value of unicode (type == PAD_OBJ_TYPE__UNICODE)
     PadObjAry *objarr;  // value of array (type == PAD_OBJ_TYPE__ARRAY)
     PadObjDict *objdict;  // value of dict (type == PAD_OBJ_TYPE__DICT)
     PadIntObj lvalue;  // value of integer (type == PAD_OBJ_TYPE__INT)
@@ -323,7 +323,7 @@ PadObj_NewIdent(
 );
 
 /**
- * construct unicode object by C strings
+ * construct PadUni object by C strings
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc reference to PadGC (do not delete)
@@ -336,7 +336,7 @@ PadObj *
 PadObj_NewUnicodeCStr(PadGC *ref_gc, const char *str);
 
 /**
- * construct unicode object by unicode_t
+ * construct PadUni object by PadUni
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc   reference to PadGC (do not delete)
@@ -346,7 +346,7 @@ PadObj_NewUnicodeCStr(PadGC *ref_gc, const char *str);
  * @return failed to NULL
  */
 PadObj *
-PadObj_NewUnicode(PadGC *ref_gc, unicode_t *move_unicode);
+PadObj_NewUnicode(PadGC *ref_gc, PadUni *move_unicode);
 
 /**
  * construct integer object by value
@@ -716,9 +716,9 @@ PadObj_GetcDict(const PadObj *self);
  *
  * @param[in] *self
  *
- * @return pointer to unicode_t
+ * @return pointer to PadUni
  */
-const unicode_t *
+const PadUni *
 PadObj_GetcUnicode(const PadObj *self);
 
 /**
@@ -726,9 +726,9 @@ PadObj_GetcUnicode(const PadObj *self);
  *
  * @param[in] *self
  *
- * @return pointer to unicode_t
+ * @return pointer to PadUni
  */
-unicode_t *
+PadUni *
 PadObj_GetUnicode(PadObj *self);
 
 /**

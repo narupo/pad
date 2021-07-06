@@ -329,7 +329,7 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
         PadStr_Del(str);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        PadCtx_PushBackStdoutBuf(context, uni_getc_mb(result->unicode));
+        PadCtx_PushBackStdoutBuf(context, PadUni_GetcMB(result->unicode));
     } break;
     case PAD_OBJ_TYPE__ARRAY: {
         PadCtx_PushBackStdoutBuf(context, "(array)");
@@ -628,7 +628,7 @@ trv_import_as_stmt(PadAST *ast, PadTrvArgs *targs) {
     }
 
     // import start
-    const char *path = uni_getc_mb(pathobj->unicode);
+    const char *path = PadUni_GetcMB(pathobj->unicode);
     assert(path);
     const char *alias = PadObj_GetcIdentName(aliasobj);
     assert(alias);
@@ -693,7 +693,7 @@ trv_from_import_stmt(PadAST *ast, PadTrvArgs *targs) {
     }
 
     // import start
-    const char *path = uni_getc_mb(pathobj->unicode);
+    const char *path = PadUni_GetcMB(pathobj->unicode);
     PadImporter *importer = PadImporter_New(ast->ref_config);
 
     if (!PadImporter_FromImport(
@@ -1585,8 +1585,8 @@ marley:
     } break;
     }
 
-    unicode_t *keyuni = PadObj_GetUnicode(idxobj);
-    const char *key = uni_getc_mb(keyuni);
+    PadUni *keyuni = PadObj_GetUnicode(idxobj);
+    const char *key = PadUni_GetcMB(keyuni);
     PadObjDict *objdict = PadObj_GetDict(owner);
 
     PadObjDict_Set(objdict, key, rhs);
@@ -2274,11 +2274,11 @@ trv_compare_or_int(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs->lvalue && uni_len(rhs->unicode)) {
+        if (lhs->lvalue && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs->lvalue && !uni_len(rhs->unicode)) {
+        } else if (lhs->lvalue && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs->lvalue && uni_len(rhs->unicode)) {
+        } else if (!lhs->lvalue && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2408,11 +2408,11 @@ trv_compare_or_bool(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs->boolean && uni_len(rhs->unicode)) {
+        if (lhs->boolean && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs->boolean && !uni_len(rhs->unicode)) {
+        } else if (lhs->boolean && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs->boolean && uni_len(rhs->unicode)) {
+        } else if (!lhs->boolean && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2486,7 +2486,7 @@ trv_compare_or_string(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     PadDepth depth = targs->depth;
-    int32_t slen = uni_len(lhs->unicode);
+    int32_t slen = PadUni_Len(lhs->unicode);
 
     switch (rhs->type) {
     default: {
@@ -2543,11 +2543,11 @@ trv_compare_or_string(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (slen && uni_len(rhs->unicode)) {
+        if (slen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (slen && !uni_len(rhs->unicode)) {
+        } else if (slen && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!slen && uni_len(rhs->unicode)) {
+        } else if (!slen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2674,11 +2674,11 @@ trv_compare_or_array(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (arrlen && uni_len(rhs->unicode)) {
+        if (arrlen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (arrlen && !uni_len(rhs->unicode)) {
+        } else if (arrlen && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!arrlen && uni_len(rhs->unicode)) {
+        } else if (!arrlen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2805,11 +2805,11 @@ trv_compare_or_dict(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (dictlen && uni_len(rhs->unicode)) {
+        if (dictlen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (dictlen && !uni_len(rhs->unicode)) {
+        } else if (dictlen && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!dictlen && uni_len(rhs->unicode)) {
+        } else if (!dictlen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -2979,11 +2979,11 @@ trv_compare_or_func(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs && uni_len(rhs->unicode)) {
+        if (lhs && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs && !uni_len(rhs->unicode)) {
+        } else if (lhs && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs && uni_len(rhs->unicode)) {
+        } else if (!lhs && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -3107,11 +3107,11 @@ trv_compare_or_module(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs && uni_len(rhs->unicode)) {
+        if (lhs && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (lhs && !uni_len(rhs->unicode)) {
+        } else if (lhs && !PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(lhs);
-        } else if (!lhs && uni_len(rhs->unicode)) {
+        } else if (!lhs && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else {
             obj = PadObj_DeepCopy(rhs);
@@ -3372,9 +3372,9 @@ trv_compare_and_int(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs->lvalue && uni_len(rhs->unicode)) {
+        if (lhs->lvalue && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->lvalue) {
             obj = PadObj_DeepCopy(lhs);
@@ -3501,9 +3501,9 @@ trv_compare_and_bool(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs->boolean && uni_len(rhs->unicode)) {
+        if (lhs->boolean && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs->boolean) {
             obj = PadObj_DeepCopy(lhs);
@@ -3574,7 +3574,7 @@ trv_compare_and_string(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__UNICODE);
 
     PadDepth depth = targs->depth;
-    int32_t slen = uni_len(lhs->unicode);
+    int32_t slen = PadUni_Len(lhs->unicode);
 
     switch (rhs->type) {
     default: {
@@ -3631,9 +3631,9 @@ trv_compare_and_string(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (slen && uni_len(rhs->unicode)) {
+        if (slen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!slen) {
             obj = PadObj_DeepCopy(lhs);
@@ -3752,9 +3752,9 @@ trv_compare_and_array(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (arrlen && uni_len(rhs->unicode)) {
+        if (arrlen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!arrlen) {
             obj = PadObj_DeepCopy(lhs);
@@ -3873,9 +3873,9 @@ trv_compare_and_dict(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (dictlen && uni_len(rhs->unicode)) {
+        if (dictlen && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!dictlen) {
             obj = PadObj_DeepCopy(lhs);
@@ -4035,9 +4035,9 @@ trv_compare_and_func(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs && uni_len(rhs->unicode)) {
+        if (lhs && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
             obj = PadObj_DeepCopy(lhs);
@@ -4155,9 +4155,9 @@ trv_compare_and_module(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *obj = NULL;
-        if (lhs && uni_len(rhs->unicode)) {
+        if (lhs && PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
-        } else if (!uni_len(rhs->unicode)) {
+        } else if (!PadUni_Len(rhs->unicode)) {
             obj = PadObj_DeepCopy(rhs);
         } else if (!lhs) {
             obj = PadObj_DeepCopy(lhs);
@@ -4382,7 +4382,7 @@ trv_compare_not(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        PadObj *obj = PadObj_NewBool(ast->ref_gc, !uni_len(operand->unicode));
+        PadObj *obj = PadObj_NewBool(ast->ref_gc, !PadUni_Len(operand->unicode));
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__ARRAY: {
@@ -4644,7 +4644,7 @@ trv_compare_comparison_eq_string(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        bool b = u_strcmp(uni_getc(lhs->unicode), uni_getc(rhs->unicode)) == 0;
+        bool b = PadU_StrCmp(PadUni_Getc(lhs->unicode), PadUni_Getc(rhs->unicode)) == 0;
         PadObj *obj = PadObj_NewBool(ast->ref_gc, b);
         return_trav(obj);
     } break;
@@ -5297,7 +5297,7 @@ trv_compare_comparison_not_eq_unicode(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        bool b = u_strcmp(uni_getc(lhs->unicode), uni_getc(rhs->unicode)) != 0;
+        bool b = PadU_StrCmp(PadUni_Getc(lhs->unicode), PadUni_Getc(rhs->unicode)) != 0;
         PadObj *obj = PadObj_NewBool(ast->ref_gc, b);
         return_trav(obj);
     } break;
@@ -6830,9 +6830,9 @@ trv_calc_expr_add_string(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        unicode_t *u = uni_new();
-        uni_app(u, uni_getc(lhs->unicode));
-        uni_app(u, uni_getc(rhs->unicode));
+        PadUni *u = PadUni_New();
+        PadUni_App(u, PadUni_Getc(lhs->unicode));
+        PadUni_App(u, PadUni_Getc(rhs->unicode));
         PadObj *obj = PadObj_NewUnicode(ast->ref_gc, u);
         return_trav(obj);
     } break;
@@ -7250,13 +7250,13 @@ trv_expr(PadAST *ast, PadTrvArgs *targs) {
 }
 
 static PadObj *
-mul_unicode_object(PadAST *ast, PadTrvArgs *targs, const unicode_t *s, int32_t n) {
+mul_unicode_object(PadAST *ast, PadTrvArgs *targs, const PadUni *s, int32_t n) {
     if (n < 0) {
         pushb_error("can't mul string by negative value");
         return NULL;
     }
 
-    unicode_t *u = uni_mul(s, n);
+    PadUni *u = PadUni_Mul(s, n);
     return PadObj_NewUnicode(ast->ref_gc, PadMem_Move(u));
 }
 
@@ -8402,7 +8402,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadObj *lhs = PadObj_DeepCopy(unicodeobj);
-        uni_app(lhs->unicode, uni_getc(rhs->unicode));
+        PadUni_App(lhs->unicode, PadUni_Getc(rhs->unicode));
         Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
@@ -8585,7 +8585,7 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, PadTrvArgs *targs) {
         } break;
         case PAD_OBJ_TYPE__UNICODE: {
             lref = PadObj_DeepCopy(lref);
-            uni_app_other(lref->unicode, rref->unicode);
+            PadUni_AppOther(lref->unicode, rref->unicode);
             _Pad_ReferAndSetRef(chainobj, lref);
         } break;
         }
@@ -8825,8 +8825,8 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, PadTrvArgs *targs) {
         } break;
         case PAD_OBJ_TYPE__INT: {
             lref = PadObj_DeepCopy(lref);
-            unicode_t *u = uni_mul(lref->unicode, rref->lvalue);
-            uni_del(lref->unicode);
+            PadUni *u = PadUni_Mul(lref->unicode, rref->lvalue);
+            PadUni_Del(lref->unicode);
             lref->unicode = u;
             _Pad_ReferAndSetRef(chainobj, lref);
         } break;
@@ -9483,13 +9483,13 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, PadTrvArgs *targs) {
             pushb_error("can't mul by negative value");
             return_trav(NULL);
         } else if (rhsref->lvalue == 0) {
-            uni_clear(lhs->unicode);
+            PadUni_Clear(lhs->unicode);
         } else {
-            unicode_t *other = uni_deep_copy(lhs->unicode);
+            PadUni *other = PadUni_DeepCopy(lhs->unicode);
             for (PadIntObj i = 0; i < rhsref->lvalue-1; ++i) {
-                uni_app_other(lhs->unicode, other);
+                PadUni_AppOther(lhs->unicode, other);
             }
-            uni_del(other);
+            PadUni_Del(other);
         }
         Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
@@ -9497,7 +9497,7 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__BOOL: {
         PadObj *lhs = PadObj_DeepCopy(unicodeobj);
         if (!rhsref->boolean) {
-            uni_clear(lhs->unicode);
+            PadUni_Clear(lhs->unicode);
         }
         Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
@@ -10357,7 +10357,7 @@ trv_dict_elems(PadAST *ast, PadTrvArgs *targs) {
             return_trav(NULL);
             break;
         case PAD_OBJ_TYPE__UNICODE:
-            skey = uni_getc_mb(key->unicode);
+            skey = PadUni_GetcMB(key->unicode);
             break;
         case PAD_OBJ_TYPE__IDENT: {
             const PadObj *ref = Pad_PullRefAll(key);
@@ -10368,7 +10368,7 @@ trv_dict_elems(PadAST *ast, PadTrvArgs *targs) {
                 return_trav(NULL);
                 break;
             }
-            skey = uni_getc_mb(ref->unicode);
+            skey = PadUni_GetcMB(ref->unicode);
         } break;
         }
 

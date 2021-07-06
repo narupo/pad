@@ -62,19 +62,19 @@ call_basic_unicode_func(const char *method_name, PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    unicode_t *result = NULL;
+    PadUni *result = NULL;
     if (PadCStr_Eq(method_name, "lower")) {
-        result = uni_lower(owner->unicode);
+        result = PadUni_Lower(owner->unicode);
     } else if (PadCStr_Eq(method_name, "upper")) {
-        result = uni_upper(owner->unicode);
+        result = PadUni_Upper(owner->unicode);
     } else if (PadCStr_Eq(method_name, "capitalize")) {
-        result = uni_capitalize(owner->unicode);
+        result = PadUni_Capi(owner->unicode);
     } else if (PadCStr_Eq(method_name, "snake")) {
-        result = uni_snake(owner->unicode);
+        result = PadUni_Snake(owner->unicode);
     } else if (PadCStr_Eq(method_name, "camel")) {
-        result = uni_camel(owner->unicode);
+        result = PadUni_Camel(owner->unicode);
     } else if (PadCStr_Eq(method_name, "hacker")) {
-        result = uni_hacker(owner->unicode);
+        result = PadUni_Hacker(owner->unicode);
     } else {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\" for call basic unicode method", method_name);
         return NULL;
@@ -126,7 +126,7 @@ builtin_unicode_split(PadBltFuncArgs *fargs) {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
         return NULL;
     }
-    const unicode_type_t *unisep = uni_getc(sep->unicode);
+    const PadUniType *unisep = PadUni_Getc(sep->unicode);
 
     PadObj *owner = extract_unicode_object(
         fargs->ref_ast,
@@ -138,14 +138,14 @@ builtin_unicode_split(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    unicode_t ** arr = uni_split(owner->unicode, unisep);
+    PadUni ** arr = PadUni_Split(owner->unicode, unisep);
     if (!arr) {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to split");
         return NULL;
     }
 
     PadObjAry *toks = PadObjAry_New();
-    for (unicode_t **p = arr; *p; ++p) {
+    for (PadUni **p = arr; *p; ++p) {
         PadObj *obj = PadObj_NewUnicode(fargs->ref_ast->ref_gc, PadMem_Move(*p));
         PadObjAry_MoveBack(toks, PadMem_Move(obj));
     }
@@ -164,16 +164,16 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
     PadObjAry *args = fargs->ref_args->objarr;
     assert(args);
 
-    const unicode_type_t *unirems = NULL;
+    const PadUniType *unirems = NULL;
     if (PadObjAry_Len(args)) {
         const PadObj *rems = PadObjAry_Getc(args, 0);
         if (rems->type != PAD_OBJ_TYPE__UNICODE) {
             PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
             return NULL;
         }
-        unirems = uni_getc(rems->unicode);
+        unirems = PadUni_Getc(rems->unicode);
     } else {
-        unirems = UNI_STR(" \r\n\t");  // default value
+        unirems = PAD_UNI__STR(" \r\n\t");  // default value
     }
 
     PadObj *owner = extract_unicode_object(
@@ -186,13 +186,13 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    unicode_t *result = NULL;
+    PadUni *result = NULL;
     if (PadCStr_Eq(method_name, "rstrip")) {
-        result = uni_rstrip(owner->unicode, unirems);
+        result = PadUni_RStrip(owner->unicode, unirems);
     } else if (PadCStr_Eq(method_name, "lstrip")) {
-        result = uni_lstrip(owner->unicode, unirems);
+        result = PadUni_LStrip(owner->unicode, unirems);
     } else if (PadCStr_Eq(method_name, "strip")) {
-        result = uni_strip(owner->unicode, unirems);
+        result = PadUni_Strip(owner->unicode, unirems);
     } else {
         PadAst_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\"", method_name);
         return NULL;
@@ -241,11 +241,11 @@ builtin_unicode_is(const char *method_name, PadBltFuncArgs *fargs) {
 
     bool boolean = false;
     if (PadCStr_Eq(method_name, "isdigit")) {
-        boolean = uni_isdigit(owner->unicode);
+        boolean = PadUni_IsDigit(owner->unicode);
     } else if (PadCStr_Eq(method_name, "isalpha")) {
-        boolean = uni_isalpha(owner->unicode);
+        boolean = PadUni_IsAlpha(owner->unicode);
     } else if (PadCStr_Eq(method_name, "isspace")) {
-        boolean = uni_isspace(owner->unicode);
+        boolean = PadUni_IsSpace(owner->unicode);
     } else {
         PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);
     }

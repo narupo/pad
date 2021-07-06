@@ -69,8 +69,8 @@ again2:
         goto again2;
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
-        unicode_t *u = PadObj_GetUnicode(arg);
-        key = uni_getc_mb(u);
+        PadUni *u = PadObj_GetUnicode(arg);
+        key = PadUni_GetcMB(u);
     } break;
     }
 

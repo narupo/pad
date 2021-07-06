@@ -8,22 +8,22 @@
 #include <pad/lib/string.h>
 #include <pad/lib/memory.h>
 
-#define UNI_CHAR32
-// #define UNI_CHAR16
-#define UNI_STR(s) (U##s)
-#define UNI_CHAR(c) (U##c)
+#define PAD_UNI__CHAR32
+// #define PAD_UNI__CH16
+#define PAD_UNI__STR(s) (U##s)
+#define PAD_UNI__CH(c) (U##c)
 
-struct unicode;
-typedef struct unicode unicode_t;
+struct PadUni;
+typedef struct PadUni PadUni;
 
-#if defined(UNI_CHAR32)
-  typedef char32_t unicode_type_t;
-#elif defined(UNI_CHAR16)
-  typedef char16_t unicode_type_t;
+#if defined(PAD_UNI__CHAR32)
+  typedef char32_t PadUniType;
+#elif defined(PAD_UNI__CH16)
+  typedef char16_t PadUniType;
 #endif
 
 enum {
-    UNI_INIT_CAPA = 4,
+    PAD_UNI__INIT_CAPA = 4,
 };
 
 /**
@@ -34,7 +34,7 @@ enum {
  * @return
  */
 int32_t
-char32_len(const char32_t *str);
+PadChar32_Len(const char32_t *str);
 
 /**
  *
@@ -44,7 +44,7 @@ char32_len(const char32_t *str);
  * @return
  */
 int32_t
-char16_len(const char16_t *str);
+PadChar16_Len(const char16_t *str);
 
 /**
  *
@@ -54,7 +54,7 @@ char16_len(const char16_t *str);
  * @return
  */
 char32_t *
-char32_dup(const char32_t *str);
+PadChar32_Dup(const char32_t *str);
 
 /**
  *
@@ -64,7 +64,7 @@ char32_dup(const char32_t *str);
  * @return
  */
 char16_t *
-char16_dup(const char16_t *str);
+PadChar16_Dup(const char16_t *str);
 
 /**
  *
@@ -74,7 +74,7 @@ char16_dup(const char16_t *str);
  * @return
  */
 bool
-char32_isalpha(char32_t ch);
+PadChar32_IsAlpha(char32_t ch);
 
 /**
  *
@@ -84,7 +84,7 @@ char32_isalpha(char32_t ch);
  * @return
  */
 bool
-char16_isalpha(char16_t ch);
+PadChar16_IsAlpha(char16_t ch);
 
 /**
  *
@@ -94,7 +94,7 @@ char16_isalpha(char16_t ch);
  * @return
  */
 bool
-char32_islower(char32_t ch);
+PadChar32_IsLower(char32_t ch);
 
 /**
  *
@@ -104,7 +104,7 @@ char32_islower(char32_t ch);
  * @return
  */
 bool
-char16_islower(char16_t ch);
+PadChar16_IsLower(char16_t ch);
 
 /**
  *
@@ -114,7 +114,7 @@ char16_islower(char16_t ch);
  * @return
  */
 bool
-char32_isupper(char32_t ch);
+PadChar32_IsUpper(char32_t ch);
 
 /**
  *
@@ -124,7 +124,7 @@ char32_isupper(char32_t ch);
  * @return
  */
 bool
-char16_isupper(char16_t ch);
+PadChar16_IsUpper(char16_t ch);
 
 /**
  *
@@ -134,7 +134,7 @@ char16_isupper(char16_t ch);
  * @return
  */
 char32_t
-char32_tolower(char32_t ch);
+PadChar32_ToLower(char32_t ch);
 
 /**
  *
@@ -144,7 +144,7 @@ char32_tolower(char32_t ch);
  * @return
  */
 char16_t
-char16_tolower(char16_t ch);
+PadChar16_ToLower(char16_t ch);
 
 /**
  *
@@ -154,7 +154,7 @@ char16_tolower(char16_t ch);
  * @return
  */
 char32_t
-char32_toupper(char32_t ch);
+PadChar32_ToUpper(char32_t ch);
 
 /**
  *
@@ -164,7 +164,7 @@ char32_toupper(char32_t ch);
  * @return
  */
 char16_t
-char16_toupper(char16_t ch);
+PadChar16_ToUpper(char16_t ch);
 
 /**
  *
@@ -174,7 +174,7 @@ char16_toupper(char16_t ch);
  * @return
  */
 bool
-char32_isdigit(char32_t ch);
+PadChar32_IsDigit(char32_t ch);
 
 /**
  *
@@ -184,7 +184,7 @@ char32_isdigit(char32_t ch);
  * @return
  */
 bool
-char16_isdigit(char16_t ch);
+PadChar16_IsDigit(char16_t ch);
 
 /**
  *
@@ -195,7 +195,7 @@ char16_isdigit(char16_t ch);
  * @return
  */
 int32_t
-char32_strcmp(const char32_t *s1, const char32_t *s2);
+PadChar32_StrCmp(const char32_t *s1, const char32_t *s2);
 
 /**
  *
@@ -206,7 +206,7 @@ char32_strcmp(const char32_t *s1, const char32_t *s2);
  * @return
  */
 int32_t
-char16_strcmp(const char16_t *s1, const char16_t *s2);
+PadChar16_StrCmp(const char16_t *s1, const char16_t *s2);
 
 /**
  * TODO: test
@@ -218,7 +218,7 @@ char16_strcmp(const char16_t *s1, const char16_t *s2);
  * @return 
  */
 int32_t
-char32_strncmp(const char32_t *s1, const char32_t *s2, int32_t n);
+PadChar32_StrNCmp(const char32_t *s1, const char32_t *s2, int32_t n);
 
 /**
  * TODO: test
@@ -230,67 +230,67 @@ char32_strncmp(const char32_t *s1, const char32_t *s2, int32_t n);
  * @return 
  */
 int32_t
-char16_strncmp(const char16_t *s1, const char16_t *s2, int32_t n);
+PadChar16_StrNCmp(const char16_t *s1, const char16_t *s2, int32_t n);
 
 bool
-char16_isspace(char16_t ch);
+PadChar16_IsSpace(char16_t ch);
 
 bool
-char32_isspace(char32_t ch);
+PadChar32_IsSpace(char32_t ch);
 
-#define u_len(str) _Generic((str[0]), \
-    char32_t: char32_len, \
-    char16_t: char16_len \
+#define PadU_Len(str) _Generic((str[0]), \
+    char32_t: PadChar32_Len, \
+    char16_t: PadChar16_Len \
 )(str)
 
-#define u_strdup(str) _Generic((str[0]), \
-    char32_t: char32_dup, \
-    char16_t: char16_dup \
+#define PadU_StrDup(str) _Generic((str[0]), \
+    char32_t: PadChar32_Dup, \
+    char16_t: PadChar16_Dup \
 )(str)
 
-#define u_isalpha(ch) _Generic((ch), \
-    char32_t: char32_isalpha, \
-    char16_t: char16_isalpha \
+#define PadU_IsAlpha(ch) _Generic((ch), \
+    char32_t: PadChar32_IsAlpha, \
+    char16_t: PadChar16_IsAlpha \
 )(ch)
 
-#define u_islower(ch) _Generic((ch), \
-    char32_t: char32_islower, \
-    char16_t: char16_islower \
+#define PadU_IsLower(ch) _Generic((ch), \
+    char32_t: PadChar32_IsLower, \
+    char16_t: PadChar16_IsLower \
 )(ch)
 
-#define u_isupper(ch) _Generic((ch), \
-    char32_t: char32_isupper, \
-    char16_t: char16_isupper \
+#define PadU_IsUpper(ch) _Generic((ch), \
+    char32_t: PadChar32_IsUpper, \
+    char16_t: PadChar16_IsUpper \
 )(ch)
 
-#define u_tolower(ch) _Generic((ch), \
-    char32_t: char32_tolower, \
-    char16_t: char16_tolower \
+#define PadU_ToLower(ch) _Generic((ch), \
+    char32_t: PadChar32_ToLower, \
+    char16_t: PadChar16_ToLower \
 )(ch)
 
-#define u_toupper(ch) _Generic((ch), \
-    char32_t: char32_toupper, \
-    char16_t: char16_toupper \
+#define PadU_ToUpper(ch) _Generic((ch), \
+    char32_t: PadChar32_ToUpper, \
+    char16_t: PadChar16_ToUpper \
 )(ch)
 
-#define u_isdigit(ch) _Generic((ch), \
-    char32_t: char32_isdigit, \
-    char16_t: char16_isdigit \
+#define PadU_IsDigit(ch) _Generic((ch), \
+    char32_t: PadChar32_IsDigit, \
+    char16_t: PadChar16_IsDigit \
 )(ch)
 
-#define u_strcmp(s1, s2) _Generic((s1[0]), \
-  char32_t: char32_strcmp, \
-  char16_t: char16_strcmp \
+#define PadU_StrCmp(s1, s2) _Generic((s1[0]), \
+  char32_t: PadChar32_StrCmp, \
+  char16_t: PadChar16_StrCmp \
 )(s1, s2)
 
-#define u_strncmp(s1, s2, n) _Generic((s1[0]), \
-  char32_t: char32_strncmp, \
-  char16_t: char16_strncmp \
+#define PadU_StrNCmp(s1, s2, n) _Generic((s1[0]), \
+  char32_t: PadChar32_StrNCmp, \
+  char16_t: PadChar16_StrNCmp \
 )(s1, s2, n)
 
-#define u_isspace(ch) _Generic((ch), \
-  char32_t: char32_isspace, \
-  char16_t: char16_isspace \
+#define PadU_IsSpace(ch) _Generic((ch), \
+  char32_t: PadChar32_IsSpace, \
+  char16_t: PadChar16_IsSpace \
 )(ch)
 
 /**********
@@ -303,15 +303,15 @@ char32_isspace(char32_t ch);
  * @param[in] *self
  */
 void
-uni_del(unicode_t *self);
+PadUni_Del(PadUni *self);
 
 /**
  * destruct PadObj with move semantics
  *
  * @param[in] *self
  */
-unicode_type_t *
-uni_esc_del(unicode_t *self);
+PadUniType *
+PadUni_EscDel(PadUni *self);
 
 /**
  * construct PadObj
@@ -320,8 +320,8 @@ uni_esc_del(unicode_t *self);
  *
  * @return
  */
-unicode_t *
-uni_new(void);
+PadUni *
+PadUni_New(void);
 
 /**
  * clear state of object
@@ -329,7 +329,7 @@ uni_new(void);
  * @param[in] *self 
  */
 void
-uni_clear(unicode_t *self);
+PadUni_Clear(PadUni *self);
 
 /**
  * resize capacity
@@ -339,8 +339,8 @@ uni_clear(unicode_t *self);
  *
  * @return
  */
-unicode_t *
-uni_resize(unicode_t *self, int32_t newcapa);
+PadUni *
+PadUni_Resize(PadUni *self, int32_t newcapa);
 
 /**
  * get length of unicode strings
@@ -350,7 +350,7 @@ uni_resize(unicode_t *self, int32_t newcapa);
  * @return
  */
 int32_t
-uni_len(const unicode_t *self);
+PadUni_Len(const PadUni *self);
 
 /**
  * get number of capacity
@@ -360,7 +360,7 @@ uni_len(const unicode_t *self);
  * @return
  */
 int32_t
-uni_capa(const unicode_t *self);
+PadUni_Capa(const PadUni *self);
 
 /**
  * get buffer of object
@@ -369,8 +369,8 @@ uni_capa(const unicode_t *self);
  *
  * @return
  */
-unicode_type_t *
-uni_get(unicode_t *self);
+PadUniType *
+PadUni_Get(PadUni *self);
 
 /**
  * get buffer of object (read-only)
@@ -379,8 +379,8 @@ uni_get(unicode_t *self);
  *
  * @return
  */
-const unicode_type_t *
-uni_getc(const unicode_t *self);
+const PadUniType *
+PadUni_Getc(const PadUni *self);
 
 /**
  * check buffer is empty?
@@ -390,7 +390,7 @@ uni_getc(const unicode_t *self);
  * @return if buffer is empty then return true else return false
  */
 bool
-uni_empty(const unicode_t *self);
+PadUni_Empty(const PadUni *self);
 
 /**
  * set buffer at object (copy)
@@ -400,8 +400,8 @@ uni_empty(const unicode_t *self);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_set(unicode_t *self, const unicode_type_t *src);
+PadUni *
+PadUni_Set(PadUni *self, const PadUniType *src);
 
 /**
  * push back unicode character at tail of buffer
@@ -411,8 +411,8 @@ uni_set(unicode_t *self, const unicode_type_t *src);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_pushb(unicode_t *self, unicode_type_t ch);
+PadUni *
+PadUni_PushBack(PadUni *self, PadUniType ch);
 
 /**
  * pop back unicode character from tail of buffer
@@ -421,8 +421,8 @@ uni_pushb(unicode_t *self, unicode_type_t ch);
  *
  * @return unicode character of tail of buffer
  */
-unicode_type_t
-uni_popb(unicode_t *self);
+PadUniType
+PadUni_PopBack(PadUni *self);
 
 /**
  * push front unicode character at front of buffer
@@ -432,8 +432,8 @@ uni_popb(unicode_t *self);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_pushf(unicode_t *self, unicode_type_t ch);
+PadUni *
+PadUni_PushFront(PadUni *self, PadUniType ch);
 
 /**
  * pop front unicode chracter from front of buffer
@@ -442,8 +442,8 @@ uni_pushf(unicode_t *self, unicode_type_t ch);
  *
  * @return unicode character
  */
-unicode_type_t
-uni_popf(unicode_t *self);
+PadUniType
+PadUni_PopFront(PadUni *self);
 
 /**
  * append unicode strings at tail of buffer
@@ -453,8 +453,8 @@ uni_popf(unicode_t *self);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_app(unicode_t *self, const unicode_type_t *src);
+PadUni *
+PadUni_App(PadUni *self, const PadUniType *src);
 
 /**
  * append unicode string of stream at tail of buffer
@@ -464,8 +464,8 @@ uni_app(unicode_t *self, const unicode_type_t *src);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_app_stream(unicode_t *self, FILE *fin);
+PadUni *
+PadUni_AppStream(PadUni *self, FILE *fin);
 
 /**
  * deep copy object
@@ -474,11 +474,11 @@ uni_app_stream(unicode_t *self, FILE *fin);
  *
  * @return success to new object else NULL
  */
-unicode_t *
-uni_deep_copy(const unicode_t *other);
+PadUni *
+PadUni_DeepCopy(const PadUni *other);
 
-unicode_t *
-uni_shallow_copy(const unicode_t *other);
+PadUni *
+PadUni_ShallowCopy(const PadUni *other);
 
 /**
  * append other object at tail of buffer
@@ -488,8 +488,8 @@ uni_shallow_copy(const unicode_t *other);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_app_other(unicode_t *self, const unicode_t *_other);
+PadUni *
+PadUni_AppOther(PadUni *self, const PadUni *_other);
 
 /**
  * append format strings at tail of buffer
@@ -502,8 +502,8 @@ uni_app_other(unicode_t *self, const unicode_t *_other);
  *
  * @return success to self else NULL
  */
-unicode_t *
-uni_app_fmt(unicode_t *self, char *buf, int32_t nbuf, const char *fmt, ...);
+PadUni *
+PadUni_AppFmt(PadUni *self, char *buf, int32_t nbuf, const char *fmt, ...);
 
 /**
  * convert unicode string to multi byte strings
@@ -513,7 +513,7 @@ uni_app_fmt(unicode_t *self, char *buf, int32_t nbuf, const char *fmt, ...);
  * @return success to strings of dyanmic allocate memory else NULL
  */
 char *
-uni_to_mb(const unicode_t *self);
+PadUni_ToMB(const PadUni *self);
 
 /**
  * set multi byte strings after converted to unicode to buffer
@@ -523,8 +523,8 @@ uni_to_mb(const unicode_t *self);
  *
  * @return
  */
-unicode_t *
-uni_set_mb(unicode_t *self, const char *mb);
+PadUni *
+PadUni_SetMB(PadUni *self, const char *mb);
 
 /**
  * strip right side characters in buffer by designated characters
@@ -532,10 +532,10 @@ uni_set_mb(unicode_t *self, const char *mb);
  * @param[in] *self
  * @param[in] *rems designated target characters
  *
- * @return success to pointer to unicode_t (dynamic allocate memory) else NULL
+ * @return success to pointer to PadUni (dynamic allocate memory) else NULL
  */
-unicode_t *
-uni_rstrip(const unicode_t *other, const unicode_type_t *rems);
+PadUni *
+PadUni_RStrip(const PadUni *other, const PadUniType *rems);
 
 /**
  * strip left side characters in buffer by designated characters
@@ -543,10 +543,10 @@ uni_rstrip(const unicode_t *other, const unicode_type_t *rems);
  * @param[in] *self
  * @param[in] *rems designated target characters
  *
- * @return success to pointer to unicode_t (dynamic allocate memory) else NULL
+ * @return success to pointer to PadUni (dynamic allocate memory) else NULL
  */
-unicode_t *
-uni_lstrip(const unicode_t *other, const unicode_type_t *rems);
+PadUni *
+PadUni_LStrip(const PadUni *other, const PadUniType *rems);
 
 /**
  * strip both side characters in buffer by designated characters
@@ -554,10 +554,10 @@ uni_lstrip(const unicode_t *other, const unicode_type_t *rems);
  * @param[in] *self
  * @param[in] *rems designated target characters
  *
- * @return success to pointer to unicode_t (dynamic allocate memory) else NULL
+ * @return success to pointer to PadUni (dynamic allocate memory) else NULL
  */
-unicode_t *
-uni_strip(const unicode_t *other, const unicode_type_t *rems);
+PadUni *
+PadUni_Strip(const PadUni *other, const PadUniType *rems);
 
 /**
  * get multi byte strings after converted from unicode strings
@@ -567,7 +567,7 @@ uni_strip(const unicode_t *other, const unicode_type_t *rems);
  * @return success to pointer to multi byte strings (read-only) else NULL
  */
 const char *
-uni_getc_mb(unicode_t *self);
+PadUni_GetcMB(PadUni *self);
 
 /**
  * convert to lower case
@@ -577,8 +577,8 @@ uni_getc_mb(unicode_t *self);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_lower(const unicode_t *other);
+PadUni *
+PadUni_Lower(const PadUni *other);
 
 /**
  * convert to upper case
@@ -588,8 +588,8 @@ uni_lower(const unicode_t *other);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_upper(const unicode_t *other);
+PadUni *
+PadUni_Upper(const PadUni *other);
 
 /**
  * capitalize first character of buffer
@@ -599,8 +599,8 @@ uni_upper(const unicode_t *other);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_capitalize(const unicode_t *other);
+PadUni *
+PadUni_Capi(const PadUni *other);
 
 /**
  * convert to snake case
@@ -610,8 +610,8 @@ uni_capitalize(const unicode_t *other);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_snake(const unicode_t *other);
+PadUni *
+PadUni_Snake(const PadUni *other);
 
 /**
  * convert to camel case
@@ -621,8 +621,8 @@ uni_snake(const unicode_t *other);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_camel(const unicode_t *other);
+PadUni *
+PadUni_Camel(const PadUni *other);
 
 /**
  * convert to hacker style case
@@ -632,8 +632,8 @@ uni_camel(const unicode_t *other);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_hacker(const unicode_t *other);
+PadUni *
+PadUni_Hacker(const PadUni *other);
 
 /**
  * multiply buffer by number
@@ -644,8 +644,8 @@ uni_hacker(const unicode_t *other);
  * @return success to pointer to object (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t *
-uni_mul(const unicode_t *other, int32_t n);
+PadUni *
+PadUni_Mul(const PadUni *other, int32_t n);
 
 /**
  * split buffer by character
@@ -656,14 +656,14 @@ uni_mul(const unicode_t *other, int32_t n);
  * @return success to pointer array (dynamic allocate memory)
  * @return failed to NULL
  */
-unicode_t **
-uni_split(const unicode_t *other, const unicode_type_t *sep);
+PadUni **
+PadUni_Split(const PadUni *other, const PadUniType *sep);
 
 bool
-uni_isdigit(const unicode_t *self);
+PadUni_IsDigit(const PadUni *self);
 
 bool
-uni_isalpha(const unicode_t *self);
+PadUni_IsAlpha(const PadUni *self);
 
 bool
-uni_isspace(const unicode_t *self);
+PadUni_IsSpace(const PadUni *self);
