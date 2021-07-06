@@ -128,6 +128,10 @@ pad: build/app.o $(OBJS)
 lib: $(OBJS)
 	$(CC) $(CFLAGS) -shared -o build/$(OUTLIB) $^
 
+test: build/pad build/pad_tests
+	valgrind build/pad_tests
+	valgrind build/pad tests/tests.pad
+
 build/app.o: pad/app.c pad/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/tests.o: tests/tests.c tests/tests.h
