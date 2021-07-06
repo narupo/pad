@@ -634,6 +634,14 @@ trv_import_as_stmt(PadAST *ast, PadTrvArgs *targs) {
     assert(alias);
 
     PadImporter *importer = PadImporter_New(ast->ref_config);
+    if (importer == NULL) {
+        pushb_error("failed to create importer");
+        PadObj_Del(pathobj);
+        PadObj_Del(aliasobj);
+        return_trav(NULL);
+    }
+
+    PadImporter_SetFixPathFunc(importer, ast->importer_fix_path);
 
     if (!PadImporter_ImportAs(
         importer,
@@ -1795,7 +1803,7 @@ trv_calc_assign(PadAST *ast, PadTrvArgs *targs) {
 }
 
 /**
- * Е▐ЁЕ└╙Е┘┬Г╣░Е░┬
+ * ср┐·ох╫Y╨о
  */
 static PadObj *
 trv_simple_assign(PadAST *ast, PadTrvArgs *targs) {
@@ -1855,7 +1863,7 @@ trv_simple_assign(PadAST *ast, PadTrvArgs *targs) {
 }
 
 /**
- * Е▐ЁЕ└╙Е┘┬Г╣░Е░┬
+ * ср┐·ох╫Y╨о
  */
 static PadObj *
 trv_assign(PadAST *ast, PadTrvArgs *targs) {
@@ -1990,7 +1998,7 @@ done:
 }
 
 /**
- * Е▐ЁЕ└╙Е┘┬Г╣░Е░┬
+ * ср┐·ох╫Y╨о
  */
 static PadObj *
 trv_multi_assign(PadAST *ast, PadTrvArgs *targs) {

@@ -77,6 +77,11 @@ PadKit_New(const PadConfig *config) {
     return self;
 }
 
+void
+PadKit_SetImporterFixPathFunc(PadKit *self, PadImporterFixPathFunc func) {
+    self->ast->importer_fix_path = func;
+}
+
 PadKit *
 PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc) {
     PadKit *self = PadMem_Calloc(1, sizeof(*self));

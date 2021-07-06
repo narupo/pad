@@ -11,9 +11,7 @@
 #include <pad/lang/opts.h>
 #include <pad/lang/object_dict.h>
 #include <pad/lang/object_array.h>
-
-struct PadImporter;
-typedef struct PadImporter PadImporter;
+#include <pad/lang/types.h>
 
 /**
  * destruct PadObj
@@ -30,6 +28,15 @@ PadImporter_Del(PadImporter *self);
  */
 PadImporter *
 PadImporter_New(const PadConfig *ref_config);
+
+/**
+ * Set fix path func to importer
+ * 
+ * @param[in] *self    
+ * @param[in] fix_path 
+ */
+void
+PadImporter_SetFixPathFunc(PadImporter *self, PadImporterFixPathFunc fix_path);
 
 /**
  * import module from path as alias

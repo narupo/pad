@@ -101,3 +101,7 @@ typedef struct PadNode PadNode;
 struct PadKit;
 typedef struct PadKit PadKit;
 
+struct PadImporter;
+typedef struct PadImporter PadImporter;
+
+typedef char *(* PadImporterFixPathFunc)(PadImporter *, char *, int32_t, const char *);

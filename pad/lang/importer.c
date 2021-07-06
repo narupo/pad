@@ -3,6 +3,7 @@
 struct PadImporter {
     const PadConfig *ref_config;
     char error[1024];
+    PadImporterFixPathFunc fix_path;
 };
 
 void
@@ -34,13 +35,18 @@ PadImporter_SetErr(PadImporter *self, const char *fmt, ...) {
     va_end(ap);
 }
 
+void
+PadImporter_SetFixPathFunc(PadImporter *self, PadImporterFixPathFunc fix_path) {
+    self->fix_path = fix_path;
+}
+
 const char *
 PadImporter_GetcErr(const PadImporter *self) {
     return self->error;
 }
 
 static char *
-fix_path(PadImporter *self, char *dst, int32_t dstsz, const char *path) {
+def_fix_path(PadImporter *self, char *dst, int32_t dstsz, const char *path) {
     if (!dst || dstsz <= 0 || !path) {
         PadImporter_SetErr(self, "invalid arguments");
         return NULL;
@@ -69,9 +75,16 @@ create_modobj(
 ) {
     // read source
     char src_path[PAD_FILE__NPATH];
-    if (!fix_path(self, src_path, sizeof src_path, path)) {
-        PadImporter_SetErr(self, "failed to fix path from \"%s\"", path);
-        return NULL; 
+    if (self->fix_path) {
+        if (!self->fix_path(self, src_path, sizeof src_path, path)) {
+            PadImporter_SetErr(self, "failed to fix-path from \"%s\"", path);
+            return NULL; 
+        }        
+    } else {
+        if (!def_fix_path(self, src_path, sizeof src_path, path)) {
+            PadImporter_SetErr(self, "failed to def-fix-path from \"%s\"", path);
+            return NULL; 
+        }
     }
 
     if (!PadFile_IsExists(src_path)) {

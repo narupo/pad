@@ -13,6 +13,7 @@
 #include <pad/lang/gc.h>
 #include <pad/lang/chain_node.h>
 #include <pad/lang/chain_nodes.h>
+#include <pad/lang/importer.h>
 
 /**
  * constant number of AST
@@ -65,6 +66,8 @@ struct PadAst {
     // if current context is in loop-statement then store true else false
     // this flag refer from jump statements
     bool is_in_loop;
+
+    PadImporterFixPathFunc importer_fix_path;
 };
 
 /**
