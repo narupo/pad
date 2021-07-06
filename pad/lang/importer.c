@@ -29,9 +29,7 @@ void
 PadImporter_SetErr(PadImporter *self, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-
     vsnprintf(self->error, sizeof self->error, fmt, ap);
-
     va_end(ap);
 }
 
