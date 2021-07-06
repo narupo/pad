@@ -1,6 +1,6 @@
 #include <pad/lib/pipe.h>
 
-struct pipe {
+struct PadPipe {
 #ifdef PIPE_WINDOWS
     HANDLE handles[2];
 #else
@@ -9,18 +9,18 @@ struct pipe {
 };
 
 void
-pipe_del(pipe_t *self) {
+PadPipe_Del(PadPipe *self) {
     if (!self) {
         return;
     }
 
-    pipe_close(self);
+    PadPipe_Close(self);
     free(self);
 }
 
-pipe_t *
-pipe_new(void) {
-    pipe_t *self = calloc(1, sizeof(*self));
+PadPipe *
+PadPipe_New(void) {
+    PadPipe *self = calloc(1, sizeof(*self));
     if (!self) {
         perror("calloc");
         exit(1);
@@ -29,60 +29,60 @@ pipe_new(void) {
     return self;
 }
 
-pipe_t *
-pipe_close(pipe_t *self) {
+PadPipe *
+PadPipe_Close(PadPipe *self) {
 #ifdef PIPE_WINDOWS
-    CloseHandle(self->handles[PIPE_READ]);
-    self->handles[PIPE_READ] = NULL;
-    CloseHandle(self->handles[PIPE_WRITE]);
-    self->handles[PIPE_WRITE] = NULL;
+    CloseHandle(self->handles[PAD_PIPE__READ]);
+    self->handles[PAD_PIPE__READ] = NULL;
+    CloseHandle(self->handles[PAD_PIPE__WRITE]);
+    self->handles[PAD_PIPE__WRITE] = NULL;
 #else
-    close(self->fds[PIPE_READ]);
-    self->fds[PIPE_READ] = -1;
-    close(self->fds[PIPE_WRITE]);
-    self->fds[PIPE_WRITE] = -1;
+    close(self->fds[PAD_PIPE__READ]);
+    self->fds[PAD_PIPE__READ] = -1;
+    close(self->fds[PAD_PIPE__WRITE]);
+    self->fds[PAD_PIPE__WRITE] = -1;
 #endif
     return self;
 }
 
-pipe_t *
-pipe_open(pipe_t *self, int flags) {
-    if (!pipe_close(self)) {
+PadPipe *
+PadPipe_Open(PadPipe *self, int flags) {
+    if (!PadPipe_Close(self)) {
         return NULL;
     }
 
 #ifdef PIPE_WINDOWS
     HANDLE hs[2];
-    if (!CreatePipe(&hs[PIPE_READ], &hs[PIPE_WRITE], NULL, 0)) {
+    if (!CreatePipe(&hs[PAD_PIPE__READ], &hs[PAD_PIPE__WRITE], NULL, 0)) {
         return NULL;
     }
 
     if (!DuplicateHandle(
         GetCurrentProcess(),
-        hs[PIPE_READ],
+        hs[PAD_PIPE__READ],
         GetCurrentProcess(),
-        &self->handles[PIPE_READ],
+        &self->handles[PAD_PIPE__READ],
         0,
         TRUE,
         DUPLICATE_SAME_ACCESS
     )) {
         return NULL;
     }
-    CloseHandle(hs[PIPE_READ]);
+    CloseHandle(hs[PAD_PIPE__READ]);
 
     if (!DuplicateHandle(
         GetCurrentProcess(),
-        hs[PIPE_WRITE],
+        hs[PAD_PIPE__WRITE],
         GetCurrentProcess(),
-        &self->handles[PIPE_WRITE],
+        &self->handles[PAD_PIPE__WRITE],
         0,
         TRUE,
         DUPLICATE_SAME_ACCESS
     )) {
-        CloseHandle(self->handles[PIPE_READ]);
+        CloseHandle(self->handles[PAD_PIPE__READ]);
         return NULL;
     }
-    CloseHandle(hs[PIPE_WRITE]);
+    CloseHandle(hs[PAD_PIPE__WRITE]);
 #else
     if (pipe(self->fds) == -1) {
         return NULL;

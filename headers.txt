@@ -46,9 +46,9 @@
 ./pad/lib/file.h *
 ./pad/lib/format.h *
 ./pad/lib/memory.h *
-./pad/lib/path.h
-./pad/lib/pipe.h
-./pad/lib/socket.h
+./pad/lib/path.h *
+./pad/lib/pipe.h *
+./pad/lib/socket.h *
 ./pad/lib/string.h
 ./pad/lib/term.h
 ./pad/lib/unicode.h

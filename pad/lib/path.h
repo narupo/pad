@@ -6,13 +6,13 @@
 #include <string.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _PATH_WINDOWS 1 /* cap: path.h */
+# define PAD_PATH__WINDOWS 1 /* cap: path.h */
 #else
-# undef _PATH_WINDOWS
+# undef PAD_PATH__WINDOWS
 #endif
 
 char *
-path_pop_back_of(char *path, int32_t ch);
+PadPath_PopBackOf(char *path, int32_t ch);
 
 char *
-path_Pad_PopTailSlash(char *path);
+PadPath_PopTailSlash(char *path);

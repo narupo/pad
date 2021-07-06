@@ -1,7 +1,7 @@
 #include <pad/lib/path.h>
 
 char *
-path_pop_back_of(char *path, int32_t ch) {
+PadPath_PopBackOf(char *path, int32_t ch) {
     if (!path) {
         return NULL;
     }
@@ -19,7 +19,7 @@ path_pop_back_of(char *path, int32_t ch) {
 }
 
 char *
-path_Pad_PopTailSlash(char *path) {
+PadPath_PopTailSlash(char *path) {
     if (!path) {
         return NULL;
     }
@@ -29,7 +29,7 @@ path_Pad_PopTailSlash(char *path) {
         return path;
     }
 
-#if _PATH_WINDOWS
+#if PAD_PATH__WINDOWS
     int32_t sep = '\\';
 #else
     int32_t sep = '/';

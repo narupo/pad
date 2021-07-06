@@ -23,7 +23,7 @@ typedef enum {
 
 static const char *SOCK_DEFAULT_PORT = "8000";
 
-struct socket {
+struct PadSock {
     char host[SOCK_NHOST];
     char port[SOCK_NPORT];
     int32_t socket;
@@ -81,7 +81,7 @@ sock_mode_to_uint8(sock_mode_t mode) {
 }
 
 void
-sock_dump(const socket_t *self, FILE *fout) {
+PadSock_Dump(const PadSock *self, FILE *fout) {
     fprintf(
         fout,
         "socket host[%s] port[%s] mode[%s] socket[%d]\n",
@@ -93,7 +93,7 @@ sock_dump(const socket_t *self, FILE *fout) {
 }
 
 int32_t
-sock_close(socket_t *self) {
+PadSock_Close(PadSock *self) {
     if (self) {
         // if (close(self->socket) < 0) {
         // 	socklog("failed to close socket [%d] by \"%s:%s\""
@@ -106,7 +106,7 @@ sock_close(socket_t *self) {
 }
 
 void
-sock_set_error(socket_t *self, const char *fmt, ...) {
+PadSock_SetErr(PadSock *self, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
 
@@ -116,7 +116,7 @@ sock_set_error(socket_t *self, const char *fmt, ...) {
 }
 
 const char *
-sock_getc_error(const socket_t *self) {
+PadSock_GetcErr(const PadSock *self) {
     if (!self) {
         return "socket is null";
     }
@@ -125,7 +125,7 @@ sock_getc_error(const socket_t *self) {
 }
 
 bool
-sock_has_error(const socket_t *self) {
+PadSock_HasErr(const PadSock *self) {
     if (!self || self->error[0] != '\0') {
         return true;
     }
@@ -133,8 +133,8 @@ sock_has_error(const socket_t *self) {
     return false;
 }
 
-static socket_t *
-init_tcp_server(socket_t *self) {
+static PadSock *
+init_tcp_server(PadSock *self) {
     struct addrinfo *infores = NULL;
     struct addrinfo hints;
 
@@ -149,7 +149,7 @@ init_tcp_server(socket_t *self) {
     hints.ai_flags = AI_PASSIVE;
 
     if (getaddrinfo(NULL, self->port, &hints, &infores) != 0) {
-        sock_set_error(self, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
+        PadSock_SetErr(self, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
         return NULL;
     }
 
@@ -164,7 +164,7 @@ init_tcp_server(socket_t *self) {
 
         int optval;
         if (setsockopt(self->socket, SOL_SOCKET, SO_REUSEADDR, (void *) &optval, sizeof(optval)) == -1) {
-            sock_set_error(self, "failed to setsockopt \"%s:%s\"", self->host, self->port);
+            PadSock_SetErr(self, "failed to setsockopt \"%s:%s\"", self->host, self->port);
             freeaddrinfo(infores);
             return NULL;
         }
@@ -179,20 +179,20 @@ init_tcp_server(socket_t *self) {
     freeaddrinfo(infores);
 
     if (!rp) {
-        sock_set_error(self, "failed to find listen socket");
+        PadSock_SetErr(self, "failed to find listen socket");
         return NULL;
     }
 
     if (listen(self->socket, SOMAXCONN) < 0) {
-        sock_set_error(self, "failed to listen \"%s:%s\"", self->host, self->port);
+        PadSock_SetErr(self, "failed to listen \"%s:%s\"", self->host, self->port);
         return NULL;
     }
 
     return self;
 }
 
-static socket_t *
-init_tcp_client(socket_t *self) {
+static PadSock *
+init_tcp_client(PadSock *self) {
     struct addrinfo *infores = NULL;
     struct addrinfo hints;
 
@@ -206,7 +206,7 @@ init_tcp_client(socket_t *self) {
     hints.ai_flags = IPPROTO_TCP;
 
     if (getaddrinfo(self->host, self->port, &hints, &infores) != 0) {
-        sock_set_error(self, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
+        PadSock_SetErr(self, "failed to getaddrinfo \"%s:%s\"", self->host, self->port);
         return NULL;
     }
 
@@ -225,14 +225,14 @@ init_tcp_client(socket_t *self) {
         }
 
         if (close(self->socket) < 0) {
-            sock_set_error(self, "failed to close socket [%d]", self->socket);
+            PadSock_SetErr(self, "failed to close socket [%d]", self->socket);
         }
     }
 
     freeaddrinfo(infores);
 
     if (!rp) {
-        sock_set_error(
+        PadSock_SetErr(
             self,
             "could not connect to any address \"%s:%s\"\n",
             self->host,
@@ -244,10 +244,10 @@ init_tcp_client(socket_t *self) {
     return self;
 }
 
-static socket_t *
-parse_open_src(socket_t *self, const char *src) {
+static PadSock *
+parse_open_src(PadSock *self, const char *src) {
     if (!self || !src) {
-        sock_set_error(self, "invalid arguments");
+        PadSock_SetErr(self, "invalid arguments");
         return NULL;
     }
 
@@ -273,7 +273,7 @@ parse_open_src(socket_t *self, const char *src) {
             break;
         case 1:
             if (!isdigit(*sp)) {
-                sock_set_error(self, "invalid port number of \"%s\"", src);
+                PadSock_SetErr(self, "invalid port number of \"%s\"", src);
                 return NULL;
             }
 
@@ -293,22 +293,22 @@ parse_open_src(socket_t *self, const char *src) {
     return self;
 }
 
-socket_t *
-sock_open(const char *src, const char *mode) {
-    socket_t *self = calloc(1, sizeof(socket_t));
+PadSock *
+PadSock_Open(const char *src, const char *mode) {
+    PadSock *self = calloc(1, sizeof(PadSock));
     if (!self) {
         perror("calloc");
         return NULL;
     }
 
     if (!src || !mode) {
-        sock_set_error(self, "invalid arguments");
+        PadSock_SetErr(self, "invalid arguments");
         return NULL;
     }
 
 #if defined(PAD_WINDOWS)
     if (pthread_once(&wsa_sock_once, wsa_sock_init) != 0) {
-        sock_set_error(self, "failed to pthread once");
+        PadSock_SetErr(self, "failed to pthread once");
         return NULL;
     }
 #endif
@@ -316,13 +316,13 @@ sock_open(const char *src, const char *mode) {
     // convert from string to number of mode
     self->mode = sock_str_to_mode(mode);
     if (self->mode == SOCK_MODE_NULL) {
-        sock_set_error(self, "invalid open mode \"%s\"", mode);
+        PadSock_SetErr(self, "invalid open mode \"%s\"", mode);
         return NULL;
     }
 
     // parse source for host and port
     if (!parse_open_src(self, src)) {
-        sock_set_error(self, "failed to parse of \"%s\"", src);
+        PadSock_SetErr(self, "failed to parse of \"%s\"", src);
         return NULL;
     }
 
@@ -339,12 +339,12 @@ sock_open(const char *src, const char *mode) {
     }
 
     // invalid open mode
-    sock_set_error(self, "invalid open mode \"%s:%s\"", self->host, self->port);
+    PadSock_SetErr(self, "invalid open mode \"%s:%s\"", self->host, self->port);
     return NULL;
 }
 
 const char *
-sock_getc_host(const socket_t *self) {
+PadSock_GetcHost(const PadSock *self) {
     if (!self) {
         return NULL;
     }
@@ -353,7 +353,7 @@ sock_getc_host(const socket_t *self) {
 }
 
 const char *
-sock_getc_port(const socket_t *self) {
+PadSock_GetcPort(const PadSock *self) {
     if (!self) {
         return NULL;
     }
@@ -361,26 +361,26 @@ sock_getc_port(const socket_t *self) {
     return self->port;
 }
 
-socket_t *
-sock_accept(socket_t *self) {
+PadSock *
+PadSock_Accept(PadSock *self) {
     if (!self) {
         return NULL;
     }
 
     if (self->mode != SOCK_MODE_TCPSERVER) {
-        sock_set_error(self, "invalid mode on accept \"%s:%s\"", self->host, self->port);
+        PadSock_SetErr(self, "invalid mode on accept \"%s:%s\"", self->host, self->port);
         return NULL;
     }
 
     int32_t cliefd = accept(self->socket, NULL, NULL);
     if (cliefd < 0) {
-        sock_set_error(self, "failed to accept \"%s:%s\"", self->host, self->port);
+        PadSock_SetErr(self, "failed to accept \"%s:%s\"", self->host, self->port);
         return NULL;
     }
 
-    socket_t *client = calloc(1, sizeof(socket_t));
+    PadSock *client = calloc(1, sizeof(PadSock));
     if (!client) {
-        sock_set_error(self, "failed to construct socket");
+        PadSock_SetErr(self, "failed to construct PadSock");
         return NULL;
     }
 
@@ -391,19 +391,19 @@ sock_accept(socket_t *self) {
 }
 
 int32_t
-sock_recv_str(socket_t *self, char *dst, int32_t dstsz) {
+PadSock_RecvStr(PadSock *self, char *dst, int32_t dstsz) {
     if (!self) {
         return -1;
     }
 
     if (!dst || dstsz < 1) {
-        sock_set_error(self, "invalid arguments");
+        PadSock_SetErr(self, "invalid arguments");
         return -1;
     }
 
     int32_t ret = recv(self->socket, dst, dstsz-1, 0);
     if (ret < 0) {
-        sock_set_error(self, "failed to read from socket [%d] by \"%s:%s\""
+        PadSock_SetErr(self, "failed to read from socket [%d] by \"%s:%s\""
             , self->socket, self->host, self->port);
         *dst = '\0';
     } else if (ret > 0) {
@@ -414,13 +414,13 @@ sock_recv_str(socket_t *self, char *dst, int32_t dstsz) {
 }
 
 int32_t
-sock_send_str(socket_t *self, const char *str) {
+PadSock_SendStr(PadSock *self, const char *str) {
     if (!self) {
         return -1;
     }
 
     if (!str) {
-        sock_set_error(self, "invalid arguments");
+        PadSock_SetErr(self, "invalid arguments");
         return -1;
     }
 
@@ -429,7 +429,7 @@ sock_send_str(socket_t *self, const char *str) {
 
     ret = send(self->socket, str, len, 0);
     if (ret < 0) {
-        sock_set_error(self, "failed to write to socket [%d] by \"%s:%s\""
+        PadSock_SetErr(self, "failed to write to socket [%d] by \"%s:%s\""
             , self->socket, self->host, self->port);
         return -1;
     }
@@ -438,13 +438,13 @@ sock_send_str(socket_t *self, const char *str) {
 }
 
 int32_t
-sock_send(socket_t *self, const char *bytes, int32_t size) {
+PadSock_Send(PadSock *self, const char *bytes, int32_t size) {
     if (!self) {
         return -1;
     }
 
     if (size <= 0) {
-        sock_set_error(self, "invalid arguments");
+        PadSock_SetErr(self, "invalid arguments");
         return -1;
     }
 
@@ -456,7 +456,7 @@ sock_send(socket_t *self, const char *bytes, int32_t size) {
     ret = send(self->socket, bytes, size, 0);
 #endif
     if (ret < 0) {
-        sock_set_error(self, "failed to write to socket [%d] by \"%s:%s\""
+        PadSock_SetErr(self, "failed to write to socket [%d] by \"%s:%s\""
             , self->socket, self->host, self->port);
     }
 

@@ -22,10 +22,10 @@
 #include <stdbool.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _SOCKET_WINDOWS 1
+# define PAD_SOCK__WINDOWS 1
 #endif
 
-#if defined(_SOCKET_WINDOWS)
+#if defined(PAD_SOCK__WINDOWS)
 # include <winsock2.h>
 # include <ws2tcpip.h>
 # include <windows.h>
@@ -42,8 +42,8 @@
 # include <netinet/in.h>
 #endif
 
-struct socket;
-typedef struct socket socket_t;
+struct PadSock;
+typedef struct PadSock PadSock;
 
 /**
  * dump parameters of socket to stream
@@ -51,7 +51,7 @@ typedef struct socket socket_t;
  * @param[in] self
  */
 void
-sock_dump(const socket_t *self, FILE *fout);
+PadSock_Dump(const PadSock *self, FILE *fout);
 
 /**
  * close socket
@@ -63,7 +63,7 @@ sock_dump(const socket_t *self, FILE *fout);
  * @return failed to under number of zero
  */
 int32_t
-sock_close(socket_t *self);
+PadSock_Close(PadSock *self);
 
 /**
  * open socket by source and mode like a fopen(3)
@@ -77,8 +77,8 @@ sock_close(socket_t *self);
  *
  * @return pointer to dynamic allocate memory of struct cap_socket
  */
-socket_t *
-sock_open(const char *src, const char *mode);
+PadSock *
+PadSock_Open(const char *src, const char *mode);
 
 /**
  * get host of C string by socket
@@ -88,7 +88,7 @@ sock_open(const char *src, const char *mode);
  * @return pointer to memory of C string
  */
 const char *
-sock_getc_host(const socket_t *self);
+PadSock_GetcHost(const PadSock *self);
 
 /**
  * get port of C string by socket
@@ -98,7 +98,7 @@ sock_getc_host(const socket_t *self);
  * @return pointer to memory of C string
  */
 const char *
-sock_getc_port(const socket_t *self);
+PadSock_GetcPort(const PadSock *self);
 
 /**
  * wrapper of accept(2)
@@ -108,8 +108,8 @@ sock_getc_port(const socket_t *self);
  *
  * @return pointer to dynamic allocate memory of struct cap_socket of client
  */
-socket_t *
-sock_accept(socket_t *self);
+PadSock *
+PadSock_Accept(PadSock *self);
 
 /**
  * wrapper of recv(2)
@@ -123,7 +123,7 @@ sock_accept(socket_t *self);
  * @return failed to number of under of zero
  */
 int32_t
-sock_recv_str(socket_t *self, char *dst, int32_t dstsz);
+PadSock_RecvStr(PadSock *self, char *dst, int32_t dstsz);
 
 /**
  * wrapper of send(2)
@@ -136,7 +136,7 @@ sock_recv_str(socket_t *self, char *dst, int32_t dstsz);
  * @return failed to number of under of zero
  */
 int32_t
-sock_send_str(socket_t *self, const char *str);
+PadSock_SendStr(PadSock *self, const char *str);
 
 /**
  * wrapper of send(2)
@@ -150,7 +150,7 @@ sock_send_str(socket_t *self, const char *str);
  * @return failed to number of under of zero
  */
 int32_t
-sock_send(socket_t *self, const char *bytes, int32_t size);
+PadSock_Send(PadSock *self, const char *bytes, int32_t size);
 
 /**
  * set error
@@ -159,7 +159,7 @@ sock_send(socket_t *self, const char *bytes, int32_t size);
  * @param[in] *fmt
  */
 void
-sock_set_error(socket_t *self, const char *fmt, ...);
+PadSock_SetErr(PadSock *self, const char *fmt, ...);
 
 /**
  * get error message
@@ -169,14 +169,14 @@ sock_set_error(socket_t *self, const char *fmt, ...);
  * @return poitner to C strings
  */
 const char *
-sock_getc_error(const socket_t *self);
+PadSock_GetcErr(const PadSock *self);
 
 /**
- * if socket_t has error then return true else return false
+ * if PadSock has error then return true else return false
  *
  * @param[in] *self
  *
  * @return true or false
  */
 bool
-sock_has_error(const socket_t *self);
+PadSock_HasErr(const PadSock *self);

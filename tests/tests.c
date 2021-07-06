@@ -3723,48 +3723,48 @@ utiltests[] = {
 *******/
 
 static void
-test_path_pop_back_of(void) {
+test_PadPath_PopBackOf(void) {
     char s[100];
 
-    assert(path_pop_back_of(NULL, '?') == NULL);
+    assert(PadPath_PopBackOf(NULL, '?') == NULL);
 
     strcpy(s, "abc");
-    assert(path_pop_back_of(s, 'c'));
+    assert(PadPath_PopBackOf(s, 'c'));
     assert(!strcmp(s, "ab"));
 
-    assert(path_pop_back_of(s, '?'));
+    assert(PadPath_PopBackOf(s, '?'));
     assert(!strcmp(s, "ab"));
 }
 
 static void
-test_path_Pad_PopTailSlash(void) {
+test_PadPath_PopTailSlash(void) {
     char s[100];
 
-    assert(path_Pad_PopTailSlash(NULL) == NULL);
+    assert(PadPath_PopTailSlash(NULL) == NULL);
 
 #ifdef _TESTS_WINDOWS
     strcpy(s, "C:\\path\\to\\dir\\");
-    assert(path_Pad_PopTailSlash(s));
+    assert(PadPath_PopTailSlash(s));
     assert(!strcmp(s, "C:\\path\\to\\dir"));
 
     strcpy(s, "C:\\path\\to\\dir");
-    assert(path_Pad_PopTailSlash(s));
+    assert(PadPath_PopTailSlash(s));
     assert(!strcmp(s, "C:\\path\\to\\dir"));
 #else
     strcpy(s, "/path/to/dir/");
-    assert(path_Pad_PopTailSlash(s));
+    assert(PadPath_PopTailSlash(s));
     assert(!strcmp(s, "/path/to/dir"));
 
     strcpy(s, "/path/to/dir");
-    assert(path_Pad_PopTailSlash(s));
+    assert(PadPath_PopTailSlash(s));
     assert(!strcmp(s, "/path/to/dir"));
 #endif
 }
 
 static const struct testcase
 pathtests[] = {
-    {"path_pop_back_of", test_path_pop_back_of},
-    {"path_Pad_PopTailSlash", test_path_Pad_PopTailSlash},
+    {"PadPath_PopBackOf", test_PadPath_PopBackOf},
+    {"PadPath_PopTailSlash", test_PadPath_PopTailSlash},
     {0},
 };
 

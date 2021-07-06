@@ -404,13 +404,13 @@ Pad_PopTailSlash(char *path) {
     if (pathlen == 3 && path[2] == '\\') {
         return path;
     } else {
-        return path_Pad_PopTailSlash(path);
+        return PadPath_PopTailSlash(path);
     }
 #else
     if (pathlen == 1 && path[0] == '/') {
         return path;
     } else {
-        return path_Pad_PopTailSlash(path);
+        return PadPath_PopTailSlash(path);
     }
 #endif
 }

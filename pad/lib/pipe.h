@@ -11,12 +11,12 @@
 #endif
 
 enum {
-    PIPE_READ = 0,
-    PIPE_WRITE = 1,
+    PAD_PIPE__READ = 0,
+    PAD_PIPE__WRITE = 1,
 };
 
-struct pipe;
-typedef struct pipe pipe_t;
+struct PadPipe;
+typedef struct PadPipe PadPipe;
 
 /**
  * Destruct PadObj
@@ -24,7 +24,7 @@ typedef struct pipe pipe_t;
  * @param[in] *self 
  */
 void 
-pipe_del(pipe_t *self);
+PadPipe_Del(PadPipe *self);
 
 /**
  * Construct PadObj
@@ -32,10 +32,10 @@ pipe_del(pipe_t *self);
  *
  * @param[in] void 
  *
- * @return success to pointer to pipe_t dynamic allocate memory
+ * @return success to pointer to PadPipe dynamic allocate memory
  */
-pipe_t * 
-pipe_new(void);
+PadPipe * 
+PadPipe_New(void);
 
 /**
  * Close pipe
@@ -45,8 +45,8 @@ pipe_new(void);
  * @return success to pointer to self
  * @return faield to pointer to NULL
  */
-pipe_t * 
-pipe_close(pipe_t *self);
+PadPipe * 
+PadPipe_Close(PadPipe *self);
 
 /**
  * Open pipe
@@ -57,5 +57,5 @@ pipe_close(pipe_t *self);
  * @return success to pointer to self
  * @return failed to pointer to NULL
  */
-pipe_t * 
-pipe_open(pipe_t *self, int flags);
+PadPipe * 
+PadPipe_Open(PadPipe *self, int flags);
