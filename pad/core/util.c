@@ -35,7 +35,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
         return system(cmdline);
     }
 
-#ifdef PAD_WINDOWS
+#ifdef PAD__WINDOWS
     int flag = 0;
     if (option & PAD_SAFESYSTEM_EDIT) {
         // option for edit command
@@ -251,7 +251,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
 
 void
 Pad_ClearScreen(void) {
-#ifdef PAD_WINDOWS
+#ifdef PAD__WINDOWS
     system("cls");
 #else
     system("clear");
@@ -400,7 +400,7 @@ Pad_IsDotFile(const char *path) {
 char *
 Pad_PopTailSlash(char *path) {
     int32_t pathlen = strlen(path);
-#ifdef PAD_WINDOWS
+#ifdef PAD__WINDOWS
     if (pathlen == 3 && path[2] == '\\') {
         return path;
     } else {

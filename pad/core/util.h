@@ -28,7 +28,7 @@
 #include <pad/lang/traverser.h>
 #include <pad/lang/context.h>
 
-#ifdef PAD_WINDOWS
+#ifdef PAD__WINDOWS
 # include <windows.h>
 #endif
 

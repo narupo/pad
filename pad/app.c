@@ -191,7 +191,7 @@ static void
 app_version(app_t *self) {
     fflush(stdout);
     fflush(stderr);
-    printf("%s\n", PAD_VERSION);
+    printf("%s\n", PAD__VERSION);
     fflush(stdout);
 }
 

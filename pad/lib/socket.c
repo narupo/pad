@@ -306,7 +306,7 @@ PadSock_Open(const char *src, const char *mode) {
         return NULL;
     }
 
-#if defined(PAD_WINDOWS)
+#if defined(PAD__WINDOWS)
     if (pthread_once(&wsa_sock_once, wsa_sock_init) != 0) {
         PadSock_SetErr(self, "failed to pthread once");
         return NULL;
@@ -450,7 +450,7 @@ PadSock_Send(PadSock *self, const char *bytes, int32_t size) {
 
     int32_t ret = 0;
 
-#if defined(PAD_WINDOWS)
+#if defined(PAD__WINDOWS)
     ret = send(self->socket, bytes, size, 0);
 #else
     ret = send(self->socket, bytes, size, 0);
