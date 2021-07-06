@@ -218,7 +218,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     PadAST_MoveOpts(ast, opts);
     opts = NULL;
 
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAST_HasErrs(ast)) {
         if (errstack) {
             const PadErrStack *es = PadAST_GetcErrStack(ast);
@@ -280,7 +280,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     PadAST_MoveOpts(ast, opts);
     opts = NULL;
 
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAST_HasErrs(ast)) {
         PadErr_Err("%s", PadAST_GetcFirstErrMsg(ast));
         return NULL;

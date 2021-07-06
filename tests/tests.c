@@ -26,7 +26,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         assert(!PadAST_HasErrs(ast)); \
@@ -36,7 +36,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        ast_debug(PadCc_Compile(ast, PadTkr_GetToks(tkr))); \
+        ast_debug(PadCC_Compile(ast, PadTkr_GetToks(tkr))); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         assert(!PadAST_HasErrs(ast)); \
@@ -46,7 +46,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         ast_debug(PadTrv_Trav(ast, ctx)); \
         assert(!PadAST_HasErrs(ast)); \
@@ -56,7 +56,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         trace(); \
@@ -67,7 +67,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         assert(!PadAST_HasErrs(ast)); \
@@ -78,7 +78,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         assert(PadAST_HasErrs(ast)); \
@@ -88,7 +88,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         const char *msg = PadAST_GetcFirstErrMsg(ast); \
@@ -101,7 +101,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         trace(); \
@@ -112,7 +112,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        ast_debug(PadCc_Compile(ast, PadTkr_GetToks(tkr))); \
+        ast_debug(PadCC_Compile(ast, PadTkr_GetToks(tkr))); \
         PadCtx_Clear(ctx); \
         PadTrv_Trav(ast, ctx); \
         assert(PadAST_HasErrs(ast)); \
@@ -122,7 +122,7 @@
     PadTkr_Parse(tkr, code); \
     { \
         PadAST_Clear(ast); \
-        PadCc_Compile(ast, PadTkr_GetToks(tkr)); \
+        PadCC_Compile(ast, PadTkr_GetToks(tkr)); \
         PadCtx_Clear(ctx); \
         ast_debug(PadTrv_Trav(ast, ctx)); \
         assert(PadAST_HasErrs(ast)); \
@@ -5450,7 +5450,7 @@ test_cc_long_code(void) {
 
     PadTkr_Parse(tkr, src);
     PadAST_Clear(ast);
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     root = PadAST_GetcRoot(ast);
     assert(root);
 
@@ -5470,7 +5470,7 @@ test_cc_basic_0(void) {
     PadTkr_Parse(tkr, "");
     PadAST_Clear(ast);
     PadAST_Clear(ast);
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     root = PadAST_GetcRoot(ast);
     assert(root == NULL);
 
@@ -5509,7 +5509,7 @@ test_cc_basic_1(void) {
 
     PadTkr_Parse(tkr, "{@ i = 0 @}"); {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root);
         program = root->real;
@@ -5559,7 +5559,7 @@ test_cc_code_block(void) {
 
     PadTkr_Parse(tkr, "{@@}");
     PadAST_Clear(ast);
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     root = PadAST_GetcRoot(ast);
     assert(root);
     program = root->real;
@@ -5581,7 +5581,7 @@ test_cc_code_block_0(void) {
 
     PadTkr_Parse(tkr, "{@@}");
     PadAST_Clear(ast);
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -5622,7 +5622,7 @@ test_cc_ref_block(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -5656,7 +5656,7 @@ test_cc_ref_block(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -5682,7 +5682,7 @@ test_cc_ref_block(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -5717,7 +5717,7 @@ test_cc_ref_block(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -5764,7 +5764,7 @@ test_cc_ref_block_0(void) {
 
     PadTkr_Parse(tkr, "{: nil :}");
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -5780,7 +5780,7 @@ test_cc_ref_block_1(void) {
 
     PadTkr_Parse(tkr, "{: 1 :}");
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -5796,7 +5796,7 @@ test_cc_ref_block_2(void) {
 
     PadTkr_Parse(tkr, "{: var :}");
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -5812,7 +5812,7 @@ test_cc_ref_block_3(void) {
 
     PadTkr_Parse(tkr, "{: [1, 2] :}");
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -5853,7 +5853,7 @@ test_cc_formula(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -5897,7 +5897,7 @@ test_cc_formula(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -5948,7 +5948,7 @@ test_cc_formula(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6022,7 +6022,7 @@ test_cc_formula(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6146,7 +6146,7 @@ test_cc_dict(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -6190,7 +6190,7 @@ test_cc_dict(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -6234,7 +6234,7 @@ test_cc_dict(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         program = root->real;
@@ -6293,7 +6293,7 @@ test_cc_dict_0(void) {
 
     PadTkr_Parse(tkr, "{@ {} @}");
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -6310,7 +6310,7 @@ test_cc_dict_1(void) {
     PadTkr_Parse(tkr, "{@ { \"key\" : \"value\", } @}");
     PadAST_Clear(ast);
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -6326,7 +6326,7 @@ test_cc_dict_2(void) {
 
     PadTkr_Parse(tkr, "{@ { \"key1\" : \"value1\", \"key2\" : \"value2\" } @}");
     PadAST_Clear(ast);
-    (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
 
     PadTkr_Del(tkr);
     PadAST_Del(ast);
@@ -6368,7 +6368,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6403,7 +6403,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6451,7 +6451,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6514,7 +6514,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6562,7 +6562,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6625,7 +6625,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6671,7 +6671,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6726,7 +6726,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6772,7 +6772,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6827,7 +6827,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6872,7 +6872,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6925,7 +6925,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -6950,7 +6950,7 @@ test_cc_expr(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7036,7 +7036,7 @@ test_cc_index(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7070,7 +7070,7 @@ test_cc_index(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7135,7 +7135,7 @@ test_cc_dot(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7161,7 +7161,7 @@ test_cc_dot(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7187,7 +7187,7 @@ test_cc_dot(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7251,7 +7251,7 @@ test_cc_call(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7285,7 +7285,7 @@ test_cc_call(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7311,7 +7311,7 @@ test_cc_call(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7337,7 +7337,7 @@ test_cc_call(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7364,7 +7364,7 @@ test_cc_call(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7395,7 +7395,7 @@ test_cc_call(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7461,7 +7461,7 @@ test_cc_array(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7496,7 +7496,7 @@ test_cc_array(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7532,7 +7532,7 @@ test_cc_array(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7568,7 +7568,7 @@ test_cc_array(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7605,7 +7605,7 @@ test_cc_array(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7646,7 +7646,7 @@ test_cc_array(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7724,7 +7724,7 @@ test_cc_asscalc(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7771,7 +7771,7 @@ test_cc_asscalc(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7818,7 +7818,7 @@ test_cc_asscalc(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7865,7 +7865,7 @@ test_cc_asscalc(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -7913,7 +7913,7 @@ test_cc_asscalc(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -7949,7 +7949,7 @@ test_cc_asscalc(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8018,7 +8018,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8051,7 +8051,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8084,7 +8084,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8117,7 +8117,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8151,7 +8151,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8181,7 +8181,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8215,7 +8215,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8249,7 +8249,7 @@ test_cc_atom(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8282,7 +8282,7 @@ test_cc_atom(void) {
 }
 
 static void
-test_PadCc_Compile(void) {
+test_PadCC_Compile(void) {
     // head
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
@@ -8335,7 +8335,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root);
         program = root->real;
@@ -8366,7 +8366,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8395,7 +8395,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -8472,7 +8472,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8548,7 +8548,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8588,7 +8588,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8622,7 +8622,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8672,7 +8672,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8737,7 +8737,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8787,7 +8787,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8851,7 +8851,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8929,7 +8929,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         root = PadAST_GetcRoot(ast);
         program = root->real;
@@ -8996,7 +8996,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ 1, 2 @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9052,7 +9052,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ 1, 2, 3 @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9120,7 +9120,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ \"abc\", \"def\" @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9170,7 +9170,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ \"abc\", \"def\", \"ghi\" @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9238,7 +9238,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ 1, \"def\" @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9288,7 +9288,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ 1, var @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9338,7 +9338,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ 1, var, \"abc\" @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9406,7 +9406,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ 1, var, \"abc\", func() @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9496,7 +9496,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -9559,7 +9559,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9588,7 +9588,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9617,7 +9617,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9641,7 +9641,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9668,7 +9668,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9690,7 +9690,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9713,7 +9713,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9742,7 +9742,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9770,7 +9770,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9796,7 +9796,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9825,7 +9825,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -9847,7 +9847,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9866,7 +9866,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9881,7 +9881,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -9899,7 +9899,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -9921,7 +9921,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -9947,7 +9947,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -9986,7 +9986,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -10029,7 +10029,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10092,7 +10092,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10131,7 +10131,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10170,7 +10170,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10213,7 +10213,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10255,7 +10255,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10299,7 +10299,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10343,7 +10343,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10390,7 +10390,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10437,7 +10437,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10484,7 +10484,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10536,7 +10536,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10588,7 +10588,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10658,7 +10658,7 @@ test_PadCc_Compile(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10697,7 +10697,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10745,7 +10745,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(!PadAST_HasErrs(ast));
     }
@@ -10754,7 +10754,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         program = root->real;
         blocks = program->blocks->real;
@@ -10772,7 +10772,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10835,7 +10835,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10927,7 +10927,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -10973,7 +10973,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11033,7 +11033,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11100,7 +11100,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11142,7 +11142,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11198,7 +11198,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11264,7 +11264,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11306,7 +11306,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11346,7 +11346,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11386,7 +11386,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11435,7 +11435,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11499,7 +11499,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11556,7 +11556,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11602,7 +11602,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11657,7 +11657,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11727,7 +11727,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11826,7 +11826,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11877,7 +11877,7 @@ test_PadCc_Compile(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         root = PadAST_GetcRoot(ast);
         assert(root != NULL);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -11960,7 +11960,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -12018,7 +12018,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12026,7 +12026,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found path in compile import as statement"));
     }
@@ -12035,7 +12035,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found keyword 'as' in compile import as statement"));
     }
@@ -12044,7 +12044,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found alias in compile import as statement"));
     }
@@ -12053,7 +12053,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found path in compile import as statement"));
     }
@@ -12062,7 +12062,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found keyword 'as' in compile import as statement"));
     }
@@ -12071,7 +12071,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found alias in compile import as statement"));
     }
@@ -12084,7 +12084,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -12160,7 +12160,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -12243,7 +12243,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -12319,7 +12319,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -12408,7 +12408,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12416,7 +12416,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12424,7 +12424,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         root = PadAST_GetcRoot(ast);
         assert(root->type == PAD_NODE_TYPE__PROGRAM);
@@ -12519,7 +12519,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12527,7 +12527,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12535,7 +12535,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12543,7 +12543,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found path in compile from import statement"));
     }
@@ -12552,7 +12552,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found import in compile from import statement"));
     }
@@ -12561,7 +12561,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found import variables in compile from import statement"));
     }
@@ -12570,7 +12570,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found import variables in compile from import statement"));
     }
@@ -12579,7 +12579,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found second identifier in compile import variable"));
     }
@@ -12588,7 +12588,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "invalid token 5 in compile import variables"));
     }
@@ -12597,7 +12597,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "invalid token 5 in compile import variables"));
     }
@@ -12606,7 +12606,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found import variable in compile import variables"));
     }
@@ -12615,7 +12615,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "invalid token 5 in compile import variables"));
     }
@@ -12624,7 +12624,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "invalid token 45 in compile import variables"));
     }
@@ -12633,7 +12633,7 @@ test_cc_import_stmt(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found second identifier in compile import variable"));
     }
@@ -12655,7 +12655,7 @@ test_cc_func_def(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12665,7 +12665,7 @@ test_cc_func_def(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12675,7 +12675,7 @@ test_cc_func_def(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12686,7 +12686,7 @@ test_cc_func_def(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12697,7 +12697,7 @@ test_cc_func_def(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12709,7 +12709,7 @@ test_cc_func_def(void) {
     {
         PadAST_Clear(ast);
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -12724,7 +12724,7 @@ test_cc_func_def(void) {
  */
 static const struct testcase
 compiler_tests[] = {
-    {"PadCc_Compile", test_PadCc_Compile},
+    {"PadCC_Compile", test_PadCC_Compile},
     {"cc_long_code", test_cc_long_code},
     {"cc_basic_0", test_cc_basic_0},
     {"cc_basic_1", test_cc_basic_1},
@@ -13237,7 +13237,7 @@ test_trv_array_index(void) {
     // PadTkr_Parse(tkr, "{@ a[0] @}");
     // {
     PadAST_Clear(ast);
-    //     (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+    //     (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
     //     PadCtx_Clear(ctx);
     //     (PadTrv_Trav(ast, ctx));
     //     assert(PadAST_HasErrs(ast));
@@ -13247,7 +13247,7 @@ test_trv_array_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13257,7 +13257,7 @@ test_trv_array_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] \n @}{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13267,7 +13267,7 @@ test_trv_array_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] \n @}{: a[0] :},{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13277,7 +13277,7 @@ test_trv_array_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] \n @}{: a[2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -13287,7 +13287,7 @@ test_trv_array_index(void) {
     /* PadTkr_Parse(tkr, "{@ a = [1, 2] \n @}{: a[-1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -13297,7 +13297,7 @@ test_trv_array_index(void) {
     // PadTkr_Parse(tkr, "{@ a = (b, c = 1, 2)[0] \n @}{: a :}");
     // {
     //     PadAST_Clear(ast);
-    //     PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    //     PadCC_Compile(ast, PadTkr_GetToks(tkr));
     //     PadCtx_Clear(ctx);
     //     (PadTrv_Trav(ast, ctx));
     //     assert(!PadAST_HasErrs(ast));
@@ -13307,7 +13307,7 @@ test_trv_array_index(void) {
     // PadTkr_Parse(tkr, "{@ a = (b, c = 1, 2)[1] \n @}{: a :}");
     // {
     PadAST_Clear(ast);
-    //     PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    //     PadCC_Compile(ast, PadTkr_GetToks(tkr));
     //     PadCtx_Clear(ctx);
     //     (PadTrv_Trav(ast, ctx));
     //     assert(!PadAST_HasErrs(ast));
@@ -13317,7 +13317,7 @@ test_trv_array_index(void) {
     PadTkr_Parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13327,7 +13327,7 @@ test_trv_array_index(void) {
     PadTkr_Parse(tkr, "{@ a = [[1, 2]] \n @}{: a[0][0] :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13353,7 +13353,7 @@ test_trv_text_block_old(void) {
     PadTkr_Parse(tkr, "abc");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abc"));
@@ -13378,7 +13378,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: nil :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "nil"));
@@ -13387,7 +13387,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: false :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "false"));
@@ -13396,7 +13396,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: true :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "true"));
@@ -13405,7 +13405,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -13414,7 +13414,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: 123 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "123"));
@@ -13423,7 +13423,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: \"abc\" :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abc"));
@@ -13432,7 +13432,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -13442,7 +13442,7 @@ test_trv_ref_block_old(void) {
     /* PadTkr_Parse(tkr, "{: alias(\"dtl\", \"run bin/date-line.py\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "nil"));
@@ -13451,7 +13451,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: 1 + 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2"));
@@ -13460,7 +13460,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: 1 + 1 + 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "3"));
@@ -13469,7 +13469,7 @@ test_trv_ref_block_old(void) {
     PadTkr_Parse(tkr, "{: [1, 2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "(array)"));
@@ -13494,7 +13494,7 @@ test_trv_assign_0(void) {
     PadTkr_Parse(tkr, "{@ a = 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13509,7 +13509,7 @@ test_trv_assign_0(void) {
         "end @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13532,7 +13532,7 @@ test_trv_assign_1(void) {
     "@}{: string :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13545,7 +13545,7 @@ test_trv_assign_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13558,7 +13558,7 @@ test_trv_assign_1(void) {
     "@}{: string :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13571,7 +13571,7 @@ test_trv_assign_1(void) {
     "@}{: string.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13585,7 +13585,7 @@ test_trv_assign_1(void) {
     "@}{: string.b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13605,7 +13605,7 @@ test_trv_assign_2(void) {
     "@}{: string.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13624,7 +13624,7 @@ test_trv_assign_3(void) {
     "@}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13661,7 +13661,7 @@ test_trv_atom_0(void) {
     PadTkr_Parse(tkr, "{@ nil @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -13670,7 +13670,7 @@ test_trv_atom_0(void) {
     PadTkr_Parse(tkr, "{@ false @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -13679,7 +13679,7 @@ test_trv_atom_0(void) {
     PadTkr_Parse(tkr, "{@ true @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -13688,7 +13688,7 @@ test_trv_atom_0(void) {
     PadTkr_Parse(tkr, "{@ 1 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -13697,7 +13697,7 @@ test_trv_atom_0(void) {
     PadTkr_Parse(tkr, "{@ \"abc\" @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -13706,7 +13706,7 @@ test_trv_atom_0(void) {
     PadTkr_Parse(tkr, "{@ var @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -13727,7 +13727,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13737,7 +13737,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" @}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13747,7 +13747,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" @}{: a[0] :},{: a[1] :},{: a[2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13757,7 +13757,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] @}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13767,7 +13767,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] @}{: a[0] :},{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13777,7 +13777,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\": 1, \"b\": 2} @}{: a[\"a\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13787,7 +13787,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\": 1, \"b\": 2} @}{: a[\"a\"] :},{: a[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13797,7 +13797,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = a[0] or a[1] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13807,7 +13807,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = a[0] and a[1] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13817,7 +13817,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = not a[0] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13827,7 +13827,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = a[0] or a[1] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13837,7 +13837,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = a[0] and a[1] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13847,7 +13847,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = not a[0] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13857,7 +13857,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] or a[\"b\"] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13867,7 +13867,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] and a[\"b\"] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13877,7 +13877,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = not a[\"a\"] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13887,7 +13887,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = a[0] == \"a\" @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13897,7 +13897,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = \"a\" == a[0] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13907,7 +13907,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = a[0] != \"a\" @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13917,7 +13917,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n b = \"a\" != a[0] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13927,7 +13927,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = a[0] == 1 @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13937,7 +13937,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = 1 == a[0] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13947,7 +13947,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = a[0] != 1 @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13957,7 +13957,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n b = 1 != a[0] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13967,7 +13967,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] == 1 @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13977,7 +13977,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = 1 == a[\"a\"] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13987,7 +13987,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = a[\"a\"] != 1 @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -13997,7 +13997,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2} \n b = 1 != a[\"a\"] @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14007,7 +14007,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n if a[0] == \"a\": puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14017,7 +14017,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n a[0] = 3 @}{: a[0] :},{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14027,7 +14027,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [1,2] \n a[0] = 3 \n a[1] = 4 @}{: a[0] :},{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14037,7 +14037,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [\"a\",\"b\"] \n a[0] = \"c\" @}{: a[0] :},{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14047,7 +14047,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [\"a\",\"b\"] \n a[0] = \"c\" \n a[1] = \"d\" @}{: a[0] :},{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14057,7 +14057,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2 } \n a[\"a\"] = 3 @}{: a[\"a\"] :},{: a[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14067,7 +14067,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = {\"a\":1, \"b\":2 } \n a[\"a\"] = 3 \n a[\"b\"] = 4 @}{: a[\"a\"] :},{: a[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14077,7 +14077,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [] a.push(1) @}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14087,7 +14087,7 @@ test_trv_index(void) {
     PadTkr_Parse(tkr, "{@ a = [\"abc_def\"] @}{: a[0].camel() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         showdetail();
@@ -14114,7 +14114,7 @@ test_trv_string_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n @}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14124,7 +14124,7 @@ test_trv_string_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n @}{: a[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14134,7 +14134,7 @@ test_trv_string_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n @}{: a[2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -14144,7 +14144,7 @@ test_trv_string_index(void) {
     PadTkr_Parse(tkr, "{@ a = (\"a\" + \"b\")[0] \n @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14154,7 +14154,7 @@ test_trv_string_index(void) {
     PadTkr_Parse(tkr, "{@ a = (\"a\" + \"b\")[1] \n @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14164,7 +14164,7 @@ test_trv_string_index(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\"[0][0] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -14192,7 +14192,7 @@ test_trv_multi_assign(void) {
     PadTkr_Parse(tkr, "{@ a, b = 1, 2, 3 @}{: a :} {: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -14202,7 +14202,7 @@ test_trv_multi_assign(void) {
     PadTkr_Parse(tkr, "{@ a, b = 2 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -14214,7 +14214,7 @@ test_trv_multi_assign(void) {
     PadTkr_Parse(tkr, "{@ a, b = 1, 2 @}{: a :} {: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14224,7 +14224,7 @@ test_trv_multi_assign(void) {
     PadTkr_Parse(tkr, "{@ a = 1, 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14252,7 +14252,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14262,7 +14262,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14272,7 +14272,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14282,7 +14282,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14292,7 +14292,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14302,7 +14302,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14312,7 +14312,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14322,7 +14322,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = nil and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14332,7 +14332,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14342,7 +14342,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = nil and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14354,7 +14354,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14364,7 +14364,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14374,7 +14374,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and 2 and 3 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14384,7 +14384,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14394,7 +14394,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14404,7 +14404,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14414,7 +14414,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14424,7 +14424,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14434,7 +14434,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14444,7 +14444,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14454,7 +14454,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14464,7 +14464,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14474,7 +14474,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14484,7 +14484,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14494,7 +14494,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14504,7 +14504,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 0 and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14514,7 +14514,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14524,7 +14524,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = 1 and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14534,7 +14534,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = 0 and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14546,7 +14546,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14556,7 +14556,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = false and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14566,7 +14566,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14576,7 +14576,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14586,7 +14586,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = false and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14596,7 +14596,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = false and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14606,7 +14606,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = false and \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14616,7 +14616,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14626,7 +14626,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14636,7 +14636,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = false and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14646,7 +14646,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = false and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14656,7 +14656,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14666,7 +14666,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = true and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14678,7 +14678,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14688,7 +14688,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14698,7 +14698,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14708,7 +14708,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14718,7 +14718,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14728,7 +14728,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14738,7 +14738,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14748,7 +14748,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14758,7 +14758,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14768,7 +14768,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and {} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14778,7 +14778,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and {\"k\":1} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14788,7 +14788,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = \"abc\" and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14798,7 +14798,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = \"abc\" and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14808,7 +14808,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = \"abc\" and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14818,7 +14818,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14828,7 +14828,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14838,7 +14838,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14848,7 +14848,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14858,7 +14858,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14868,7 +14868,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14878,7 +14878,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14888,7 +14888,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14898,7 +14898,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14908,7 +14908,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and {} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14918,7 +14918,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" and {\"k\":1} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14928,7 +14928,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = \"\" and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14938,7 +14938,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = \"\" and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14948,7 +14948,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = \"\" and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14960,7 +14960,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14970,7 +14970,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14980,7 +14980,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -14990,7 +14990,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15000,7 +15000,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15010,7 +15010,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15020,7 +15020,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15030,7 +15030,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15040,7 +15040,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15050,7 +15050,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and {} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15060,7 +15060,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] and {\"k\":1} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15070,7 +15070,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = [1, 2] and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15080,7 +15080,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = [1, 2] and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15090,7 +15090,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = [1, 2] and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15100,7 +15100,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15110,7 +15110,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15120,7 +15120,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15130,7 +15130,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15140,7 +15140,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15150,7 +15150,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15160,7 +15160,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15170,7 +15170,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15180,7 +15180,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15190,7 +15190,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and {} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15200,7 +15200,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = [] and {\"k\":1} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15210,7 +15210,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = [] and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15220,7 +15220,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = [] and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15230,7 +15230,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = [] and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15242,7 +15242,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15252,7 +15252,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15262,7 +15262,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15272,7 +15272,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15282,7 +15282,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15292,7 +15292,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15302,7 +15302,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15312,7 +15312,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15322,7 +15322,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15332,7 +15332,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and {} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15342,7 +15342,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {\"k\": 1} and {\"k\":1} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15352,7 +15352,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = {\"k\": 1} and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15362,7 +15362,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = {\"k\": 1} and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15372,7 +15372,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = {\"k\": 1} and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15382,7 +15382,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15392,7 +15392,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15402,7 +15402,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15412,7 +15412,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15422,7 +15422,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15432,7 +15432,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15442,7 +15442,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15452,7 +15452,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15462,7 +15462,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15472,7 +15472,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and {} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15482,7 +15482,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = {} and {\"k\":1} @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15492,7 +15492,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = {} and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15502,7 +15502,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = {} and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15512,7 +15512,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = {} and b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15524,7 +15524,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" and 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15534,7 +15534,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ a = 1 and \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15544,7 +15544,7 @@ test_trv_and_test(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = 1 and f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15572,7 +15572,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15582,7 +15582,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15592,7 +15592,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15602,7 +15602,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15612,7 +15612,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\"\n b = a @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15622,7 +15622,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15632,7 +15632,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15642,7 +15642,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = 1 + 2, b = 3 * 4 @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15652,7 +15652,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = 1, b = 2, c = 3 @}{: a :},{: b :},{: c :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15662,7 +15662,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = a = 1 @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15672,7 +15672,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = a = 1, c = b = 1 @}{: a :},{: b :},{: c :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15682,7 +15682,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -15692,7 +15692,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a, b = 1, 2 @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15702,7 +15702,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = alias.set(\"\", \"\") @}{: a :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15712,7 +15712,7 @@ test_trv_assign_list(void) {
     PadTkr_Parse(tkr, "{@ a = alias.set(\"\", \"\")\n b = alias.set(\"\", \"\") @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15730,7 +15730,7 @@ test_trv_assign_list(void) {
         PadOpts *opts = PadOpts_New();
         assert(PadOpts_Parse(opts, 3, argv));
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadAST_MoveOpts(ast, opts);
         (PadTrv_Trav(ast, ctx));
@@ -15758,7 +15758,7 @@ test_trv_test_list(void) {
     PadTkr_Parse(tkr, "{@ 1, 2 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15767,7 +15767,7 @@ test_trv_test_list(void) {
     PadTkr_Parse(tkr, "{@ 1, \"abc\", var, alias.set(\"\", \"\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15776,7 +15776,7 @@ test_trv_test_list(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = 0 \n a += 1, b += 2 @}{: a :} {: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15802,7 +15802,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15812,7 +15812,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: -1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15822,7 +15822,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: 1 + -1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15832,7 +15832,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: -1 + -1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15842,7 +15842,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: 1 - -1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15852,7 +15852,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: -1 - -1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15862,7 +15862,7 @@ test_trv_negative_0(void) {
     PadTkr_Parse(tkr, "{: 1-1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15892,7 +15892,7 @@ test_trv_dot_0(void) {
     PadTkr_Parse(tkr, "{: \"ABC\".lower() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -15902,7 +15902,7 @@ test_trv_dot_0(void) {
     PadTkr_Parse(tkr, "{: \"abc\".upper() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15912,7 +15912,7 @@ test_trv_dot_0(void) {
     PadTkr_Parse(tkr, "{: \"ABC\".lower().upper() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15922,7 +15922,7 @@ test_trv_dot_0(void) {
     PadTkr_Parse(tkr, "{: alias.set(\"a\", \"b\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15946,7 +15946,7 @@ test_trv_dot_1(void) {
     "@}{: string.variable.upper() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -15995,7 +15995,7 @@ test_trv_dot_4(void) {
     "@}{: n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16016,7 +16016,7 @@ test_trv_dot_5(void) {
     "@}{: n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16064,7 +16064,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: \"abc\".upper() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16074,7 +16074,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n @}{: a.upper() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16084,7 +16084,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: nil.upper() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -16098,7 +16098,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: \"ABC\".lower() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16108,7 +16108,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{@ a = \"ABC\" \n @}{: a.lower() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16118,7 +16118,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: nil.lower() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -16132,7 +16132,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: \"abc\".capitalize() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16142,7 +16142,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" \n @}{: a.capitalize() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16152,7 +16152,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: nil.capitalize() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -16166,7 +16166,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: \"abcDef\".snake() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16176,7 +16176,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{@ a = \"abcDef\" \n @}{: a.snake() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16186,7 +16186,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: nil.snake() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -16200,7 +16200,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: \"camel_case\".camel() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16210,7 +16210,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{@ a = \"camel_case\" \n @}{: a.camel() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16220,7 +16220,7 @@ test_trv_builtin_string(void) {
     PadTkr_Parse(tkr, "{: nil.camel() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -16243,7 +16243,7 @@ test_trv_builtin_unicode_split(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16255,7 +16255,7 @@ test_trv_builtin_unicode_split(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16267,7 +16267,7 @@ test_trv_builtin_unicode_split(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16286,7 +16286,7 @@ test_trv_builtin_unicode_rstrip(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16298,7 +16298,7 @@ test_trv_builtin_unicode_rstrip(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16317,7 +16317,7 @@ test_trv_builtin_unicode_lstrip(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16329,7 +16329,7 @@ test_trv_builtin_unicode_lstrip(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16348,7 +16348,7 @@ test_trv_builtin_unicode_strip(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16360,7 +16360,7 @@ test_trv_builtin_unicode_strip(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16421,7 +16421,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ alias.set(\"abc\", \"def\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16434,7 +16434,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ alias.set(\"abc\", \"def\", \"ghi\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16462,7 +16462,7 @@ test_trv_builtin_functions(void) {
         };
         PadOpts_Parse(opts, 3, argv);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadAST_MoveOpts(ast, opts);
         PadTrv_Trav(ast, ctx);
@@ -16480,7 +16480,7 @@ test_trv_builtin_functions(void) {
         };
         PadOpts_Parse(opts, 2, argv);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadAST_MoveOpts(ast, opts);
         PadTrv_Trav(ast, ctx);
@@ -16498,7 +16498,7 @@ test_trv_builtin_functions(void) {
         };
         PadOpts_Parse(opts, 2, argv);
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadAST_MoveOpts(ast, opts);
         PadTrv_Trav(ast, ctx);
@@ -16513,7 +16513,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ puts() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16523,7 +16523,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ puts(1) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16533,7 +16533,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ puts(1, 2) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16543,7 +16543,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ puts(1, \"abc\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16553,7 +16553,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ puts(\"abc\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16567,7 +16567,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ eputs() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16577,7 +16577,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ eputs(1) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16587,7 +16587,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ eputs(1, 2) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16597,7 +16597,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ eputs(1, \"abc\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16607,7 +16607,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{@ eputs(\"abc\") @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16621,7 +16621,7 @@ test_trv_builtin_functions(void) {
     PadTkr_Parse(tkr, "{: id(1) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16650,7 +16650,7 @@ test_trv_builtin_structs_error_0(void) {
     PadTkr_ExtendFrontOther(tkr, s_tkr);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16662,7 +16662,7 @@ test_trv_builtin_structs_error_0(void) {
     PadTkr_ExtendFrontOther(tkr, s_tkr);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16674,7 +16674,7 @@ test_trv_builtin_structs_error_0(void) {
     PadTkr_ExtendFrontOther(tkr, s_tkr);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16686,7 +16686,7 @@ test_trv_builtin_structs_error_0(void) {
     PadTkr_ExtendFrontOther(tkr, s_tkr);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16748,7 +16748,7 @@ test_trv_builtin_structs_error_1(void) {
     PadTkr_ExtendFrontOther(tkr, s_tkr);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         trace();
@@ -16787,7 +16787,7 @@ test_trv_builtin_modules_opts_0(void) {
         PadOpts_Parse(opts, argc, argv);
         PadAST_Clear(ast);
         PadAST_MoveOpts(ast, PadMem_Move(opts));
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -16804,7 +16804,7 @@ test_trv_builtin_modules_alias_0(void) {
     PadTkr_Parse(tkr, "{@ alias.set(1, 2, 3) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -16821,7 +16821,7 @@ test_trv_builtin_modules_alias_1(void) {
     PadTkr_Parse(tkr, "{@ alias.set() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -16831,7 +16831,7 @@ test_trv_builtin_modules_alias_1(void) {
     PadTkr_Parse(tkr, "{@ alias.set(1, 2, 3) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -16848,7 +16848,7 @@ test_trv_builtin_modules_alias_2(void) {
     PadTkr_Parse(tkr, "{@ alias.set() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
     }
@@ -16867,7 +16867,7 @@ test_trv_builtin_modules_array_0(void) {
     "@}{: dst[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16889,7 +16889,7 @@ test_trv_builtin_modules_array_1(void) {
     "@}{: arr[0] :},{: arr[1] :},{: arr[2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16911,7 +16911,7 @@ test_trv_builtin_functions_type_dict(void) {
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16920,7 +16920,7 @@ test_trv_builtin_functions_type_dict(void) {
     PadTkr_Parse(tkr, "{@ def f(d): end \n f({\"a\": 1}) @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16929,7 +16929,7 @@ test_trv_builtin_functions_type_dict(void) {
     PadTkr_Parse(tkr, "{@ def f(d): end @}{: f(1) :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16938,7 +16938,7 @@ test_trv_builtin_functions_type_dict(void) {
     PadTkr_Parse(tkr, "{@ def f(d): end @}{: f({\"a\": 1}) :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -16947,7 +16947,7 @@ test_trv_builtin_functions_type_dict(void) {
     PadTkr_Parse(tkr, "{: type({ \"a\": 1 }) :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -17002,7 +17002,7 @@ test_trv_builtin_functions_puts_0(void) {
     PadTkr_Parse(tkr, "{@ puts(1) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17024,7 +17024,7 @@ test_trv_builtin_functions_len_0(void) {
     PadTkr_Parse(tkr, "{: len([1, 2]) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17034,7 +17034,7 @@ test_trv_builtin_functions_len_0(void) {
     PadTkr_Parse(tkr, "{: len([]) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17044,7 +17044,7 @@ test_trv_builtin_functions_len_0(void) {
     PadTkr_Parse(tkr, "{: len(\"12\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17054,7 +17054,7 @@ test_trv_builtin_functions_len_0(void) {
     PadTkr_Parse(tkr, "{: len(\"\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17194,7 +17194,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17204,7 +17204,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17214,7 +17214,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17224,7 +17224,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17234,7 +17234,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17244,7 +17244,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17254,7 +17254,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = 0 or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17264,7 +17264,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = 0 or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17274,7 +17274,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return true end \n a = 0 or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -17284,7 +17284,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17294,7 +17294,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17304,7 +17304,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17314,7 +17314,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17326,7 +17326,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17336,7 +17336,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = true or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17346,7 +17346,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17356,7 +17356,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17366,7 +17366,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = true or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17376,7 +17376,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = true or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17386,7 +17386,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17396,7 +17396,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17406,7 +17406,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = false or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17416,7 +17416,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = true or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17426,7 +17426,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return true end \n a = false or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17436,7 +17436,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return 0 end \n a = false or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17446,7 +17446,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17456,7 +17456,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = false or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17466,7 +17466,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = true or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17476,7 +17476,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = true or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17488,7 +17488,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17498,7 +17498,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17508,7 +17508,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17518,7 +17518,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17528,7 +17528,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17538,7 +17538,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17548,7 +17548,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = nil or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17558,7 +17558,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = nil or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17568,7 +17568,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return true end \n a = nil or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17578,7 +17578,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17588,7 +17588,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = nil or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17600,7 +17600,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17610,7 +17610,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17620,7 +17620,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17630,7 +17630,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17640,7 +17640,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17650,7 +17650,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17660,7 +17660,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17670,7 +17670,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17680,7 +17680,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17690,7 +17690,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17700,7 +17700,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17710,7 +17710,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17720,7 +17720,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"def\" or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17730,7 +17730,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = \"abc\" or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17740,7 +17740,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = \"abc\" or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17750,7 +17750,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = \"abc\" or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17760,7 +17760,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = \"\" or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17770,7 +17770,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return true end \n a = \"\" or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17780,7 +17780,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return nil end \n a = \"\" or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17790,7 +17790,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return nil end \n a = \"abc\" or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17800,7 +17800,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17810,7 +17810,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17820,7 +17820,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17830,7 +17830,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"\" or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17842,7 +17842,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17852,7 +17852,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17862,7 +17862,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17872,7 +17872,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17882,7 +17882,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17892,7 +17892,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17902,7 +17902,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17912,7 +17912,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17922,7 +17922,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17932,7 +17932,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17942,7 +17942,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17952,7 +17952,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17962,7 +17962,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17972,7 +17972,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17982,7 +17982,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -17992,7 +17992,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = [] or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18002,7 +18002,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = [] or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18012,7 +18012,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 0 \n a = [] or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18022,7 +18022,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ b = 1 \n a = [1, 2] or b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18032,7 +18032,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = [] or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18042,7 +18042,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = [1, 2] or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18052,7 +18052,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return 1 end \n a = [] or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18062,7 +18062,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): return 0 end \n a = [] or f() @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18074,7 +18074,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18084,7 +18084,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18094,7 +18094,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18104,7 +18104,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18114,7 +18114,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18124,7 +18124,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18134,7 +18134,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18144,7 +18144,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18154,7 +18154,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18164,7 +18164,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = f or [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18176,7 +18176,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18187,7 +18187,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 \n b = 0 or a @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18198,7 +18198,7 @@ test_PadTrv_Trav(void) {
         "a = 0 or f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18208,7 +18208,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 or 0 or 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18218,7 +18218,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 or \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18228,7 +18228,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = not nil @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18238,7 +18238,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = not 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18248,7 +18248,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = not 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18258,7 +18258,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = not \"\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18268,7 +18268,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = not \"abc\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18278,7 +18278,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = not f @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18292,7 +18292,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 + 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "3"));
@@ -18301,7 +18301,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 + 2 + 3 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "6"));
@@ -18310,7 +18310,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 2 - 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18319,7 +18319,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 3 - 2 - 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "0"));
@@ -18328,7 +18328,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 + 2 - 3 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "0"));
@@ -18337,7 +18337,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"abc\" + \"def\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abcdef"));
@@ -18346,7 +18346,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = \"123\" \n b = \"abc\" + a + \"def\" @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abc123def"));
@@ -18359,7 +18359,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 2 * 3 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "6"));
@@ -18368,7 +18368,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 2 * 3 * 4 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "24"));
@@ -18377,7 +18377,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 4 / 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2"));
@@ -18386,7 +18386,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 4 / 2 / 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18395,7 +18395,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 4 / (2 / 2) @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "4"));
@@ -18404,7 +18404,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 1 + ( 2 - 3 ) * 4 / 4 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "0"));
@@ -18417,7 +18417,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a += 1 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -18427,7 +18427,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18436,7 +18436,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += 1 + 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2"));
@@ -18445,7 +18445,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = 1 + 1 @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2"));
@@ -18454,7 +18454,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = 1 + (a += 1) @}{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2"));
@@ -18463,7 +18463,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18472,7 +18472,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += 1 \n a += 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "3"));
@@ -18482,7 +18482,7 @@ test_PadTrv_Trav(void) {
         "a += \"b\" @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18507,7 +18507,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18521,7 +18521,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ import alias @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
     }
@@ -18529,7 +18529,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ import my.alias @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
     }
@@ -18541,7 +18541,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 1: a = 1 end @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18550,7 +18550,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: a = 1 end @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18559,7 +18559,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 0: else: a = 1 end @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -18568,7 +18568,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), ""));
@@ -18577,7 +18577,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}abc{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abc"));
@@ -18586,7 +18586,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "abc{@ if 1: @}def{@ end @}ghi");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abcdefghi"));
@@ -18595,7 +18595,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}abc{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abc"));
@@ -18604,7 +18604,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}abc{@ if 1: @}def{@ end @}ghi{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abcdefghi"));
@@ -18613,7 +18613,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}abc{@ else: @}def{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "def"));
@@ -18622,7 +18622,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}abc{@ elif 1: @}def{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "def"));
@@ -18631,7 +18631,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}abc{@ elif 0: @}def{@ else: @}ghi{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "ghi"));
@@ -18649,7 +18649,7 @@ test_PadTrv_Trav(void) {
         "@}\n");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -18662,7 +18662,7 @@ test_PadTrv_Trav(void) {
         "end @}{: a :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18675,7 +18675,7 @@ test_PadTrv_Trav(void) {
         "end @}{: a :} {: i :} {: j :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18685,7 +18685,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ for i = 0; i != 4; i += 1: @}a{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18695,7 +18695,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18705,7 +18705,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ i, a = 0, 0 \n for i != 4: a += i \n i += 1 end @}{: i :},{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -18718,7 +18718,7 @@ test_PadTrv_Trav(void) {
         "{@ end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18731,7 +18731,7 @@ test_PadTrv_Trav(void) {
         "{@ end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18744,7 +18744,7 @@ test_PadTrv_Trav(void) {
         "{@ end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18761,7 +18761,7 @@ test_PadTrv_Trav(void) {
         "end @}{: i :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18776,7 +18776,7 @@ test_PadTrv_Trav(void) {
         "end @}{: i :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18790,7 +18790,7 @@ test_PadTrv_Trav(void) {
         "end @}{: i :},{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18806,7 +18806,7 @@ test_PadTrv_Trav(void) {
         "end @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18824,7 +18824,7 @@ test_PadTrv_Trav(void) {
         "end @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18841,7 +18841,7 @@ test_PadTrv_Trav(void) {
         "end @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18856,7 +18856,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18871,7 +18871,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18886,7 +18886,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18901,7 +18901,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18918,7 +18918,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18934,7 +18934,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18953,7 +18953,7 @@ test_PadTrv_Trav(void) {
         "@}{: x :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18972,7 +18972,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -18987,7 +18987,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19002,7 +19002,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19017,7 +19017,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19031,7 +19031,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{@ def func(): end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19046,7 +19046,7 @@ test_PadTrv_Trav(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19061,7 +19061,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
@@ -19078,7 +19078,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
@@ -19095,7 +19095,7 @@ test_PadTrv_Trav(void) {
         "@}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
@@ -19112,7 +19112,7 @@ test_PadTrv_Trav(void) {
         "@}{: c :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
@@ -19130,7 +19130,7 @@ test_PadTrv_Trav(void) {
         "@}{: c :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
@@ -19149,7 +19149,7 @@ test_PadTrv_Trav(void) {
         "@}{: c :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
@@ -19164,7 +19164,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{: \"abc\ndef\n\" :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19174,7 +19174,7 @@ test_PadTrv_Trav(void) {
     PadTkr_Parse(tkr, "{: \"\tabc\tdef\" :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19207,7 +19207,7 @@ test_trv_assign_and_reference_0(void) {
     "@}{: i :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19219,7 +19219,7 @@ test_trv_assign_and_reference_0(void) {
     "@}{: i :},{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19231,7 +19231,7 @@ test_trv_assign_and_reference_0(void) {
     "@}{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         trace();
@@ -19260,7 +19260,7 @@ test_trv_assign_and_reference_1(void) {
     "@}{: i :},{: j :},{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19289,7 +19289,7 @@ test_trv_assign_and_reference_2(void) {
     "@}{: i :},{: j :},{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19317,7 +19317,7 @@ test_trv_assign_and_reference_3(void) {
     "@}{: i :},{: j :},{: id(i) != id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19346,7 +19346,7 @@ test_trv_assign_and_reference_4(void) {
     "@}{: i :},{: j :},{: id(i) == id(j) :},{: id(i) == id(k) :},{: id(j) == id(k) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19375,7 +19375,7 @@ test_trv_assign_and_reference_5(void) {
     "@}{: i :},{: j :},{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19405,7 +19405,7 @@ test_trv_assign_and_reference_6(void) {
     "@}{: i[0] :},{: i[1] :},{: j :},{: id(i[0]) == id(j) :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19433,7 +19433,7 @@ test_trv_assign_and_reference_7(void) {
     "@}{: i :},{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19461,7 +19461,7 @@ test_trv_assign_and_reference_8(void) {
     "@}{: i :},{: j :},{: k :},{: l :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19490,7 +19490,7 @@ test_trv_assign_and_reference_9(void) {
     "@}{: i :},{: j :},{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19535,7 +19535,7 @@ test_trv_assign_and_reference_11(void) {
     "@}{: i :},{: j :},{: id(i) != id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19562,7 +19562,7 @@ test_trv_assign_and_reference_11_5(void) {
     "@}{: id(k) != id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19584,7 +19584,7 @@ test_trv_assign_and_reference_11_6(void) {
     "@}{: i :},{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19606,7 +19606,7 @@ test_trv_assign_and_reference_11_7(void) {
     "@}{: i :},{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19629,7 +19629,7 @@ test_trv_assign_and_reference_12(void) {
     "@}{: i :},{: j :},{: id(i) == id(j) :},{: id(k) != id(i) :},{: id(k) != id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19653,7 +19653,7 @@ test_trv_assign_and_reference_13(void) {
     "@}{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19676,7 +19676,7 @@ test_trv_assign_and_reference_14(void) {
     "@}{: i :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19695,7 +19695,7 @@ test_trv_assign_and_reference_15(void) {
     "@}{: id(i) == id(j) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -19770,7 +19770,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19780,7 +19780,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@ \n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19790,7 +19790,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@ \n\n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19800,7 +19800,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@ \n\n1 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19810,7 +19810,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@ 1\n\n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19820,7 +19820,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@ \n\n1\n\n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19830,7 +19830,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@@}{@@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19840,7 +19840,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "{@@}{@@}{@@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19850,7 +19850,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "\n{@\n@}\n{@\n@}\n");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19860,7 +19860,7 @@ test_trv_code_block(void) {
     PadTkr_Parse(tkr, "\n{@\n\n\n@}\n{@\n\n\n@}\n");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19892,7 +19892,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{: 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19902,7 +19902,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{: 1\n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19912,7 +19912,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{: \n1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19922,7 +19922,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "\n{: 1 :}\n");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19932,7 +19932,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{@@}{: 1 :}{@@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19942,7 +19942,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{: 1 :}{@@}{: 2 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19952,7 +19952,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{: 2 * 3 + 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -19962,7 +19962,7 @@ test_trv_ref_block(void) {
     PadTkr_Parse(tkr, "{: \"ab\" * 4 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20001,7 +20001,7 @@ test_trv_text_block(void) {
     PadTkr_Parse(tkr, "1");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20011,7 +20011,7 @@ test_trv_text_block(void) {
     PadTkr_Parse(tkr, "1{@@}2");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20021,7 +20021,7 @@ test_trv_text_block(void) {
     PadTkr_Parse(tkr, "1{@@}2{@@}3");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20031,7 +20031,7 @@ test_trv_text_block(void) {
     PadTkr_Parse(tkr, "1{: 2 :}3{: 4 :}5");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20041,7 +20041,7 @@ test_trv_text_block(void) {
     PadTkr_Parse(tkr, "1{@@}{: 2 :}{@@}3");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20071,7 +20071,7 @@ test_trv_import_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as hello @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20081,7 +20081,7 @@ test_trv_import_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ import \n \"tests/lang/modules/hello.cap\" as hello @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -20091,7 +20091,7 @@ test_trv_import_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" \n as hello @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -20101,7 +20101,7 @@ test_trv_import_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as \n hello @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -20117,7 +20117,7 @@ test_trv_import_stmt_0(void) {
         "@}{: count.n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20133,7 +20133,7 @@ test_trv_import_stmt_0(void) {
         "{@ from \"tests/lang/modules/funcs.cap\" import f1 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20145,7 +20145,7 @@ test_trv_import_stmt_0(void) {
         "{@ from \"tests/lang/modules/funcs.cap\" import f1 \n f1() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20157,7 +20157,7 @@ test_trv_import_stmt_0(void) {
         "{@ from \"tests/lang/modules/funcs.cap\" import ( f1, f2 ) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20169,7 +20169,7 @@ test_trv_import_stmt_0(void) {
         "{@ from \"tests/lang/modules/funcs.cap\" import ( f1, f2, ) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20181,7 +20181,7 @@ test_trv_import_stmt_0(void) {
         "{@ from \"tests/lang/modules/funcs.cap\" import (\nf1,\nf2,\n) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20194,7 +20194,7 @@ test_trv_import_stmt_0(void) {
         "   f1() \n f2() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20207,7 +20207,7 @@ test_trv_import_stmt_0(void) {
         "   f1() \n f2() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found path in compile from import statement"));
@@ -20218,7 +20218,7 @@ test_trv_import_stmt_0(void) {
         "   f1() \n f2() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found import in compile from import statement"));
@@ -20229,7 +20229,7 @@ test_trv_import_stmt_0(void) {
         "   f1() \n f2() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found import variables in compile from import statement"));
@@ -20251,7 +20251,7 @@ test_trv_import_stmt_1(void) {
         "@}{: count.n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20274,7 +20274,7 @@ test_trv_import_stmt_2(void) {
         "@}{: count.n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20291,7 +20291,7 @@ test_trv_import_stmt_2(void) {
         "@}{: count.n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20308,7 +20308,7 @@ test_trv_import_stmt_2(void) {
         "@}{: count.n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20325,7 +20325,7 @@ test_trv_import_stmt_2(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20343,7 +20343,7 @@ test_trv_import_stmt_2(void) {
         "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20360,7 +20360,7 @@ test_trv_import_stmt_2(void) {
         "@}{: count :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20378,7 +20378,7 @@ test_trv_import_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ import \"tests/lang/modules/hello.cap\" as hello @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20424,7 +20424,7 @@ test_trv_from_import_stmt_1(void) {
         "{@ from \"tests/lang/modules/funcs.cap\" import f1 \n f1() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20454,7 +20454,7 @@ test_trv_from_import_stmt_2(void) {
     );
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20483,7 +20483,7 @@ test_trv_from_import_stmt_3(void) {
         "   f1() \n f2() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
@@ -20510,7 +20510,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 1: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20520,7 +20520,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 1:\n puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20530,7 +20530,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 1: puts(1) \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20540,7 +20540,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 1:\n\n puts(1) \n\nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20550,7 +20550,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if \n1: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20560,7 +20560,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 1\n: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20570,7 +20570,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ \n if 1: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20580,7 +20580,7 @@ test_trv_if_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 1: puts(1) end \n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20606,7 +20606,7 @@ test_trv_if_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20616,7 +20616,7 @@ test_trv_if_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 1: \n@}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20626,7 +20626,7 @@ test_trv_if_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 1: \n\n@}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20636,7 +20636,7 @@ test_trv_if_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}1{@ \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20646,7 +20646,7 @@ test_trv_if_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}1{@ \n\nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20672,7 +20672,7 @@ test_trv_if_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 1: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20682,7 +20682,7 @@ test_trv_if_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 1: \nif 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20692,7 +20692,7 @@ test_trv_if_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 1: if 1: \nputs(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20702,7 +20702,7 @@ test_trv_if_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 1: if 1: puts(1) \nend end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20712,7 +20712,7 @@ test_trv_if_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 1: if 1: puts(1) end \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20737,7 +20737,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20747,7 +20747,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ \nif 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20757,7 +20757,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: \n@}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20767,7 +20767,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ \nif 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20777,7 +20777,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: \n@}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20787,7 +20787,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ \nend @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20797,7 +20797,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end \n@}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20807,7 +20807,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end @}{@ \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20817,7 +20817,7 @@ test_trv_if_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end @}{@ end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20843,7 +20843,7 @@ test_trv_if_stmt_4(void) {
     PadTkr_Parse(tkr, "{@ i = 1 \n if i: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20853,7 +20853,7 @@ test_trv_if_stmt_4(void) {
     PadTkr_Parse(tkr, "{@ i = 1 @}{@ if i: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20871,7 +20871,7 @@ test_trv_if_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -20889,7 +20889,7 @@ test_trv_if_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20917,7 +20917,7 @@ test_trv_if_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20941,7 +20941,7 @@ test_trv_if_stmt_6(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20961,7 +20961,7 @@ test_trv_if_stmt_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -20980,7 +20980,7 @@ test_trv_if_stmt_8(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21005,7 +21005,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21019,7 +21019,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21037,7 +21037,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21062,7 +21062,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21091,7 +21091,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21120,7 +21120,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21154,7 +21154,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21195,7 +21195,7 @@ test_trv_if_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21212,7 +21212,7 @@ test_trv_if_stmt_10(void) {
     PadTkr_Parse(tkr, "{@ \nif\n0\n:\nend\n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21314,7 +21314,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21324,7 +21324,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: \nelif 1: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21334,7 +21334,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1:\n puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21344,7 +21344,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: puts(1) \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21354,7 +21354,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: puts(1) end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21364,7 +21364,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif \n1: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21374,7 +21374,7 @@ test_trv_elif_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1\n: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21393,7 +21393,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: @}{@ elif 1: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21403,7 +21403,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0:\n @}{@ elif 1: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21413,7 +21413,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ \nelif 1: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21423,7 +21423,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: \n@}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21433,7 +21433,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}1{@ \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21443,7 +21443,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}1{@ end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21453,7 +21453,7 @@ test_trv_elif_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: @}{@ elif 1: @}1{@ end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21475,7 +21475,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21485,7 +21485,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: elif 1: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21495,7 +21495,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: \nelif 1: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21505,7 +21505,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1:\n if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21515,7 +21515,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: if 1:\n puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21525,7 +21525,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: if 1: puts(1)\n end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21535,7 +21535,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: if 1: puts(1) end\n end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21545,7 +21545,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: elif 1: if 1: puts(1) end end\n @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21571,7 +21571,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21581,7 +21581,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ \nelif 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21591,7 +21591,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1:\n @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21601,7 +21601,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ \nif 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21611,7 +21611,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1:\n @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21621,7 +21621,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1: @}1{@ \nend @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21631,7 +21631,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1: @}1{@ end \n@}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21664,7 +21664,7 @@ test_trv_elif_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21687,7 +21687,7 @@ test_trv_elif_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -21710,7 +21710,7 @@ test_trv_elif_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21735,7 +21735,7 @@ test_trv_elif_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21758,7 +21758,7 @@ test_trv_elif_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21786,7 +21786,7 @@ test_trv_elif_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21842,7 +21842,7 @@ test_trv_elif_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -21867,7 +21867,7 @@ test_trv_elif_stmt_6(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21891,7 +21891,7 @@ test_trv_elif_stmt_6(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21918,7 +21918,7 @@ test_trv_elif_stmt_6(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21943,7 +21943,7 @@ test_trv_elif_stmt_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21964,7 +21964,7 @@ test_trv_elif_stmt_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -21988,7 +21988,7 @@ test_trv_elif_stmt_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22010,7 +22010,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22020,7 +22020,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: else: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22030,7 +22030,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: \nelse: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22040,7 +22040,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: else:\n puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22050,7 +22050,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: puts(1) \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22060,7 +22060,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: puts(1) end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22070,7 +22070,7 @@ test_trv_else_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ if 0: else\n: puts(1) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22096,7 +22096,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22106,7 +22106,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: @}{@ else: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22116,7 +22116,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0:\n @}{@ else: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22126,7 +22126,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ \nelse: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22136,7 +22136,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else\n: @}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22146,7 +22146,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: \n@}1{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22156,7 +22156,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}1{@ \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22166,7 +22166,7 @@ test_trv_else_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}1{@ end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22192,7 +22192,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22202,7 +22202,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: else: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22212,7 +22212,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: \nelse: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22222,7 +22222,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else\n: if 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22232,7 +22232,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: \nif 1: puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22242,7 +22242,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: if 1:\n puts(1) end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22252,7 +22252,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: if 1: puts(1)\n end end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22262,7 +22262,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: if 1: puts(1) end \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22272,7 +22272,7 @@ test_trv_else_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ if 0: else: if 1: puts(1) end end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22293,7 +22293,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22303,7 +22303,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ \nif 0: @}{@ else: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22313,7 +22313,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: \n@}{@ else: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22323,7 +22323,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ \nelse: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22333,7 +22333,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: \n@}{@ if 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22343,7 +22343,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ \nif 1: @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22353,7 +22353,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1:\n @}1{@ end @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22363,7 +22363,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ \nend @}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22373,7 +22373,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ end \n@}{@ end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22383,7 +22383,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ end @}{@ \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22393,7 +22393,7 @@ test_trv_else_stmt_3(void) {
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}{@ if 1: @}1{@ end @}{@ end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22417,7 +22417,7 @@ test_trv_else_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22438,7 +22438,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2; i +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22448,7 +22448,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ size=0 for i=size; i<2; i += 1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22458,7 +22458,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ \nfor i=0; i<2; i +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22468,7 +22468,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2; i +=1: \nputs(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22478,7 +22478,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2; i +=1: puts(i)\n end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22488,7 +22488,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2; i +=1: puts(i) end \n@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22498,7 +22498,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for \ni=0; i<2; i +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22508,7 +22508,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0\n; i<2; i +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22518,7 +22518,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; \ni<2; i +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22528,7 +22528,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2\n; i +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22538,7 +22538,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2; \ni +=1: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22548,7 +22548,7 @@ test_trv_for_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for i=0; i<2; i +=1\n: puts(i) end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22574,7 +22574,7 @@ test_trv_for_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ i=0 for i<2: puts(i)\ni+=1 end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22584,7 +22584,7 @@ test_trv_for_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ i=0 for i<2: \nputs(i)\ni+=1 end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22594,7 +22594,7 @@ test_trv_for_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ i=0 for i<2: puts(i)\ni+=1 \nend @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22604,7 +22604,7 @@ test_trv_for_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ i=0 for \ni<2: puts(i)\ni+=1 end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22614,7 +22614,7 @@ test_trv_for_stmt_1(void) {
     PadTkr_Parse(tkr, "{@ i=0 for i<2\n: puts(i)\ni+=1 end @}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22640,7 +22640,7 @@ test_trv_for_stmt_2(void) {
     PadTkr_Parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22696,7 +22696,7 @@ test_trv_for_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22714,7 +22714,7 @@ test_trv_for_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22736,7 +22736,7 @@ test_trv_for_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22757,7 +22757,7 @@ test_trv_for_stmt_6(void) {
     "@}{: a[0] :},{: a[1] :},{: a[2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22778,7 +22778,7 @@ test_trv_for_stmt_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -22801,7 +22801,7 @@ test_trv_for_stmt_8(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -22826,7 +22826,7 @@ test_trv_for_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -22845,7 +22845,7 @@ test_trv_for_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -22865,7 +22865,7 @@ test_trv_for_stmt_10(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -22881,7 +22881,7 @@ test_trv_for_stmt_10(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -22911,7 +22911,7 @@ test_trv_for_stmt_12(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22928,7 +22928,7 @@ test_trv_break_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for: break end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22938,7 +22938,7 @@ test_trv_break_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for:\n break end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22948,7 +22948,7 @@ test_trv_break_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ for: break \nend @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22971,7 +22971,7 @@ test_trv_break_stmt_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -22990,7 +22990,7 @@ test_trv_break_stmt_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23015,7 +23015,7 @@ test_trv_break_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23035,7 +23035,7 @@ test_trv_break_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23057,7 +23057,7 @@ test_trv_break_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23076,7 +23076,7 @@ test_trv_break_stmt_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23096,7 +23096,7 @@ test_trv_break_stmt_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23113,7 +23113,7 @@ test_trv_break_stmt_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23130,7 +23130,7 @@ test_trv_continue_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ j=0 for i=0; i<2; i+=1: continue\n j=i end @}{: j :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23153,7 +23153,7 @@ test_trv_continue_stmt_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23178,7 +23178,7 @@ test_trv_continue_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23197,7 +23197,7 @@ test_trv_continue_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23216,7 +23216,7 @@ test_trv_continue_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23243,7 +23243,7 @@ test_trv_continue_stmt_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -23274,7 +23274,7 @@ test_trv_continue_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23293,7 +23293,7 @@ test_trv_continue_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23313,7 +23313,7 @@ test_trv_continue_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23330,7 +23330,7 @@ test_trv_continue_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -23352,7 +23352,7 @@ test_trv_return_stmt_0(void) {
     PadTkr_Parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23384,7 +23384,7 @@ test_trv_return_stmt_1(void) {
     "@}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23413,7 +23413,7 @@ test_trv_return_stmt_2(void) {
     "@}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23433,7 +23433,7 @@ test_trv_return_stmt_2(void) {
     "@}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23460,7 +23460,7 @@ test_trv_return_stmt_3(void) {
     "@}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23482,7 +23482,7 @@ test_trv_return_stmt_3(void) {
     "@}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23506,7 +23506,7 @@ test_trv_return_stmt_3(void) {
     "@}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23525,7 +23525,7 @@ test_trv_return_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -23539,7 +23539,7 @@ test_trv_return_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -23554,7 +23554,7 @@ test_trv_return_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -23569,7 +23569,7 @@ test_trv_return_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -23583,7 +23583,7 @@ test_trv_return_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -23607,7 +23607,7 @@ test_trv_return_stmt_5(void) {
     "@}{: func() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23631,7 +23631,7 @@ test_trv_return_stmt_6(void) {
     "@}{: func() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23651,7 +23651,7 @@ test_trv_block_stmt_0(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "can't access to function node"));
     }
@@ -23669,7 +23669,7 @@ test_trv_block_stmt_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "can't access to function node"));
     }
@@ -23689,7 +23689,7 @@ test_trv_block_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         showdetail();
         assert(!PadAST_HasErrs(ast));
     }
@@ -23707,7 +23707,7 @@ test_trv_inject_stmt_0(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "inject statement needs function"));
     }
@@ -23725,7 +23725,7 @@ test_trv_inject_stmt_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "not found identifier in inject statement"));
     }
@@ -23745,7 +23745,7 @@ test_trv_inject_stmt_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -23762,7 +23762,7 @@ test_trv_struct_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -23787,7 +23787,7 @@ test_trv_struct_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -23807,7 +23807,7 @@ test_trv_struct_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         assert(!PadAST_HasErrs(ast));
     }
 
@@ -23854,7 +23854,7 @@ test_trv_struct_6(void) {
     "@}{: animal.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23896,7 +23896,7 @@ test_trv_struct_8(void) {
     "@}{: animal.body.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23918,7 +23918,7 @@ test_trv_struct_9(void) {
     "@}{: animal.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23941,7 +23941,7 @@ test_trv_struct_10(void) {
     "@}{: animal.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23961,7 +23961,7 @@ test_trv_struct_11(void) {
     "@}{: animal.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23973,7 +23973,7 @@ test_trv_struct_11(void) {
     "@}{: animal.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -23996,7 +23996,7 @@ test_trv_struct_12(void) {
     "@}{: animal.b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24021,7 +24021,7 @@ test_trv_struct_13(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24047,7 +24047,7 @@ test_trv_struct_14(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24076,7 +24076,7 @@ test_trv_struct_15(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24110,7 +24110,7 @@ test_trv_struct_16(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24151,7 +24151,7 @@ test_trv_struct_17(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24176,7 +24176,7 @@ test_trv_struct_18(void) {
     "@}{: animal.sum :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24202,7 +24202,7 @@ test_trv_struct_19(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24225,7 +24225,7 @@ test_trv_struct_20(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24251,7 +24251,7 @@ test_trv_struct_21(void) {
     "@}{: animal.b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24273,7 +24273,7 @@ test_trv_struct_22(void) {
     "@}{: arr[0].a :},{: arr[1].a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24295,7 +24295,7 @@ test_trv_struct_23(void) {
     "@}{: d[\"a\"].a :},{: d[\"b\"].a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24328,7 +24328,7 @@ test_trv_struct_24(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24355,7 +24355,7 @@ test_trv_struct_25(void) {
     "@}{: file.fileno :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -24376,7 +24376,7 @@ test_trv_struct_26(void) {
     "@}{: File.n :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25038,7 +25038,7 @@ test_trv_func_def_0(void) {
     PadTkr_Parse(tkr, "{@ def f(): end @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25064,7 +25064,7 @@ test_trv_func_def_1(void) {
     PadTkr_Parse(tkr, "{@ def f(a, b): puts(a, b) end f(1, 2) @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25094,7 +25094,7 @@ test_trv_func_def_2(void) {
         "@}{: c :}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         (PadTrv_Trav(ast, ctx));
         PadObjDict *varmap = PadCtx_GetVarmap(ctx);
         assert(PadObjDict_Get(varmap, "func"));
@@ -25119,7 +25119,7 @@ test_trv_func_def_3(void) {
     PadTkr_Parse(tkr, "{@ def f(): end \n a = not f @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25144,7 +25144,7 @@ test_trv_func_def_4(void) {
     PadTkr_Parse(tkr, "{@ i = 1 \n def f(): puts(i) end \n f() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25170,7 +25170,7 @@ test_trv_func_def_5(void) {
     PadTkr_Parse(tkr, "{@ def f(arg): end \n f() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -25203,7 +25203,7 @@ test_trv_func_def_6(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25227,7 +25227,7 @@ test_trv_func_def_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25264,7 +25264,7 @@ test_trv_func_def_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25288,7 +25288,7 @@ test_trv_func_def_10(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25305,7 +25305,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25315,7 +25315,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(a): return a end @}{: f(1) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25325,7 +25325,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(a, b): return a + b end @}{: f(1, 2) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25335,7 +25335,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): return true end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25345,7 +25345,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): return 0 end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25355,7 +25355,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): return 1 + 2 end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25365,7 +25365,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): @}abc{@ end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25375,7 +25375,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): @}abc{@ a = 1 @}def{@ end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25385,7 +25385,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(): @}abc{@ a = 1 @}{: a :}{@ end @}{: f() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25395,7 +25395,7 @@ test_trv_func_def_11(void) {
     PadTkr_Parse(tkr, "{@ def f(a): @}{: a :}{@ b = 123 @}{: b :}{@ end @}{: f(\"abc\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25411,7 +25411,7 @@ test_trv_func_def_11(void) {
     );
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -25431,7 +25431,7 @@ test_trv_func_def_11(void) {
     );
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25467,7 +25467,7 @@ test_trv_func_def_11(void) {
     );
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25712,7 +25712,7 @@ test_trv_func_extends_0(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25759,7 +25759,7 @@ test_trv_func_super_0(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25790,7 +25790,7 @@ test_trv_func_super_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25937,7 +25937,7 @@ test_trv_inject_stmt_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -25969,7 +25969,7 @@ test_trv_inject_stmt_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26005,7 +26005,7 @@ test_trv_inject_stmt_5(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26038,7 +26038,7 @@ test_trv_inject_stmt_6(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26077,7 +26077,7 @@ test_trv_inject_stmt_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26119,7 +26119,7 @@ test_trv_inject_stmt_8(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26149,7 +26149,7 @@ test_trv_inject_stmt_9(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26177,7 +26177,7 @@ test_trv_inject_stmt_10(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -26202,7 +26202,7 @@ test_trv_inject_stmt_11(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26233,7 +26233,7 @@ test_trv_inject_stmt_12(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26263,7 +26263,7 @@ test_trv_inject_stmt_13(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26293,7 +26293,7 @@ test_trv_inject_stmt_14(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26322,7 +26322,7 @@ test_trv_inject_stmt_15(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26352,7 +26352,7 @@ test_trv_inject_stmt_16(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26380,7 +26380,7 @@ test_trv_inject_stmt_17(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26409,7 +26409,7 @@ test_trv_inject_stmt_18(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        (PadCc_Compile(ast, PadTkr_GetToks(tkr)));
+        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -26612,7 +26612,7 @@ test_trv_assign_list_0(void) {
     PadTkr_Parse(tkr, "{@ a = 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26638,7 +26638,7 @@ test_trv_assign_list_1(void) {
     PadTkr_Parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26664,7 +26664,7 @@ test_trv_assign_list_2(void) {
     PadTkr_Parse(tkr, "{@ a = b = 1 @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26804,7 +26804,7 @@ test_trv_comparison_0(void) {
     PadTkr_Parse(tkr, "{: 1 == 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26830,7 +26830,7 @@ test_trv_comparison_1(void) {
     PadTkr_Parse(tkr, "{: 1 != 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26856,7 +26856,7 @@ test_trv_comparison_2(void) {
     PadTkr_Parse(tkr, "{: 1 < 2 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26882,7 +26882,7 @@ test_trv_comparison_3(void) {
     PadTkr_Parse(tkr, "{: 2 > 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26908,7 +26908,7 @@ test_trv_comparison_4(void) {
     PadTkr_Parse(tkr, "{: 1 <= 2 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26934,7 +26934,7 @@ test_trv_comparison_5(void) {
     PadTkr_Parse(tkr, "{: 2 >= 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26986,7 +26986,7 @@ test_trv_asscalc_0(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -26996,7 +26996,7 @@ test_trv_asscalc_0(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = 1 \n a += b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27006,7 +27006,7 @@ test_trv_asscalc_0(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27016,7 +27016,7 @@ test_trv_asscalc_0(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a += false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27054,7 +27054,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a -= 1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27064,7 +27064,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n b = 1 \n a -= b @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27074,7 +27074,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a -= true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27084,7 +27084,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a -= false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27098,7 +27098,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ 1 -= 1 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27108,7 +27108,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ true -= 1 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27118,7 +27118,7 @@ test_trv_asscalc_1(void) {
     PadTkr_Parse(tkr, "{@ a = 0 \n a -= \"c\" @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27148,7 +27148,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = 2 \n a *= 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27158,7 +27158,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = 2 @}{: (a *= 2) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27168,7 +27168,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = 2 \n a *= true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27178,7 +27178,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = 2 \n a *= false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27188,7 +27188,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n a *= 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27198,7 +27198,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n a *= 0 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27208,7 +27208,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n a *= true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27218,7 +27218,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n a *= false @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27232,7 +27232,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n a *= -1 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27242,7 +27242,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ 1 *= 2 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27252,7 +27252,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ true *= 2 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27262,7 +27262,7 @@ test_trv_asscalc_2(void) {
     PadTkr_Parse(tkr, "{@ a = 2 \n a *= \"b\" @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27292,7 +27292,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = 4 \n a /= 2 @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27302,7 +27302,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = 4  @}{: (a /= 2) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27312,7 +27312,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = 4 \n a /= true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27322,7 +27322,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = true \n a /= true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27332,7 +27332,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = false \n a /= true @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27346,7 +27346,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ 4 /= 2 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27356,7 +27356,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ true /= 2 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27366,7 +27366,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = 4 \n a /= false @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27376,7 +27376,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = 4 \n a /= 0 @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27386,7 +27386,7 @@ test_trv_asscalc_3(void) {
     PadTkr_Parse(tkr, "{@ a = 4 \n a /= \"b\" @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27531,7 +27531,7 @@ test_trv_asscalc_13(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27551,7 +27551,7 @@ test_trv_asscalc_14(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27571,7 +27571,7 @@ test_trv_asscalc_15(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27591,7 +27591,7 @@ test_trv_asscalc_16(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27611,7 +27611,7 @@ test_trv_asscalc_17(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27631,7 +27631,7 @@ test_trv_asscalc_18(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27651,7 +27651,7 @@ test_trv_asscalc_19(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27671,7 +27671,7 @@ test_trv_asscalc_20(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -27691,7 +27691,7 @@ test_trv_asscalc_21(void) {
     "@}{: a[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -27830,7 +27830,7 @@ test_trv_expr_3(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27853,7 +27853,7 @@ test_trv_expr_4(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27876,7 +27876,7 @@ test_trv_expr_4a(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27900,7 +27900,7 @@ test_trv_expr_4b(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27924,7 +27924,7 @@ test_trv_expr_4c(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27948,7 +27948,7 @@ test_trv_expr_5(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27965,7 +27965,7 @@ test_trv_expr_5(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -27986,7 +27986,7 @@ test_trv_expr_6(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28007,7 +28007,7 @@ test_trv_expr_7(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28028,7 +28028,7 @@ test_trv_expr_8(void) {
     "@}{: r :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28614,7 +28614,7 @@ test_trv_call_0(void) {
     PadTkr_Parse(tkr, "{@ def f(): end f() @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28637,7 +28637,7 @@ test_trv_call_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28662,7 +28662,7 @@ test_trv_call_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28689,7 +28689,7 @@ test_trv_call_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28714,7 +28714,7 @@ test_trv_call_4(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28877,7 +28877,7 @@ test_trv_array_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28911,7 +28911,7 @@ test_trv_array_3(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28934,7 +28934,7 @@ test_trv_array_4(void) {
     "@}{: a[0] :}{: a[1] :}{: a[2] :}{: a[3] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -28951,7 +28951,7 @@ test_trv_array_5(void) {
     PadTkr_Parse(tkr, "{@ a = [] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28961,7 +28961,7 @@ test_trv_array_5(void) {
     PadTkr_Parse(tkr, "{@ a = [1] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28971,7 +28971,7 @@ test_trv_array_5(void) {
     PadTkr_Parse(tkr, "{@ a = [1] \n b = a @}{: a :},{: b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28981,7 +28981,7 @@ test_trv_array_5(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -28991,7 +28991,7 @@ test_trv_array_5(void) {
     PadTkr_Parse(tkr, "{@ a = [b = 1, c = 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29001,7 +29001,7 @@ test_trv_array_5(void) {
     PadTkr_Parse(tkr, "{@ a = [1, b = 2] @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29149,7 +29149,7 @@ test_trv_nil(void) {
     PadTkr_Parse(tkr, "{: nil :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29175,7 +29175,7 @@ test_trv_false(void) {
     PadTkr_Parse(tkr, "{: false :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29201,7 +29201,7 @@ test_trv_true(void) {
     PadTkr_Parse(tkr, "{: true :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29227,7 +29227,7 @@ test_trv_digit(void) {
     PadTkr_Parse(tkr, "{: 1 :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29253,7 +29253,7 @@ test_trv_string(void) {
     PadTkr_Parse(tkr, "{: \"abc\" :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29274,7 +29274,7 @@ test_trv_dict_0(void) {
     PadTkr_Parse(tkr, "{@ d = {\"a\":1, \"b\":2} @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29296,7 +29296,7 @@ test_trv_dict_1(void) {
     "@}{: d[\"a\"] :}{: d[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29319,7 +29319,7 @@ test_trv_dict_2(void) {
     "@}{: d[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(PadAST_HasErrs(ast));
@@ -29340,7 +29340,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { 1: 1 } @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29350,7 +29350,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"k\": 1 } \n a[0] @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29360,7 +29360,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29372,7 +29372,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"key\": 1 } @}{: a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "(dict)"));
@@ -29381,7 +29381,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"key\": 1 } @}{: a[\"key\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -29390,7 +29390,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"key\": \"val\" } @}{: a[\"key\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "val"));
@@ -29399,7 +29399,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"key\": [1, 2] } @}{: a[\"key\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "(array)"));
@@ -29408,7 +29408,7 @@ test_trv_dict_3(void) {
     // PadTkr_Parse(tkr, "{@ a = { \"key\": 1 }[\"key\"] @}{: a :}");
     // {
     PadAST_Clear(ast);
-    //     PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    //     PadCC_Compile(ast, PadTkr_GetToks(tkr));
     //     PadCtx_Clear(ctx);
     //     PadTrv_Trav(ast, ctx);
     //     assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -29417,7 +29417,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"k1\": 1, \"k2\": 2 } @}{: a[\"k1\"] :},{: a[\"k2\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1,2"));
@@ -29426,7 +29426,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ a = { \"k1\": { \"k2\": 1 } } @}{: a[\"k1\"][\"k2\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -29435,7 +29435,7 @@ test_trv_dict_3(void) {
     PadTkr_Parse(tkr, "{@ k = \"key\" \n a = { k: 1 } @}{: a[k] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
@@ -29475,7 +29475,7 @@ test_trv_identifier(void) {
     PadTkr_Parse(tkr, "{@ i = 1 @}{: i :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29501,7 +29501,7 @@ test_trv_builtin_array_0(void) {
     PadTkr_Parse(tkr, "{@ arr = [1, 2] \n arr.push(3) @}{: len(arr) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29511,7 +29511,7 @@ test_trv_builtin_array_0(void) {
     PadTkr_Parse(tkr, "{: len([1, 2].push(3)) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29521,7 +29521,7 @@ test_trv_builtin_array_0(void) {
     PadTkr_Parse(tkr, "{@ a = [1, 2] @}{: a.pop() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29531,7 +29531,7 @@ test_trv_builtin_array_0(void) {
     PadTkr_Parse(tkr, "{@ a = [] @}{: a.pop() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29541,7 +29541,7 @@ test_trv_builtin_array_0(void) {
     PadTkr_Parse(tkr, "{: [1, 2].pop() :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29567,7 +29567,7 @@ test_trv_builtin_dict_0(void) {
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(1) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29577,7 +29577,7 @@ test_trv_builtin_dict_0(void) {
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(\"a\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         trace();
@@ -29588,7 +29588,7 @@ test_trv_builtin_dict_0(void) {
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(\"b\") :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29612,7 +29612,7 @@ test_trv_module_0(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29636,7 +29636,7 @@ test_trv_chain_object(void) {
     "@}{: string.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
@@ -29653,7 +29653,7 @@ test_trv_chain_object(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29665,7 +29665,7 @@ test_trv_chain_object(void) {
     "@}{: string.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29678,7 +29678,7 @@ test_trv_chain_object(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29691,7 +29691,7 @@ test_trv_chain_object(void) {
     "@}{: string.a :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29704,7 +29704,7 @@ test_trv_chain_object(void) {
     "@}{: string.a.b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29716,7 +29716,7 @@ test_trv_chain_object(void) {
     "@}{: string.a.b :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
@@ -29742,7 +29742,7 @@ test_trv_etc_0(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29780,7 +29780,7 @@ test_trv_etc_1(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29831,7 +29831,7 @@ test_trv_etc_2(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29861,7 +29861,7 @@ test_trv_etc_3(void) {
     "@}{: a[0][\"a\"] :},{: d[\"a\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29887,7 +29887,7 @@ test_trv_etc_4(void) {
     "@}{: id(a) == id(f) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29903,7 +29903,7 @@ test_trv_etc_4(void) {
     "@}{: a :},{: id(a) == id(f) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29931,7 +29931,7 @@ test_trv_etc_5(void) {
     "@}{: c :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29947,7 +29947,7 @@ test_trv_etc_5(void) {
     "@}{: c :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29964,7 +29964,7 @@ test_trv_etc_5(void) {
     "@}{: d[\"a\"] :},{: d[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29981,7 +29981,7 @@ test_trv_etc_5(void) {
     "@}{: d[\"a\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -29998,7 +29998,7 @@ test_trv_etc_5(void) {
     "@}{: d[\"a\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30017,7 +30017,7 @@ test_trv_etc_5(void) {
     "@}{: l[0] :},{: l[1] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30036,7 +30036,7 @@ test_trv_etc_5(void) {
     "@}{: c[\"a\"] :},{: c[\"b\"] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30063,7 +30063,7 @@ test_trv_etc_6(void) {
     "@}{: l[2] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30080,7 +30080,7 @@ test_trv_etc_6(void) {
     "@}{: l2[2][0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30097,7 +30097,7 @@ test_trv_etc_6(void) {
     "@}{: l[2] :},{: id(l[2]) != id(g) :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30124,7 +30124,7 @@ test_trv_etc_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30142,7 +30142,7 @@ test_trv_etc_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30159,7 +30159,7 @@ test_trv_etc_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30177,7 +30177,7 @@ test_trv_etc_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30196,7 +30196,7 @@ test_trv_etc_7(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30227,7 +30227,7 @@ test_trv_etc_8(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30246,7 +30246,7 @@ test_trv_etc_8(void) {
     "@}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadCtx_Clear(ctx);
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
@@ -30277,7 +30277,7 @@ test_trv_etc_9(void) {
     PadTkr_Parse(tkr, s);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1 2 3 4\n"));
@@ -30314,7 +30314,7 @@ test_trv_etc_10(void) {
     PadTkr_Parse(tkr, s);
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2 1 3 4\n"));
@@ -30332,7 +30332,7 @@ test_trv_unicode_0(void) {
     "@}{: s[0] :}");
     {
         PadAST_Clear(ast);
-        PadCc_Compile(ast, PadTkr_GetToks(tkr));
+        PadCC_Compile(ast, PadTkr_GetToks(tkr));
         PadTrv_Trav(ast, ctx);
         assert(!PadAST_HasErrs(ast));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "a"));

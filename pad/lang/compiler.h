@@ -18,4 +18,4 @@
 #include <pad/lang/types.h>
 
 PadAST *
-PadCc_Compile(PadAST *ast, PadTok *tokens[]);
+PadCC_Compile(PadAST *ast, PadTok *tokens[]);

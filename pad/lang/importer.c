@@ -114,7 +114,7 @@ create_modobj(
     }
 
     PadAST_Clear(ast);
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAST_HasErrs(ast)) {
         PadImporter_SetErr(self, PadAST_GetcFirstErrMsg(ast));
         free(src);

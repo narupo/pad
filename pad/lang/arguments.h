@@ -17,7 +17,7 @@ typedef struct {
 /**
  * The abstract arguments of compiler functions
  */
-struct PadCcArgs {
+struct PadCCArgs {
     // number of depth of recursion
     PadDepth depth;
 

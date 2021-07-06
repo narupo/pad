@@ -650,7 +650,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
     PadAST_MoveOpts(ast, PadMem_Move(opts));
     opts = NULL;
 
-    PadCc_Compile(ast, PadTkr_GetToks(tkr));
+    PadCC_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAST_HasErrs(ast)) {
         const PadErrStack *es = PadAST_GetcErrStack(ast);
         return_fail_es(es);

@@ -193,7 +193,7 @@ PadKit_CompileFromStrArgs(
         opts = NULL;
     }
 
-    PadCc_Compile(self->ast, PadTkr_GetToks(self->tkr));
+    PadCC_Compile(self->ast, PadTkr_GetToks(self->tkr));
     if (PadAST_HasErrs(self->ast)) {
         const PadErrStack *err = PadAST_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);
