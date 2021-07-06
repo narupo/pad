@@ -267,3 +267,8 @@ PadKit_TraceErrDebug(const PadKit *self, FILE *fout) {
 
     PadErrStack_TraceDebug(self->errstack, fout);
 }
+
+void
+PadKit_SetUseBuf(PadKit *self, bool use_buf) {
+    PadCtx_SetUseBuf(self->ctx, use_buf);  // no use stdout/stderr buffer
+}

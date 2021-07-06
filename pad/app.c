@@ -282,8 +282,7 @@ app_run_args(app_t *self) {
     }
 
     PadKit *kit = PadKit_New(self->config);
-    PadCtx *ctx = PadKit_GetCtx(kit);
-    PadCtx_SetUseBuf(ctx, false);  // no use stdout/stderr buffer
+    PadKit_SetUseBuf(kit, false);  // no use stdout/stderr buffer
     
     if (!PadKit_CompileFromPathArgs(kit, path, argc, argv)) {
         trace_kit(self, kit, stderr);

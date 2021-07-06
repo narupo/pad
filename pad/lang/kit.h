@@ -62,3 +62,6 @@ PadKit_TraceErrDebug(const PadKit *self, FILE *fout);
 
 void
 PadKit_SetImporterFixPathFunc(PadKit *self, PadImporterFixPathFunc func);
+
+void
+PadKit_SetUseBuf(PadKit *self, bool use_buf);
