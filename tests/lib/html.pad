@@ -81,9 +81,9 @@ end
 def allTest():
 	puts("Test lib/html all")
 
-	case1()
-	case2()
-	case3()
+	// case1()
+	// case2()
+	// case3()
 end
 
 def main(name):

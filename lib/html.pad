@@ -62,15 +62,7 @@ struct HtmlParser:
     end
 
     met parse(self, src):
-        strm = Stream.new(src)
-        tokenizer = Tokenizer.new()
-        tokens = tokenizer.tokenize(strm)
-
-        strm = Stream.new(tokens)
-        parser = Parser()
-        tags = parser.parse(tokens)
-
-        return tags
+        // TODO
     end
 end
 
