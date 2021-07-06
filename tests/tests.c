@@ -2642,7 +2642,7 @@ static const char *
 get_test_finpath(void) {
     static char path[PAD_FILE__NPATH];
 
-#ifdef _TESTS_WINDOWS
+#ifdef PAD_TESTS__WINDOWS
     char tmp[PAD_FILE__NPATH];
     assert(PadFile_GetUserHome(tmp, sizeof tmp) != NULL);
     assert(PadFile_SolveFmt(path, sizeof path, "%s/cap.test.file", tmp) != NULL);
@@ -2682,7 +2682,7 @@ get_test_finsize(void) {
 static const char *
 get_test_dirpath(void) {
     static char path[PAD_FILE__NPATH];
-#ifdef _TESTS_WINDOWS
+#ifdef PAD_TESTS__WINDOWS
     assert(PadFile_GetUserHome(path, sizeof path) != NULL);
 #else
     assert(PadFile_Solve(path, sizeof path, "/tmp") != NULL);
@@ -3537,7 +3537,7 @@ test_util_Pad_RandRange(void) {
 static void
 test_util_Pad_SafeSystem(void) {
     char cmd[1024];
-#ifdef _TESTS_WINDOWS
+#ifdef PAD_TESTS__WINDOWS
     assert(PadFile_SolveFmt(cmd, sizeof cmd, "dir") != NULL);
 #else
     const char *path = "/tmp/f";
@@ -3621,7 +3621,7 @@ test_util_Pad_CompileArgv(void) {
 static void
 test_util_Pad_PopTailSlash(void) {
     char s[100];
-#ifdef _TESTS_WINDOWS
+#ifdef PAD_TESTS__WINDOWS
     strcpy(s, "C:\\path\\to\\dir\\");
     assert(Pad_PopTailSlash(s));
     assert(!strcmp(s, "C:\\path\\to\\dir"));
@@ -3742,7 +3742,7 @@ test_PadPath_PopTailSlash(void) {
 
     assert(PadPath_PopTailSlash(NULL) == NULL);
 
-#ifdef _TESTS_WINDOWS
+#ifdef PAD_TESTS__WINDOWS
     strcpy(s, "C:\\path\\to\\dir\\");
     assert(PadPath_PopTailSlash(s));
     assert(!strcmp(s, "C:\\path\\to\\dir"));

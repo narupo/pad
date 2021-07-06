@@ -8,7 +8,7 @@
 #pragma once
 
 #if defined(_WIN32) || defined(_WIN64)
-# define _TESTS_WINDOWS
+# define PAD_TESTS__WINDOWS
 #endif
 
 #define _SVID_SOURCE 1 /* cap: tests: strdup */
