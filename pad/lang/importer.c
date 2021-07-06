@@ -101,9 +101,6 @@ create_modobj(
     PadAST *ast = PadAST_New(self->ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
     PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
-    ast->importer_fix_path = self->fix_path;
-    ast->import_level = ref_ast->import_level + 1;
-    ast->debug = ref_ast->debug;
 
     PadTkr_SetProgFname(tkr, src_path);
     PadTkr_Parse(tkr, src);
@@ -114,6 +111,9 @@ create_modobj(
     }
 
     PadAST_Clear(ast);
+    ast->importer_fix_path = self->fix_path;
+    ast->import_level = ref_ast->import_level + 1;
+    ast->debug = ref_ast->debug;
     PadCC_Compile(ast, PadTkr_GetToks(tkr));
     if (PadAST_HasErrs(ast)) {
         PadImporter_SetErr(self, PadAST_GetcFirstErrMsg(ast));
