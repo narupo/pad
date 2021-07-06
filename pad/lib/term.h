@@ -5,36 +5,36 @@
 #include <stdarg.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-# define TERM_WINDOWS
+# define PAD_TERM__WINDOWS
 #endif
 
-#ifdef TERM_WINDOWS
+#ifdef PAD_TERM__WINDOWS
 # include <windows.h>
 # include <wincon.h>
 #endif
 
 enum {
-    TERM_NULL,
+    PAD_TERM__NULL,
     
     // fg, bg
-    TERM_BLACK,
-    TERM_RED,
-    TERM_GREEN,
-    TERM_YELLOW,
-    TERM_BLUE,
-    TERM_MAGENTA,
-    TERM_CYAN,
-    TERM_GRAY,
-    TERM_WHITE,
-    TERM_DEFAULT,
+    PAD_TERM__BLACK,
+    PAD_TERM__RED,
+    PAD_TERM__GREEN,
+    PAD_TERM__YELLOW,
+    PAD_TERM__BLUE,
+    PAD_TERM__MAGENTA,
+    PAD_TERM__CYAN,
+    PAD_TERM__GRAY,
+    PAD_TERM__WHITE,
+    PAD_TERM__DEFAULT,
 
     // opt
-    TERM_UNDER,
-    TERM_BRIGHT,
-    TERM_REVERSE,
+    PAD_TERM__UNDER,
+    PAD_TERM__BRIGHT,
+    PAD_TERM__REVERSE,
 };
 
-#define term_cprintf(fg, bg, opt, fmt, ...) term_cfprintf(stdout, fg, bg, opt, fmt, __VA_ARGS__)
+#define PadTerm_CPrintf(fg, bg, opt, fmt, ...) PadTerm_CFPrintf(stdout, fg, bg, opt, fmt, __VA_ARGS__)
 
 /**
  * print format with color at stream
@@ -49,5 +49,5 @@ enum {
  * @return print length
  */
 int 
-term_cfprintf(FILE *fout, int fg, int bg, int opt, const char *fmt, ...);
+PadTerm_CFPrintf(FILE *fout, int fg, int bg, int opt, const char *fmt, ...);
 
