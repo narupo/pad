@@ -30,7 +30,7 @@ builtin_id(PadBltFuncArgs *fargs) {
     assert(obj);
 
     obj = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-    if (PadAst_HasErrs(ref_ast)) {
+    if (PadAST_HasErrs(ref_ast)) {
         return NULL;
     }
     if (!obj) {
@@ -191,7 +191,7 @@ builtin_puts(PadBltFuncArgs *fargs) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        if (PadAst_HasErrs(ref_ast)) {
+        if (PadAST_HasErrs(ref_ast)) {
             push_error("failed to get argument");
             return NULL;
         }
@@ -207,7 +207,7 @@ builtin_puts(PadBltFuncArgs *fargs) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        if (PadAst_HasErrs(ref_ast)) {
+        if (PadAST_HasErrs(ref_ast)) {
             push_error("failed to get argument");
             return NULL;
         }
@@ -628,7 +628,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
 
     PadObjAry *retarr = PadObjAry_New();
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
-    PadAST *ast = PadAst_New(ref_ast->ref_config);
+    PadAST *ast = PadAST_New(ref_ast->ref_config);
     PadCtx *ctx = PadCtx_New(ref_ast->ref_gc);
     PadOpts *opts = PadOpts_New();
 
@@ -646,24 +646,24 @@ builtin_dance(PadBltFuncArgs *fargs) {
         return_fail_es(es);
     }
 
-    PadAst_Clear(ast);
-    PadAst_MoveOpts(ast, PadMem_Move(opts));
+    PadAST_Clear(ast);
+    PadAST_MoveOpts(ast, PadMem_Move(opts));
     opts = NULL;
 
     PadCc_Compile(ast, PadTkr_GetToks(tkr));
-    if (PadAst_HasErrs(ast)) {
-        const PadErrStack *es = PadAst_GetcErrStack(ast);
+    if (PadAST_HasErrs(ast)) {
+        const PadErrStack *es = PadAST_GetcErrStack(ast);
         return_fail_es(es);
     }
 
     PadTrv_Trav(ast, ctx);
-    if (PadAst_HasErrs(ast)) {
-        const PadErrStack *es = PadAst_GetcErrStack(ast);
+    if (PadAST_HasErrs(ast)) {
+        const PadErrStack *es = PadAST_GetcErrStack(ast);
         return_fail_es(es);
     }
 
     PadTkr_Del(tkr);
-    PadAst_Del(ast);
+    PadAST_Del(ast);
 
     const char *out = PadCtx_GetcStdoutBuf(ctx);
     const char *err = PadCtx_GetcStderrBuf(ctx);
@@ -781,7 +781,7 @@ builtin_func_infos[] = {
 PadObj *
 Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
-    PadAST *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAST_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 

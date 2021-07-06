@@ -12,7 +12,7 @@
             40, \
             __func__, \
             targs->depth, \
-            PadAst_GetcLastErrMsg(ast) \
+            PadAST_GetcLastErrMsg(ast) \
         ); \
         fflush(stderr); \
     } \
@@ -29,7 +29,7 @@
             targs->depth, \
             obj, \
             (s ? PadStr_Getc(s) : "null"), \
-            PadAst_GetcLastErrMsg(ast)); \
+            PadAST_GetcLastErrMsg(ast)); \
         if (obj) PadStr_Del(s); \
         fflush(stderr); \
     } \
@@ -45,7 +45,7 @@
             targs->depth \
         ); \
         fprintf(stderr, fmt, ##__VA_ARGS__); \
-        fprintf(stderr, ": %s\n", PadAst_GetcLastErrMsg(ast)); \
+        fprintf(stderr, ": %s\n", PadAST_GetcLastErrMsg(ast)); \
     } \
 
 #define vissf(fmt, ...) \
@@ -188,7 +188,7 @@ trv_program(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = program->blocks;
     targs->depth += 1;
     PadObj *result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -208,7 +208,7 @@ trv_blocks(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = blocks->code_block;
     targs->depth = depth + 1;
     PadObj *result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -221,7 +221,7 @@ trv_blocks(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = blocks->ref_block;
     targs->depth = depth + 1;
     result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -229,7 +229,7 @@ trv_blocks(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = blocks->text_block;
     targs->depth = depth + 1;
     result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -237,7 +237,7 @@ trv_blocks(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = blocks->blocks;
     targs->depth = depth + 1;
     result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -257,7 +257,7 @@ trv_code_block(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = code_block->elems;
     targs->depth = depth + 1;
     _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -276,7 +276,7 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = ref_block->formula;
     targs->depth = depth + 1;
     PadObj *tmp = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(tmp);
@@ -284,7 +284,7 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     PadObj *result = tmp;
     if (tmp->type == PAD_OBJ_TYPE__CHAIN) {
         result = _Pad_ExtractRefOfObjAll(tmp);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(result);
@@ -387,7 +387,7 @@ trv_elems(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = elems->def;
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
     } else if (elems->stmt) {
@@ -395,7 +395,7 @@ trv_elems(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = elems->stmt;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
 
@@ -410,7 +410,7 @@ trv_elems(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = elems->struct_; 
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }        
     } else if (elems->formula) {
@@ -418,7 +418,7 @@ trv_elems(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = elems->formula;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         PadObj_Del(result);
@@ -428,7 +428,7 @@ trv_elems(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = elems->elems;
     targs->depth = depth + 1;
     result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -449,7 +449,7 @@ trv_formula(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = formula->assign_list;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -458,7 +458,7 @@ trv_formula(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = formula->multi_assign;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -483,7 +483,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->import_stmt;
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
@@ -492,7 +492,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->if_stmt;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -501,7 +501,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->for_stmt;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -510,7 +510,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->break_stmt;
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
@@ -519,7 +519,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->continue_stmt;
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(NULL);
@@ -528,7 +528,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->return_stmt;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -537,7 +537,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->block_stmt;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -546,7 +546,7 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = stmt->inject_stmt;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         return_trav(result);
@@ -571,7 +571,7 @@ trv_import_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = import_stmt->import_as_stmt;
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
     } else if (import_stmt->from_import_stmt) {
@@ -579,7 +579,7 @@ trv_import_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = import_stmt->from_import_stmt;
         targs->depth = depth + 1;
         _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
     } else {
@@ -604,7 +604,7 @@ trv_import_as_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = import_as_stmt->path;
     targs->depth = depth + 1;
     PadObj *pathobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     if (!pathobj || pathobj->type != PAD_OBJ_TYPE__UNICODE) {
@@ -616,7 +616,7 @@ trv_import_as_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = import_as_stmt->alias;
     targs->depth = depth + 1;
     PadObj *aliasobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         PadObj_Del(pathobj);
         return_trav(NULL);
     }
@@ -676,7 +676,7 @@ trv_from_import_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = from_import_stmt->path;
     targs->depth = depth + 1;
     PadObj *pathobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     if (!pathobj || pathobj->type != PAD_OBJ_TYPE__UNICODE) {
@@ -689,7 +689,7 @@ trv_from_import_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = from_import_stmt->import_vars;
     targs->depth = depth + 1;
     PadObj *varsobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         PadObj_Del(pathobj);
         return_trav(NULL);
     }
@@ -745,7 +745,7 @@ trv_import_vars(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = node;
         targs->depth = depth + 1;
         PadObj *varobj = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             PadObjAry_Del(objarr);
             return_trav(NULL);
         }
@@ -778,7 +778,7 @@ trv_import_var(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = import_var->identifier;
     targs->depth = depth + 1;
     PadObj *idnobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     if (!idnobj || idnobj->type != PAD_OBJ_TYPE__IDENT) {
@@ -792,7 +792,7 @@ trv_import_var(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = import_var->alias;
     targs->depth = depth + 1;
     PadObj *aliasobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         PadObj_Del(idnobj);
         return_trav(NULL);
     }
@@ -825,7 +825,7 @@ trv_if_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = if_stmt->test;
     targs->depth = depth + 1;
     PadObj *result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     if (!result) {
@@ -834,7 +834,7 @@ trv_if_stmt(PadAST *ast, PadTrvArgs *targs) {
     }
 
     bool boolean = _Pad_ParseBool(result);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to parse boolean");
         return_trav(NULL);
     }
@@ -846,7 +846,7 @@ trv_if_stmt(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = node;
             targs->depth = depth + 1;
             result = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 pushb_error("failed to execute contents in if-statement");
                 return_trav(NULL);
             }
@@ -857,7 +857,7 @@ trv_if_stmt(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = if_stmt->elif_stmt;
             targs->depth = depth + 1;
             result = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
         } else if (if_stmt->else_stmt) {
@@ -865,7 +865,7 @@ trv_if_stmt(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = if_stmt->else_stmt;
             targs->depth = depth + 1;
             result = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
         } else {
@@ -892,7 +892,7 @@ trv_else_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = node;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to execute contents in else-statement");
             return_trav(NULL);
         }
@@ -915,7 +915,7 @@ trv_for_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = for_stmt->init_formula;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
     }
@@ -926,7 +926,7 @@ trv_for_stmt(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = for_stmt->comp_formula;
             targs->depth = depth + 1;
             result = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 goto done;
             }
             if (!_Pad_ParseBool(result)) {
@@ -943,7 +943,7 @@ trv_for_stmt(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = node;
             targs->depth = depth + 1;
             result = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 goto done;
             }
 
@@ -969,7 +969,7 @@ trv_for_stmt(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = for_stmt->update_formula;
             targs->depth = depth + 1;
             result = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 goto done;
             }
         }
@@ -1020,8 +1020,8 @@ trv_return_stmt(PadAST *ast, PadTrvArgs *targs) {
     PadDepth depth = targs->depth;
 
     if (!return_stmt->formula) {
-        PadCtx *ref_context = PadAst_GetRefCtx(ast);
-        PadGC *ref_gc = PadAst_GetRefGc(ast);
+        PadCtx *ref_context = PadAST_GetRefCtx(ast);
+        PadGC *ref_gc = PadAST_GetRefGc(ast);
         PadCtx_SetDoReturn(ref_context, true);
         PadObj *ret = PadObj_NewNil(ref_gc);
         return_trav(ret);
@@ -1031,7 +1031,7 @@ trv_return_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = return_stmt->formula;
     targs->depth = depth + 1;
     PadObj *result = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse formula");
         return_trav(NULL);
     }
@@ -1076,7 +1076,7 @@ again:
     }
 
     check("set true at do return flag");
-    PadCtx *ref_context = PadAst_GetRefCtx(ast);
+    PadCtx *ref_context = PadAST_GetRefCtx(ast);
     PadCtx_SetDoReturn(ref_context, true);
 
     assert(ret);
@@ -1106,7 +1106,7 @@ trv_block_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = block_stmt->identifier;
     targs->depth = depth + 1;
     PadObj *idn = _PadTrv_Trav(ast, targs);
-    if (!idn || PadAst_HasErrs(ast)) {
+    if (!idn || PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
@@ -1122,7 +1122,7 @@ trv_block_stmt(PadAST *ast, PadTrvArgs *targs) {
 
     // push back scope
     PadAST *ref_ast = func->ref_ast;
-    PadCtx *ref_context = PadAst_GetRefCtx(ref_ast);
+    PadCtx *ref_context = PadAST_GetRefCtx(ref_ast);
     PadCtx_PushBackScope(ref_context);
 
     // extract variables from injector's varmap to current scope
@@ -1142,7 +1142,7 @@ trv_block_stmt(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = content;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to traverse content");
             goto fail;
         }
@@ -1173,7 +1173,7 @@ trv_inject_stmt(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = inject_stmt->identifier;
     targs->depth = depth + 1;
     PadObj *idn = _PadTrv_Trav(ast, targs);
-    if (!idn || PadAst_HasErrs(ast)) {
+    if (!idn || PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
@@ -1209,7 +1209,7 @@ trv_inject_stmt(PadAST *ast, PadTrvArgs *targs) {
 
     // inject varmap at block
     PadAST *ref_ast = ast;
-    PadCtx *ref_context = PadAst_GetRefCtx(ref_ast);
+    PadCtx *ref_context = PadAST_GetRefCtx(ref_ast);
     PadObjDict *ref_varmap = PadCtx_GetRefVarmapCurScope(ref_context);
     PadObjDict *varmap = PadObjDict_ShallowCopy(ref_varmap);
     block_stmt->inject_varmap = varmap;
@@ -1233,24 +1233,24 @@ trv_def_struct(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = struct_->identifier;
     targs->depth = depth + 1;
     PadObj *idn = _PadTrv_Trav(ast, targs);
-    if (!idn || PadAst_HasErrs(ast)) {
+    if (!idn || PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
 
     // parse elems
     PadCtx *struct_ctx = PadCtx_New(ast->ref_gc);
-    PadCtx_SetRefPrev(struct_ctx, PadAst_GetRefCtx(ast));
+    PadCtx_SetRefPrev(struct_ctx, PadAST_GetRefCtx(ast));
 
-    PadAST *struct_ast = PadAst_New(ast->ref_config);
-    PadAst_SetRefCtx(struct_ast, struct_ctx);
-    PadAst_SetRefGc(struct_ast, ast->ref_gc);
+    PadAST *struct_ast = PadAST_New(ast->ref_config);
+    PadAST_SetRefCtx(struct_ast, struct_ctx);
+    PadAST_SetRefGc(struct_ast, ast->ref_gc);
 
     PadObj *result = _PadTrv_Trav(struct_ast, &(PadTrvArgs) {
         .ref_node = struct_->elems,
         .depth = 0,
     });
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse elems in struct");
         return_trav(NULL);
     }
@@ -1275,7 +1275,7 @@ trv_def_struct(PadAST *ast, PadTrvArgs *targs) {
         PadObj_GetcIdentName(idn),
         PadMem_Move(def_struct)
     );
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to move object");
         return_trav(NULL);
     }
@@ -1300,7 +1300,7 @@ trv_content(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = content->elems;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to traverse elems");
             return_trav(NULL);
         }
@@ -1309,7 +1309,7 @@ trv_content(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = content->blocks;
         targs->depth = depth + 1;
         result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to traverse blocks");
             return_trav(NULL);
         }
@@ -1338,7 +1338,7 @@ again:
         break;
     case PAD_OBJ_TYPE__CHAIN: {
         rhs = _Pad_ReferRingObjWithRef(rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             return_trav(NULL);
         }
@@ -1470,7 +1470,7 @@ assign_to_chain_call(
     PadObj *rhs
 ) {
     PadObj *obj = Pad_ReferChainCall(ast, ast->error_stack, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain call");
         return NULL;
     }
@@ -1633,7 +1633,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__ARRAY: {
         PadObj *result = assign_to_chain_array_index(ast, targs, owner, co, rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to assign to array");
             return NULL;
         }
@@ -1641,7 +1641,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__DICT: {
         PadObj *result = assign_to_chain_dict_index(ast, targs, owner, co, rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to assign to dict");
             return NULL;
         }
@@ -1666,7 +1666,7 @@ assign_to_chain_three_objs(
     switch (PadChainObj_GetcType(co)) {
     case PAD_CHAIN_PAD_OBJ_TYPE___DOT: {
         PadObj *result = assign_to_chain_dot(ast, targs, owners, co, rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to assign to chain dot");
             return NULL;
         }
@@ -1674,7 +1674,7 @@ assign_to_chain_three_objs(
     } break;
     case PAD_CHAIN_PAD_OBJ_TYPE___CALL: {
         PadObj *result = assign_to_chain_call(ast, targs, owners, co, rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to assign to chain call");
             return NULL;
         }
@@ -1682,7 +1682,7 @@ assign_to_chain_three_objs(
     } break;
     case PAD_CHAIN_PAD_OBJ_TYPE___INDEX: {
         PadObj *result = assign_to_chain_index(ast, targs, owners, co, rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to assign to chain index");
             return NULL;
         }
@@ -1726,7 +1726,7 @@ trv_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
         assert(co);
 
         last = _Pad_ReferChainThreeObjs(owners, co);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer three objects");
             return NULL;
         }
@@ -1738,7 +1738,7 @@ trv_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
     PadChainObj *co = PadChainObjs_Get(cos, coslen-1);
     assert(co);
     last = assign_to_chain_three_objs(ast, targs, owners, co, rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to assign to three objects");
         return NULL;
     }
@@ -1758,7 +1758,7 @@ trv_calc_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
 
     targs->depth = depth + 1;
     PadObj *obj = trv_assign_to_chain(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
 
@@ -1828,7 +1828,7 @@ trv_simple_assign(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = rnode;
     targs->depth = depth + 1;
     PadObj *rhs = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
@@ -1841,7 +1841,7 @@ trv_simple_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = lnode;
         targs->depth = depth + 1;
         PadObj *lhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         if (!lhs) {
@@ -1852,7 +1852,7 @@ trv_simple_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
         PadObj *result = trv_calc_assign(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
 
@@ -1893,7 +1893,7 @@ trv_assign(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = rnode;
     targs->depth = depth + 1;
     PadObj *rhs = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         _return(NULL);
     }
     assert(rhs);
@@ -1912,7 +1912,7 @@ trv_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->do_not_refer_chain = true;
 
         PadObj *lhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             _return(NULL);
         }
         // why lhs in null?
@@ -1925,7 +1925,7 @@ trv_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
         PadObj *result = trv_calc_assign(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             _return(NULL);
         }
 
@@ -1958,7 +1958,7 @@ trv_assign_list(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = assign;
     targs->depth = depth + 1;
     PadObj *obj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         PadObjAry_Del(objarr);
         return_trav(NULL);
     }
@@ -1974,7 +1974,7 @@ trv_assign_list(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = assign;
         targs->depth = depth + 1;
         obj = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             PadObjAry_Del(objarr);
             return_trav(NULL);
         }
@@ -2023,7 +2023,7 @@ trv_multi_assign(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = rnode;
     targs->depth = depth + 1;
     PadObj *rhs = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(rhs);
@@ -2035,7 +2035,7 @@ trv_multi_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = lnode;
         targs->depth = depth + 1;
         PadObj *lhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         if (!lhs) {
@@ -2047,7 +2047,7 @@ trv_multi_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
         PadObj *result = trv_calc_assign(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         if (!result) {
@@ -2089,7 +2089,7 @@ trv_test_list(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = test;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
 
@@ -2117,14 +2117,14 @@ trv_call_args(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = test;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to traverse call argument");
             return_trav(NULL);
         }
         assert(result);
 
         PadObj *ref = _Pad_ExtractRefOfObjAll(result);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to extract reference");
             return_trav(NULL);
         }
@@ -3281,7 +3281,7 @@ trv_or_test(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = lnode;
     targs->depth = depth + 1;
     PadObj *lhs = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(lhs);
@@ -3292,7 +3292,7 @@ trv_or_test(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = rnode;
         targs->depth = depth + 1;
         PadObj *rhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         if (!rhs) {
@@ -3304,7 +3304,7 @@ trv_or_test(PadAST *ast, PadTrvArgs *targs) {
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
         PadObj *result = trv_compare_or(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(result);
@@ -4317,7 +4317,7 @@ trv_and_test(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = lnode;
     targs->depth = depth + 1;
     PadObj *lhs = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(lhs);
@@ -4328,7 +4328,7 @@ trv_and_test(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = rnode;
         targs->depth = depth + 1;
         PadObj *rhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         if (!rhs) {
@@ -4340,7 +4340,7 @@ trv_and_test(PadAST *ast, PadTrvArgs *targs) {
         targs->rhs_obj = rhs;
         targs->depth = depth + 1;
         PadObj *result = trv_compare_and(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(result);
@@ -4432,7 +4432,7 @@ trv_not_test(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = not_test->not_test;
         targs->depth = depth + 1;
         PadObj *operand = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         if (!operand) {
@@ -4790,7 +4790,7 @@ trv_compare_comparison_eq_nil(PadAST *ast, PadTrvArgs *targs) {
         targs->rhs_obj = rval;
         targs->depth = depth + 1;
         PadObj *obj = trv_compare_comparison_not_eq_nil(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to compare not equal to nil");
             return_trav(NULL);
         }
@@ -6623,7 +6623,7 @@ trv_comparison(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = lnode;
         targs->depth = depth + 1;
         PadObj *lhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -6641,7 +6641,7 @@ trv_comparison(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = rnode;
             targs->depth = depth + 1;
             PadObj *rhs = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
@@ -6652,7 +6652,7 @@ trv_comparison(PadAST *ast, PadTrvArgs *targs) {
             targs->rhs_obj = rhs;
             targs->depth = depth + 1;
             PadObj *result = trv_compare_comparison(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
 
@@ -6870,7 +6870,7 @@ trv_calc_expr_add_array(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__ARRAY);
 
     PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
     }
@@ -7216,7 +7216,7 @@ trv_expr(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = lnode;
         targs->depth = depth + 1;
         PadObj *lhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -7232,7 +7232,7 @@ trv_expr(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = rnode;
             targs->depth = depth + 1;
             PadObj *rhs = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
@@ -7243,7 +7243,7 @@ trv_expr(PadAST *ast, PadTrvArgs *targs) {
             targs->rhs_obj = rhs;
             targs->depth = depth + 1;
             PadObj *result = trv_calc_expr(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
 
@@ -7739,7 +7739,7 @@ trv_calc_term_div(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
         PadObj *lval = Pad_ExtractCopyOfObj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("can't division. index object value is null");
             return_trav(NULL);
         }
@@ -7766,7 +7766,7 @@ trv_calc_term_mod_int(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs && rhs);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -7812,7 +7812,7 @@ trv_calc_term_mod_bool(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs && rhs);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -7861,7 +7861,7 @@ trv_calc_term_mod(PadAST *ast, PadTrvArgs *targs) {
     targs->depth += 1;
 
     PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -7946,7 +7946,7 @@ trv_term(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = lnode;
         targs->depth = depth + 1;
         PadObj *lhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         assert(lhs);
@@ -7963,7 +7963,7 @@ trv_term(PadAST *ast, PadTrvArgs *targs) {
             targs->ref_node = rnode;
             targs->depth = depth + 1;
             PadObj *rhs = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
             assert(rnode);
@@ -7974,7 +7974,7 @@ trv_term(PadAST *ast, PadTrvArgs *targs) {
             targs->rhs_obj = rhs;
             targs->depth = depth + 1;
             PadObj *result = trv_calc_term(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_trav(NULL);
             }
 
@@ -8002,7 +8002,7 @@ trv_negative(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = negative->chain;
     targs->depth = depth + 1;
     PadObj *operand = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     if (!operand) {
@@ -8070,7 +8070,7 @@ trv_chain(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = factor;
     targs->depth = depth + 1;
     PadObj *operand = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse factor");
         return_trav(NULL);
     }
@@ -8095,7 +8095,7 @@ trv_chain(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = node;
         targs->depth = depth + 1;
         PadObj *elem = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to traverse node");
             goto fail;
         }
@@ -8132,7 +8132,7 @@ trv_chain(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj_chain);
     } else {
         PadObj *result = _Pad_ReferRingObjWithRef(obj_chain);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             goto fail;
         }
@@ -8248,7 +8248,7 @@ trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         PadObj *rvar = _Pad_ExtractRefOfObjAll(rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
         }
@@ -8304,7 +8304,7 @@ trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         PadObj *rvar = _Pad_ExtractRefOfObjAll(rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
         }
@@ -8363,7 +8363,7 @@ trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         PadObj *rvar = _Pad_ExtractRefOfObjAll(rhs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to extract object");
             return_trav(NULL);
         }
@@ -8496,13 +8496,13 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return_trav(NULL);
     }
 
     PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -8629,13 +8629,13 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
     PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
     }
@@ -8736,13 +8736,13 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
     PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
     }
@@ -8858,13 +8858,13 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
     PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
     }
@@ -8983,13 +8983,13 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain object");
         return NULL;
     }
 
     PadObj *rref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return NULL;
     }
@@ -9072,7 +9072,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__CHAIN: {
         obj = _Pad_ReferRingObjWithRef(obj);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
             return_trav(NULL);
         }
@@ -9123,7 +9123,7 @@ trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9170,7 +9170,7 @@ trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9216,7 +9216,7 @@ trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9261,7 +9261,7 @@ trv_calc_asscalc_sub_ass_idn(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to pull reference");
         return_trav(NULL);
     }
@@ -9333,7 +9333,7 @@ trv_calc_asscalc_mul_ass_int(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9380,7 +9380,7 @@ trv_calc_asscalc_mul_ass_float(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9426,7 +9426,7 @@ trv_calc_asscalc_mul_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9475,7 +9475,7 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, PadTrvArgs *targs) {
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9532,7 +9532,7 @@ trv_calc_asscalc_mul_ass(PadAST *ast, PadTrvArgs *targs) {
     }
 
     PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9581,7 +9581,7 @@ trv_calc_asscalc_div_ass_int(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9634,7 +9634,7 @@ trv_calc_asscalc_div_ass_float(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__FLOAT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9686,7 +9686,7 @@ trv_calc_asscalc_div_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9751,7 +9751,7 @@ trv_calc_asscalc_div_ass(PadAST *ast, PadTrvArgs *targs) {
     }
 
     PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9791,7 +9791,7 @@ trv_calc_asscalc_mod_ass_int(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__INT);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9836,7 +9836,7 @@ trv_calc_asscalc_mod_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs->type == PAD_OBJ_TYPE__BOOL);
 
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9892,7 +9892,7 @@ trv_calc_asscalc_mod_ass(PadAST *ast, PadTrvArgs *targs) {
     }
 
     PadObj *lhsref = _Pad_ExtractRefOfObjAll(lhs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
         return_trav(NULL);
     }
@@ -9997,7 +9997,7 @@ trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
         targs->depth = depth + 1;
         targs->do_not_refer_chain = true;
         PadObj *rhs = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             _return(NULL);
         }
         assert(rhs);
@@ -10016,7 +10016,7 @@ trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
             targs->depth = depth + 1;
             targs->do_not_refer_chain = true;
             PadObj *lhs = _PadTrv_Trav(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 _return(NULL);
             }
             assert(lnode);
@@ -10027,7 +10027,7 @@ trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
             targs->lhs_obj = lhs;
             targs->depth = depth + 1;
             PadObj *result = trv_calc_asscalc(ast, targs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 _return(NULL);
             }
             assert(result);
@@ -10218,13 +10218,13 @@ trv_array_elems(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = n;
         targs->depth = depth + 1;
         PadObj *result = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("result is null");
             return_trav(NULL);
         }
 
         PadObj *ref = _Pad_ExtractRefOfObjAll(result);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to extract reference");
             return_trav(NULL);
         }
@@ -10285,7 +10285,7 @@ trv_dict_elem(PadAST *ast, PadTrvArgs *targs) {
     check("call _PadTrv_Trav with key simple assign");
     targs->ref_node = dict_elem->key_simple_assign;
     PadObj *key = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(key);
@@ -10301,7 +10301,7 @@ trv_dict_elem(PadAST *ast, PadTrvArgs *targs) {
 
     targs->ref_node = dict_elem->value_simple_assign;
     PadObj *val = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_trav(NULL);
     }
     assert(val);
@@ -10335,7 +10335,7 @@ trv_dict_elems(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = dict_elem;
         targs->depth = depth + 1;
         PadObj *arrobj = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             PadObj_Del(arrobj);
             PadObjDict_Del(objdict);
             return_trav(NULL);
@@ -10457,12 +10457,12 @@ trv_func_def(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = func_def->identifier;
     targs->depth = depth + 1;
     PadObj *name = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
     if (!name) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
         }
         pushb_error("failed to traverse name in traverse func def");
@@ -10473,7 +10473,7 @@ trv_func_def(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = func_def->func_def_params;
     targs->depth = depth + 1;
     PadObj *def_args = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse func def params");
         return_trav(NULL);
     }
@@ -10486,7 +10486,7 @@ trv_func_def(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = func_def->func_extends;
         targs->depth = depth + 1;
         PadObj *extends_func_name = _PadTrv_Trav(ast, targs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             pushb_error("failed to traverse func-extends");
             return_trav(NULL);
         }
@@ -10589,7 +10589,7 @@ trv_func_extends(PadAST *ast, PadTrvArgs *targs) {
     targs->ref_node = func_extends->identifier;
     targs->depth = depth + 1;
     PadObj *idnobj = _PadTrv_Trav(ast, targs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         pushb_error("failed to traverse identifier");
         return_trav(NULL);
     }
@@ -11032,8 +11032,8 @@ trv_define_builtin_funcs(PadAST *ast) {
 
 void
 PadTrv_Trav(PadAST *ast, PadCtx *context) {
-    PadAst_SetRefCtx(ast, context);
-    PadAst_SetRefGc(ast, PadCtx_GetGc(context));
+    PadAST_SetRefCtx(ast, context);
+    PadAST_SetRefGc(ast, PadCtx_GetGc(context));
 
     if (!PadTrv_ImportBltMods(ast)) {
         Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to import builtin modules");

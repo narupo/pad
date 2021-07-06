@@ -7,13 +7,13 @@ extern void
 PadTkr_Del(PadTkr *self);
 
 extern void
-PadAst_Del(PadAST *self);
+PadAST_Del(PadAST *self);
 
 extern PadAST *
-PadAst_DeepCopy(const PadAST *other);
+PadAST_DeepCopy(const PadAST *other);
 
 extern PadAST *
-PadAst_ShallowCopy(const PadAST *other);
+PadAST_ShallowCopy(const PadAST *other);
 
 extern void
 PadCtx_Del(PadCtx *self);
@@ -98,7 +98,7 @@ PadObj_Del(PadObj *self) {
         self->module.program_source = NULL;
         PadTkr_Del(self->module.tokenizer);
         self->module.tokenizer = NULL;
-        PadAst_Del(self->module.ast);
+        PadAST_Del(self->module.ast);
         self->module.ast = NULL;
         PadCtx_Del(self->module.context);
         self->module.context = NULL;
@@ -243,14 +243,14 @@ PadObj_DeepCopy(const PadObj *other) {
             }
         }
         self->module.tokenizer = PadTkr_DeepCopy(other->module.tokenizer);
-        self->module.ast = PadAst_DeepCopy(other->module.ast);
+        self->module.ast = PadAST_DeepCopy(other->module.ast);
         self->module.context = PadCtx_DeepCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case PAD_OBJ_TYPE__DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
         self->def_struct.identifier = PadObj_DeepCopy(other->def_struct.identifier); 
-        self->def_struct.ast = PadAst_DeepCopy(other->def_struct.ast);
+        self->def_struct.ast = PadAST_DeepCopy(other->def_struct.ast);
         self->def_struct.context = PadCtx_DeepCopy(other->def_struct.context);
         break;
     case PAD_OBJ_TYPE__OBJECT:
@@ -359,14 +359,14 @@ PadObj_ShallowCopy(const PadObj *other) {
             }
         }
         self->module.tokenizer = PadTkr_ShallowCopy(other->module.tokenizer);
-        self->module.ast = PadAst_ShallowCopy(other->module.ast);
+        self->module.ast = PadAST_ShallowCopy(other->module.ast);
         self->module.context = PadCtx_ShallowCopy(other->module.context);
         self->module.builtin_func_infos = other->module.builtin_func_infos;
         break;
     case PAD_OBJ_TYPE__DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
         self->def_struct.identifier = PadObj_ShallowCopy(other->def_struct.identifier); 
-        self->def_struct.ast = PadAst_ShallowCopy(other->def_struct.ast);
+        self->def_struct.ast = PadAST_ShallowCopy(other->def_struct.ast);
         self->def_struct.context = PadCtx_ShallowCopy(other->def_struct.context);
         break;
     case PAD_OBJ_TYPE__OBJECT:

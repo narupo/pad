@@ -98,7 +98,7 @@ create_modobj(
 
     // compile source
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
-    PadAST *ast = PadAst_New(self->ref_config);
+    PadAST *ast = PadAST_New(self->ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
     PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
 
@@ -113,17 +113,17 @@ create_modobj(
         return NULL;
     }
 
-    PadAst_Clear(ast);
+    PadAST_Clear(ast);
     PadCc_Compile(ast, PadTkr_GetToks(tkr));
-    if (PadAst_HasErrs(ast)) {
-        PadImporter_SetErr(self, PadAst_GetcFirstErrMsg(ast));
+    if (PadAST_HasErrs(ast)) {
+        PadImporter_SetErr(self, PadAST_GetcFirstErrMsg(ast));
         free(src);
         return NULL;
     }
 
     PadTrv_Trav(ast, ctx);
-    if (PadAst_HasErrs(ast)) {
-        PadImporter_SetErr(self, PadAst_GetcFirstErrMsg(ast));
+    if (PadAST_HasErrs(ast)) {
+        PadImporter_SetErr(self, PadAST_GetcFirstErrMsg(ast));
         free(src);
         return NULL;
     }

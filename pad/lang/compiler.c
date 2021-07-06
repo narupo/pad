@@ -21,7 +21,7 @@
             __func__, \
             cargs->depth, \
             PadTok_TypeToStr(t), \
-            PadAst_GetcLastErrMsg(ast) \
+            PadAST_GetcLastErrMsg(ast) \
         ); \
         fflush(stderr); \
     } \
@@ -41,7 +41,7 @@
             cargs->depth, \
             ret, \
             PadTok_TypeToStr(t), \
-            PadAst_GetcLastErrMsg(ast) \
+            PadAST_GetcLastErrMsg(ast) \
         ); \
         fflush(stderr); \
     } \
@@ -58,7 +58,7 @@
             cargs->depth, \
             msg, \
             PadTok_TypeToStr(*ast->ref_ptr), \
-            PadAst_GetcLastErrMsg(ast) \
+            PadAST_GetcLastErrMsg(ast) \
         ); \
     } \
 
@@ -227,7 +227,7 @@ cc_assign(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -262,7 +262,7 @@ cc_assign(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *rhs = cc_test(ast, cargs);
     if (!rhs) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup("syntax error. not found rhs test in assign list");
@@ -288,7 +288,7 @@ cc_assign(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         rhs = cc_test(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs test in assign list (2)");
@@ -313,7 +313,7 @@ cc_assign_list(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -352,7 +352,7 @@ cc_assign_list(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_assign(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup(""); // not error
@@ -374,8 +374,8 @@ cc_formula(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->assign_list); \
-        PadAst_DelNodes(ast, cur->multi_assign); \
+        PadAST_DelNodes(ast, cur->assign_list); \
+        PadAST_DelNodes(ast, cur->multi_assign); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -389,7 +389,7 @@ cc_formula(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->assign_list = cc_assign_list(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->assign_list) {
@@ -401,7 +401,7 @@ cc_formula(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->multi_assign = cc_multi_assign(ast, cargs);
     if (!cur->multi_assign) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup("");  // not error
@@ -423,7 +423,7 @@ cc_multi_assign(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -439,7 +439,7 @@ cc_multi_assign(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *node = cc_test_list(ast, cargs);
     if (!node) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -464,7 +464,7 @@ cc_multi_assign(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         node = cc_test_list(ast, cargs);
         if (!node) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs in multi assign");
@@ -489,7 +489,7 @@ cc_test_list(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -504,7 +504,7 @@ cc_test_list(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *lhs = cc_test(ast, cargs);
     if (!lhs) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -527,7 +527,7 @@ cc_test_list(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_test(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found test in test list");
@@ -552,7 +552,7 @@ cc_call_args(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -568,7 +568,7 @@ cc_call_args(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *lhs = cc_test(ast, cargs);
     if (!lhs) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return PadNode_New(PAD_NODE_TYPE__CALL_ARGS, cur, savetok);
@@ -591,7 +591,7 @@ cc_call_args(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_test(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found test in test list");
@@ -616,9 +616,9 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
-        PadAst_DelNodes(ast, cur->init_formula); \
-        PadAst_DelNodes(ast, cur->comp_formula); \
-        PadAst_DelNodes(ast, cur->update_formula); \
+        PadAST_DelNodes(ast, cur->init_formula); \
+        PadAST_DelNodes(ast, cur->comp_formula); \
+        PadAST_DelNodes(ast, cur->update_formula); \
         PadNodeAry_Del(cur->contents); \
         free(cur); \
         if (strlen(fmt)) { \
@@ -682,7 +682,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
                 PadNode *blocks = cc_blocks(ast, cargs);
-                if (PadAst_HasErrs(ast)) {
+                if (PadAST_HasErrs(ast)) {
                     return_cleanup("");
                 }
                 if (blocks) {
@@ -708,7 +708,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
                 PadNode *elems = cc_elems(ast, cargs);
-                if (PadAst_HasErrs(ast)) {
+                if (PadAST_HasErrs(ast)) {
                     return_cleanup("");
                 }
                 if (elems) {
@@ -732,7 +732,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         cur->init_formula = cc_formula(ast, cargs);
         if (!cur->init_formula) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found initialize assign list in for statement");
@@ -764,7 +764,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
             cargs->depth = depth + 1;
             cur->comp_formula = cc_formula(ast, cargs);
             // allow empty
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
 
@@ -790,7 +790,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
             cargs->depth = depth + 1;
             cur->update_formula = cc_formula(ast, cargs);
             // allow empty
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
         } else {
@@ -847,7 +847,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
                 PadNode *blocks = cc_blocks(ast, cargs);
-                if (PadAst_HasErrs(ast)) {
+                if (PadAST_HasErrs(ast)) {
                     return_cleanup("");
                 }
                 if (blocks) {
@@ -874,7 +874,7 @@ cc_for_stmt(PadAST *ast, PadCcArgs *cargs) {
                 cargs->depth = depth + 1;
                 cargs->is_in_loop = true;
                 PadNode *elems = cc_elems(ast, cargs);
-                if (PadAst_HasErrs(ast)) {
+                if (PadAST_HasErrs(ast)) {
                     return_cleanup("");
                 }
                 if (elems) {
@@ -980,7 +980,7 @@ cc_return_stmt(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->formula = cc_formula(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     // allow null
@@ -1098,7 +1098,7 @@ cc_simple_assign(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -1113,7 +1113,7 @@ cc_simple_assign(PadAST *ast, PadCcArgs *cargs) {
     check("call cc_test");
     cargs->depth = depth + 1;
     PadNode *lhs = cc_test(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1137,7 +1137,7 @@ cc_simple_assign(PadAST *ast, PadCcArgs *cargs) {
         check("call cc_test");
         cargs->depth = depth + 1;
         PadNode *rhs = cc_test(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1164,7 +1164,7 @@ cc_array_elems(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -1180,7 +1180,7 @@ cc_array_elems(PadAST *ast, PadCcArgs *cargs) {
     PadTok *t = cur_tok(ast);
     cargs->depth = depth + 1;
     PadNode *lhs = cc_simple_assign(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1218,7 +1218,7 @@ cc_array_elems(PadAST *ast, PadCcArgs *cargs) {
         t = cur_tok(ast);
         cargs->depth = depth + 1;
         PadNode *rhs = cc_simple_assign(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1242,7 +1242,7 @@ cc_array(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->array_elems); \
+        PadAST_DelNodes(ast, cur->array_elems); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -1267,7 +1267,7 @@ cc_array(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->array_elems = cc_array_elems(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     // allow null
@@ -1298,8 +1298,8 @@ cc_dict_elem(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->key_simple_assign); \
-        PadAst_DelNodes(ast, cur->value_simple_assign); \
+        PadAST_DelNodes(ast, cur->key_simple_assign); \
+        PadAST_DelNodes(ast, cur->value_simple_assign); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -1311,7 +1311,7 @@ cc_dict_elem(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->key_simple_assign = cc_simple_assign(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->key_simple_assign) {
@@ -1339,7 +1339,7 @@ cc_dict_elem(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->value_simple_assign = cc_simple_assign(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->value_simple_assign) {
@@ -1362,7 +1362,7 @@ cc_dict_elems(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -1378,7 +1378,7 @@ cc_dict_elems(PadAST *ast, PadCcArgs *cargs) {
     PadTok *t = cur_tok(ast);
     cargs->depth = depth + 1;
     PadNode *lhs = cc_dict_elem(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1415,7 +1415,7 @@ cc_dict_elems(PadAST *ast, PadCcArgs *cargs) {
         t = cur_tok(ast);
         cargs->depth = depth + 1;
         PadNode *rhs = cc_dict_elem(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1440,7 +1440,7 @@ cc_dict(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->dict_elems); \
+        PadAST_DelNodes(ast, cur->dict_elems); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -1464,7 +1464,7 @@ cc_dict(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->dict_elems = cc_dict_elems(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->dict_elems) {
@@ -1636,15 +1636,15 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(fmt, ...) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->nil); \
-        PadAst_DelNodes(ast, cur->true_); \
-        PadAst_DelNodes(ast, cur->false_); \
-        PadAst_DelNodes(ast, cur->digit); \
-        PadAst_DelNodes(ast, cur->float_); \
-        PadAst_DelNodes(ast, cur->string); \
-        PadAst_DelNodes(ast, cur->array); \
-        PadAst_DelNodes(ast, cur->dict); \
-        PadAst_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->nil); \
+        PadAST_DelNodes(ast, cur->true_); \
+        PadAST_DelNodes(ast, cur->false_); \
+        PadAST_DelNodes(ast, cur->digit); \
+        PadAST_DelNodes(ast, cur->float_); \
+        PadAST_DelNodes(ast, cur->string); \
+        PadAST_DelNodes(ast, cur->array); \
+        PadAST_DelNodes(ast, cur->dict); \
+        PadAST_DelNodes(ast, cur->identifier); \
         free(cur); \
         if (strlen(fmt)) { \
             pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
@@ -1658,7 +1658,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->nil = cc_nil(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->nil) {
@@ -1669,7 +1669,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->false_ = cc_false_(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->false_) {
@@ -1680,7 +1680,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->true_ = cc_true_(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->true_) {
@@ -1691,7 +1691,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->digit = cc_digit(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->digit) {
@@ -1702,7 +1702,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->float_ = cc_float(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->float_) {
@@ -1713,7 +1713,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->string = cc_string(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->string) {
@@ -1724,7 +1724,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->array = cc_array(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->array) {
@@ -1735,7 +1735,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->dict = cc_dict(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->dict) {
@@ -1746,7 +1746,7 @@ cc_atom(PadAST *ast, PadCcArgs *cargs) {
     savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->identifier) {
@@ -1766,8 +1766,8 @@ cc_factor(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->atom); \
-        PadAst_DelNodes(ast, cur->formula); \
+        PadAST_DelNodes(ast, cur->atom); \
+        PadAST_DelNodes(ast, cur->formula); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -1781,7 +1781,7 @@ cc_factor(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->atom = cc_atom(ast, cargs);
     if (!cur->atom) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
 
@@ -1799,7 +1799,7 @@ cc_factor(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         cur->formula = cc_formula(ast, cargs);
         if (!cur->formula) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found content of ( )");
@@ -1833,7 +1833,7 @@ cc_asscalc(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -1849,7 +1849,7 @@ cc_asscalc(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *lhs = cc_expr(ast, cargs);
     if (!lhs) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -1864,7 +1864,7 @@ cc_asscalc(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *op = cc_augassign(ast, cargs);
         if (!op) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_parse(PadNode_New(PAD_NODE_TYPE__ASSCALC, cur, savetok));
@@ -1877,7 +1877,7 @@ cc_asscalc(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_expr(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in asscalc");
@@ -1903,7 +1903,7 @@ cc_term(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -1918,7 +1918,7 @@ cc_term(PadAST *ast, PadCcArgs *cargs) {
     check("call left cc_dot");
     cargs->depth = depth + 1;
     PadNode *lhs = cc_negative(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!lhs) {
@@ -1933,7 +1933,7 @@ cc_term(PadAST *ast, PadCcArgs *cargs) {
         const PadTok *savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         PadNode *op = cc_mul_div_op(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!op) {
@@ -1946,7 +1946,7 @@ cc_term(PadAST *ast, PadCcArgs *cargs) {
         check("call right cc_dot");
         cargs->depth = depth + 1;
         PadNode *rhs = cc_negative(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!rhs) {
@@ -1970,7 +1970,7 @@ cc_negative(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->chain); \
+        PadAST_DelNodes(ast, cur->chain); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -1992,7 +1992,7 @@ cc_negative(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->chain = cc_ring(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->chain) {
@@ -2016,7 +2016,7 @@ cc_ring(PadAST *ast, PadCcArgs *cargs) {
         for (int32_t i = 0; i < PadChainNodes_Len(cur->chain_nodes); ++i) { \
             PadChainNode *cn = PadChainNodes_Get(cur->chain_nodes, i); \
             PadNode *factor = PadChainNode_GetNode(cn); \
-            PadAst_DelNodes(ast, factor); \
+            PadAST_DelNodes(ast, factor); \
         } \
         free(cur); \
         if (strlen(msg)) { \
@@ -2031,7 +2031,7 @@ cc_ring(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->factor = cc_factor(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("failed to compile factor");
     }
     if (!cur->factor) {
@@ -2067,7 +2067,7 @@ cc_ring(PadAST *ast, PadCcArgs *cargs) {
             check("call cc_factor");
             cargs->depth = depth + 1;
             PadNode *factor = cc_factor(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile factor");
             }
             assert(factor);
@@ -2085,7 +2085,7 @@ cc_ring(PadAST *ast, PadCcArgs *cargs) {
             PadTok **saveptr = ast->ref_ptr;
             cargs->depth = depth + 1;
             PadNode *simple_assign = cc_simple_assign(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile simple assign");
             }
             if (!simple_assign) {
@@ -2117,7 +2117,7 @@ cc_ring(PadAST *ast, PadCcArgs *cargs) {
             check("call cc_call_args");
             cargs->depth = depth + 1;
             PadNode *call_args = cc_call_args(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile simple assign");
             }
             assert(call_args);
@@ -2226,7 +2226,7 @@ cc_expr(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -2242,7 +2242,7 @@ cc_expr(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *lhs = cc_term(ast, cargs);
     if (!lhs) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -2257,7 +2257,7 @@ cc_expr(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *op = cc_add_sub_op(ast, cargs);
         if (!op) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_parse(PadNode_New(PAD_NODE_TYPE__EXPR, cur, savetok));
@@ -2270,7 +2270,7 @@ cc_expr(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_term(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in expr");
@@ -2352,7 +2352,7 @@ cc_comparison(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -2368,7 +2368,7 @@ cc_comparison(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *lexpr = cc_asscalc(ast, cargs);
     if (!lexpr) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -2383,7 +2383,7 @@ cc_comparison(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *comp_op = cc_comp_op(ast, cargs);
         if (!comp_op) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_parse(PadNode_New(PAD_NODE_TYPE__COMPARISON, cur, savetok));
@@ -2395,7 +2395,7 @@ cc_comparison(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rexpr = cc_asscalc(ast, cargs);
         if (!rexpr) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             PadNode_Del(comp_op);
@@ -2421,8 +2421,8 @@ cc_not_test(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->not_test); \
-        PadAst_DelNodes(ast, cur->comparison); \
+        PadAST_DelNodes(ast, cur->not_test); \
+        PadAST_DelNodes(ast, cur->comparison); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -2440,7 +2440,7 @@ cc_not_test(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         cur->not_test = cc_not_test(ast, cargs);
         if (!cur->not_test) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found operand in not operator");
@@ -2452,7 +2452,7 @@ cc_not_test(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         cur->comparison = cc_comparison(ast, cargs);
         if (!cur->comparison) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup(""); // not error
@@ -2475,7 +2475,7 @@ cc_and_test(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -2514,7 +2514,7 @@ cc_and_test(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_not_test(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in 'and' operator");
@@ -2541,7 +2541,7 @@ cc_or_test(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->nodearr); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->nodearr); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -2580,7 +2580,7 @@ cc_or_test(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         PadNode *rhs = cc_and_test(ast, cargs);
         if (!rhs) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found rhs operand in 'or' operator");
@@ -2604,7 +2604,7 @@ cc_test(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->or_test); \
+        PadAST_DelNodes(ast, cur->or_test); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -2690,7 +2690,7 @@ cc_else_stmt(PadAST *ast, PadCcArgs *cargs) {
             check("call cc_blocks");
             cargs->depth = depth + 1;
             PadNode *blocks = cc_blocks(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile blocks");
             }
             if (blocks) {
@@ -2718,7 +2718,7 @@ cc_else_stmt(PadAST *ast, PadCcArgs *cargs) {
             check("call cc_elems");
             cargs->depth = depth + 1;
             PadNode *elems = cc_elems(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile elems");
             }
             if (elems) {
@@ -2743,10 +2743,10 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->test); \
+        PadAST_DelNodes(ast, cur->test); \
         PadNodeAry_Del(cur->contents); \
-        PadAst_DelNodes(ast, cur->elif_stmt); \
-        PadAst_DelNodes(ast, cur->else_stmt); \
+        PadAST_DelNodes(ast, cur->elif_stmt); \
+        PadAST_DelNodes(ast, cur->else_stmt); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -2784,7 +2784,7 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
     cur->test = cc_test(ast, cargs);
     if (!cur->test) {
         ast->ref_ptr = save_ptr;
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
 
@@ -2827,7 +2827,7 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
             cargs->depth = depth + 1;
             cargs->if_stmt_type = 1;
             PadNode *elif = cc_if_stmt(ast, cargs);
-            if (!elif || PadAst_HasErrs(ast)) {
+            if (!elif || PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile elif statement");
             }
             cur->elif_stmt = elif;
@@ -2838,7 +2838,7 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
 
             cargs->depth = depth + 1;
             PadNode *else_ = cc_else_stmt(ast, cargs);
-            if (!else_ || PadAst_HasErrs(ast)) {
+            if (!else_ || PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile else statement");
             }
             cur->else_stmt = else_;
@@ -2862,7 +2862,7 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
             check("call cc_blocks");
             cargs->depth = depth + 1;
             PadNode *blocks = cc_blocks(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile blocks");
             }
             if (blocks) {
@@ -2887,7 +2887,7 @@ cc_if_stmt(PadAST *ast, PadCcArgs *cargs) {
             check("call cc_elems");
             cargs->depth = depth + 1;
             PadNode *elems = cc_elems(ast, cargs);
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("failed to compile elems");
             }
             if (elems) {
@@ -2919,8 +2919,8 @@ cc_import_as_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(fmt, ...) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->path); \
-        PadAst_DelNodes(ast, cur->alias); \
+        PadAST_DelNodes(ast, cur->path); \
+        PadAST_DelNodes(ast, cur->alias); \
         free(cur); \
         if (strlen(fmt)) { \
             pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
@@ -2937,7 +2937,7 @@ cc_import_as_stmt(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->path = cc_string(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (!cur->path) {
         return_cleanup("not found path in compile import as statement");
@@ -2954,7 +2954,7 @@ cc_import_as_stmt(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->alias = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (!cur->alias) {
         return_cleanup("not found alias in compile import as statement");
@@ -2973,8 +2973,8 @@ cc_import_var(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(fmt, ...) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->identifier); \
-        PadAst_DelNodes(ast, cur->alias); \
+        PadAST_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->alias); \
         free(cur); \
         if (strlen(fmt)) { \
             pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
@@ -2986,7 +2986,7 @@ cc_import_var(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->identifier) {
@@ -3007,7 +3007,7 @@ cc_import_var(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->alias = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->alias) {
@@ -3031,7 +3031,7 @@ cc_import_vars(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (int32_t i = 0; i < PadNodeAry_Len(cur->nodearr); ++i) { \
             PadNode *node = PadNodeAry_Get(cur->nodearr, i); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         PadNodeAry_DelWithoutNodes(cur->nodearr); \
         free(cur); \
@@ -3058,7 +3058,7 @@ cc_import_vars(PadAST *ast, PadCcArgs *cargs) {
 
         cargs->depth = depth + 1;
         PadNode *import_var = cc_import_var(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!import_var) {
@@ -3082,7 +3082,7 @@ cc_import_vars(PadAST *ast, PadCcArgs *cargs) {
 
         cargs->depth = depth + 1;
         PadNode *import_var = cc_import_var(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!import_var) {
@@ -3138,8 +3138,8 @@ cc_from_import_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(fmt, ...) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->path); \
-        PadAst_DelNodes(ast, cur->import_vars); \
+        PadAST_DelNodes(ast, cur->path); \
+        PadAST_DelNodes(ast, cur->import_vars); \
         free(cur); \
         if (strlen(fmt)) { \
             pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
@@ -3157,7 +3157,7 @@ cc_from_import_stmt(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->path = cc_string(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->path) {
@@ -3173,7 +3173,7 @@ cc_from_import_stmt(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->import_vars = cc_import_vars(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->import_vars) {
@@ -3194,8 +3194,8 @@ cc_import_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(fmt, ...) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->import_as_stmt); \
-        PadAst_DelNodes(ast, cur->from_import_stmt); \
+        PadAST_DelNodes(ast, cur->import_as_stmt); \
+        PadAST_DelNodes(ast, cur->from_import_stmt); \
         free(cur); \
         if (strlen(fmt)) { \
             pushb_error(ast, curtok, fmt, ##__VA_ARGS__); \
@@ -3208,13 +3208,13 @@ cc_import_stmt(PadAST *ast, PadCcArgs *cargs) {
     // get import_as_stmt or from_import_stmt
     cargs->depth = depth + 1;
     cur->import_as_stmt = cc_import_as_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->import_as_stmt) {
         cargs->depth = depth + 1;
         cur->from_import_stmt = cc_from_import_stmt(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         if (!cur->from_import_stmt) {
@@ -3253,12 +3253,12 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->import_stmt); \
-        PadAst_DelNodes(ast, cur->if_stmt); \
-        PadAst_DelNodes(ast, cur->for_stmt); \
-        PadAst_DelNodes(ast, cur->break_stmt); \
-        PadAst_DelNodes(ast, cur->continue_stmt); \
-        PadAst_DelNodes(ast, cur->return_stmt); \
+        PadAST_DelNodes(ast, cur->import_stmt); \
+        PadAST_DelNodes(ast, cur->if_stmt); \
+        PadAST_DelNodes(ast, cur->for_stmt); \
+        PadAST_DelNodes(ast, cur->break_stmt); \
+        PadAST_DelNodes(ast, cur->continue_stmt); \
+        PadAST_DelNodes(ast, cur->return_stmt); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3273,7 +3273,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->import_stmt = cc_import_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->import_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3284,7 +3284,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cargs->if_stmt_type = 0;
     cur->if_stmt = cc_if_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->if_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3294,7 +3294,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->for_stmt = cc_for_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->for_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3304,7 +3304,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->break_stmt = cc_break_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->break_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3314,7 +3314,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->continue_stmt = cc_continue_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->continue_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3324,7 +3324,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->return_stmt = cc_return_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->return_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3334,7 +3334,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->block_stmt = cc_block_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->block_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3344,7 +3344,7 @@ cc_stmt(PadAST *ast, PadCcArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->inject_stmt = cc_inject_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->inject_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
@@ -3364,10 +3364,10 @@ cc_block_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->identifier); \
         for (int32_t i = 0; i < PadNodeAry_Len(cur->contents); ++i) { \
             PadNode *n = PadNodeAry_Get(cur->contents, i); \
-            PadAst_DelNodes(ast, n); \
+            PadAST_DelNodes(ast, n); \
         } \
         PadNodeAry_DelWithoutNodes(cur->contents); \
         free(cur); \
@@ -3389,7 +3389,7 @@ cc_block_stmt(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (!cur->identifier) {
         return_cleanup("not found identifier in block statement");
@@ -3410,12 +3410,12 @@ cc_block_stmt(PadAST *ast, PadCcArgs *cargs) {
         } else if (t->type == PAD_TOK_TYPE__STMT_END) {
             break;
         } else {
-            PadAst_PrevPtr(ast);
+            PadAST_PrevPtr(ast);
         }
 
         cargs->depth = depth + 1;
         PadNode *content = cc_content(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         } else if (!content) {
             break;  // allow empty contents
@@ -3444,10 +3444,10 @@ cc_inject_stmt(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->identifier); \
         for (int32_t i = 0; i < PadNodeAry_Len(cur->contents); ++i) { \
             PadNode *n = PadNodeAry_Get(cur->contents, i); \
-            PadAst_DelNodes(ast, n); \
+            PadAST_DelNodes(ast, n); \
         } \
         PadNodeAry_Del(cur->contents); \
         free(cur); \
@@ -3465,7 +3465,7 @@ cc_inject_stmt(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (!cur->identifier) {
         return_cleanup("not found identifier in inject statement");
@@ -3487,13 +3487,13 @@ cc_inject_stmt(PadAST *ast, PadCcArgs *cargs) {
         } else if (t->type == PAD_TOK_TYPE__STMT_END) {
             break;
         } else {
-            PadAst_PrevPtr(ast);
+            PadAST_PrevPtr(ast);
         }
 
         savetok = cur_tok(ast);
         cargs->depth = depth + 1;
         PadNode *content = cc_content(ast, cargs);
-        if (!content || PadAst_HasErrs(ast)) {
+        if (!content || PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
 
@@ -3519,8 +3519,8 @@ cc_struct(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg, ...) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->identifier); \
-        PadAst_DelNodes(ast, cur->elems); \
+        PadAST_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg, ##__VA_ARGS__); \
@@ -3540,7 +3540,7 @@ cc_struct(PadAST *ast, PadCcArgs *cargs) {
     PadTok **saveptr = ast->ref_ptr;
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast) || !cur->identifier) {
+    if (PadAST_HasErrs(ast) || !cur->identifier) {
         ast->ref_ptr = saveptr;
         return_cleanup("not found identifier");
     }
@@ -3557,7 +3557,7 @@ cc_struct(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->elems = cc_elems(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     // allow null
@@ -3589,8 +3589,8 @@ cc_content(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->elems); \
-        PadAst_DelNodes(ast, cur->blocks); \
+        PadAST_DelNodes(ast, cur->elems); \
+        PadAST_DelNodes(ast, cur->blocks); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3608,7 +3608,7 @@ cc_content(PadAST *ast, PadCcArgs *cargs) {
     } else if (t->type == PAD_TOK_TYPE__RBRACEAT) {  // '@}'
         cargs->depth = depth + 1;
         cur->blocks = cc_blocks(ast, cargs);
-        if (!cur->blocks || PadAst_HasErrs(ast)) {
+        if (!cur->blocks || PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
 
@@ -3617,10 +3617,10 @@ cc_content(PadAST *ast, PadCcArgs *cargs) {
             return_cleanup("not found '{@' in content");
         }
     } else {
-        PadAst_PrevPtr(ast);
+        PadAST_PrevPtr(ast);
         cargs->depth = depth + 1;
         cur->elems = cc_elems(ast, cargs);
-        if (!cur->elems || PadAst_HasErrs(ast)) {
+        if (!cur->elems || PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
     }
@@ -3641,11 +3641,11 @@ cc_elems(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->def); \
-        PadAst_DelNodes(ast, cur->stmt); \
-        PadAst_DelNodes(ast, cur->struct_); \
-        PadAst_DelNodes(ast, cur->formula); \
-        PadAst_DelNodes(ast, cur->elems); \
+        PadAST_DelNodes(ast, cur->def); \
+        PadAST_DelNodes(ast, cur->stmt); \
+        PadAST_DelNodes(ast, cur->struct_); \
+        PadAST_DelNodes(ast, cur->formula); \
+        PadAST_DelNodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3658,7 +3658,7 @@ cc_elems(PadAST *ast, PadCcArgs *cargs) {
     check("call def");
     cargs->depth = depth + 1;
     cur->def = cc_def(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->def) {
@@ -3668,7 +3668,7 @@ cc_elems(PadAST *ast, PadCcArgs *cargs) {
     check("call cc_stmt");
     cargs->depth = depth + 1;
     cur->stmt = cc_stmt(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->stmt) {
@@ -3678,7 +3678,7 @@ cc_elems(PadAST *ast, PadCcArgs *cargs) {
     check("call cc_struct");
     cargs->depth = depth + 1;
     cur->struct_ = cc_struct(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->struct_) {
@@ -3688,7 +3688,7 @@ cc_elems(PadAST *ast, PadCcArgs *cargs) {
     check("call cc_formula");
     cargs->depth = depth + 1;
     cur->formula = cc_formula(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (cur->formula) {
@@ -3708,7 +3708,7 @@ elem_readed:
     cargs->depth = depth + 1;
     cur->elems = cc_elems(ast, cargs);
     if (!cur->elems) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_parse(PadNode_New(PAD_NODE_TYPE__ELEMS, cur, savetok));
@@ -3751,7 +3751,7 @@ cc_ref_block(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->formula); \
+        PadAST_DelNodes(ast, cur->formula); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3800,7 +3800,7 @@ cc_code_block(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->elems); \
+        PadAST_DelNodes(ast, cur->elems); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3823,7 +3823,7 @@ cc_code_block(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->elems = cc_elems(ast, cargs);
     // cur->elems allow null
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
 
@@ -3852,10 +3852,10 @@ cc_blocks(PadAST *ast, PadCcArgs *cargs) {
 
 #undef return_cleanup
 #define return_cleanup() { \
-        PadAst_DelNodes(ast, cur->code_block); \
-        PadAst_DelNodes(ast, cur->ref_block); \
-        PadAst_DelNodes(ast, cur->text_block); \
-        PadAst_DelNodes(ast, cur->blocks); \
+        PadAST_DelNodes(ast, cur->code_block); \
+        PadAST_DelNodes(ast, cur->ref_block); \
+        PadAST_DelNodes(ast, cur->text_block); \
+        PadAST_DelNodes(ast, cur->blocks); \
         free(cur); \
         return_parse(NULL); \
     } \
@@ -3866,7 +3866,7 @@ cc_blocks(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->code_block = cc_code_block(ast, cargs);
     if (!cur->code_block) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup();
         }
 
@@ -3874,7 +3874,7 @@ cc_blocks(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         cur->ref_block = cc_ref_block(ast, cargs);
         if (!cur->ref_block) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup();
             }
 
@@ -3890,7 +3890,7 @@ cc_blocks(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
     // allow null
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup();
     }
 
@@ -3904,7 +3904,7 @@ cc_program(PadAST *ast, PadCcArgs *cargs) {
 
 #undef return_cleanup
 #define return_cleanup(fmt) { \
-        PadAst_DelNodes(ast, cur->blocks); \
+        PadAST_DelNodes(ast, cur->blocks); \
         free(cur); \
         if (strlen(fmt)) { \
             pushb_error(ast, NULL, fmt); \
@@ -3918,7 +3918,7 @@ cc_program(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->blocks = cc_blocks(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->blocks) {
@@ -3938,7 +3938,7 @@ cc_def(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->func_def); \
+        PadAST_DelNodes(ast, cur->func_def); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3952,7 +3952,7 @@ cc_def(PadAST *ast, PadCcArgs *cargs) {
     const PadTok *savetok = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->func_def = cc_func_def(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     if (!cur->func_def) {
@@ -3975,7 +3975,7 @@ cc_func_def_args(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         for (; PadNodeAry_Len(cur->identifiers); ) { \
             PadNode *node = PadNodeAry_PopBack(cur->identifiers); \
-            PadAst_DelNodes(ast, node); \
+            PadAST_DelNodes(ast, node); \
         } \
         free(cur); \
         if (strlen(msg)) { \
@@ -3991,7 +3991,7 @@ cc_func_def_args(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     PadNode *identifier = cc_identifier(ast, cargs);
     if (!identifier) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_parse(PadNode_New(PAD_NODE_TYPE__FUNC_DEF_ARGS, cur, savetok)); // not error, empty args
@@ -4015,7 +4015,7 @@ cc_func_def_args(PadAST *ast, PadCcArgs *cargs) {
         cargs->depth = depth + 1;
         identifier = cc_identifier(ast, cargs);
         if (!identifier) {
-            if (PadAst_HasErrs(ast)) {
+            if (PadAST_HasErrs(ast)) {
                 return_cleanup("");
             }
             return_cleanup("syntax error. not found identifier in func def args");
@@ -4038,7 +4038,7 @@ cc_func_def_params(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->func_def_args); \
+        PadAST_DelNodes(ast, cur->func_def_args); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -4058,7 +4058,7 @@ cc_func_def_params(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->func_def_args = cc_func_def_args(ast, cargs);
     if (!cur->func_def_args) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -4087,7 +4087,7 @@ cc_func_extends(PadAST *ast, PadCcArgs *cargs) {
 #define return_cleanup(msg) { \
         PadTok *curtok = cur_tok(ast); \
         ast->ref_ptr = save_ptr; \
-        PadAst_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->identifier); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -4103,7 +4103,7 @@ cc_func_extends(PadAST *ast, PadCcArgs *cargs) {
 
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (!cur->identifier) {
         return_cleanup("not found identifier in function extends");
@@ -4129,10 +4129,10 @@ cc_func_def(PadAST *ast, PadCcArgs *cargs) {
         ast->ref_ptr = save_ptr; \
         cargs->is_in_loop = is_in_loop; \
         cargs->is_in_func = is_in_func; \
-        PadAst_DelNodes(ast, cur->identifier); \
-        PadAst_DelNodes(ast, cur->func_def_params); \
+        PadAST_DelNodes(ast, cur->identifier); \
+        PadAST_DelNodes(ast, cur->func_def_params); \
         for (int32_t i = 0; i < PadNodeAry_Len(cur->contents); ++i) { \
-            PadAst_DelNodes(ast, PadNodeAry_Get(cur->contents, i)); \
+            PadAST_DelNodes(ast, PadNodeAry_Get(cur->contents, i)); \
         } \
         PadNodeAry_DelWithoutNodes(cur->contents); \
         free(cur); \
@@ -4159,7 +4159,7 @@ cc_func_def(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->identifier = cc_identifier(ast, cargs);
     if (!cur->identifier) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -4169,7 +4169,7 @@ cc_func_def(PadAST *ast, PadCcArgs *cargs) {
     cargs->depth = depth + 1;
     cur->func_def_params = cc_func_def_params(ast, cargs);
     if (!cur->func_def_params) {
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("");
         }
         return_cleanup(""); // not error
@@ -4182,7 +4182,7 @@ cc_func_def(PadAST *ast, PadCcArgs *cargs) {
     // extends ?
     cargs->depth = depth + 1;
     cur->func_extends = cc_func_extends(ast, cargs);
-    if (PadAst_HasErrs(ast)) {
+    if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     }
     // allow cur->func_extends is null
@@ -4209,7 +4209,7 @@ cc_func_def(PadAST *ast, PadCcArgs *cargs) {
     cargs->func_def = cur;
     for (;;) {
         PadNode *content = cc_content(ast, cargs);
-        if (PadAst_HasErrs(ast)) {
+        if (PadAST_HasErrs(ast)) {
             return_cleanup("failed to compile content")
         } else if (!content) {
             break;

@@ -4,7 +4,7 @@ static PadObj *
 builtin_PadDict_Get(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
     assert(ref_ast);
-    PadGC * ref_gc = PadAst_GetRefGc(ref_ast);
+    PadGC * ref_gc = PadAST_GetRefGc(ref_ast);
     assert(ref_gc);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -13,25 +13,25 @@ builtin_PadDict_Get(PadBltFuncArgs *fargs) {
 
     PadObjAry *args = actual_args->objarr;
     if (PadObjAry_Len(args) != 1) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke dict.get. need one argument");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke dict.get. need one argument");
         return NULL;
     }
 
     if (!ref_owners) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners is null. can't get");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners is null. can't get");
         return NULL;
     }
 
     PadObj *ref_owner = PadObjAry_GetLast(ref_owners);
     if (!ref_owner) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't get");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't get");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't get", ref_owner->type);
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't get", ref_owner->type);
         return NULL;
         break;
     case PAD_OBJ_TYPE__OWNERS_METHOD:
@@ -41,7 +41,7 @@ again:
     case PAD_OBJ_TYPE__IDENT:
         ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
-            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
+            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't get");
             return NULL;
         }
         goto again;
@@ -56,14 +56,14 @@ again:
 again2:
     switch (arg->type) {
     default:
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "invalid index type (%d) of dict", arg->type);
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "invalid index type (%d) of dict", arg->type);
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(arg);
         arg = Pad_PullRef(arg);
         if (!arg) {
-            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
         }
         goto again2;
@@ -92,7 +92,7 @@ builtin_func_infos[] = {
 PadObj *
 Pad_NewBltDictMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
-    PadAST *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAST_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;  // set reference
 

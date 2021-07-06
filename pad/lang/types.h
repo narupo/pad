@@ -55,8 +55,8 @@ typedef struct PadCtx PadCtx;
 struct PadScope;
 typedef struct PadScope PadScope;
 
-struct PadAst;
-typedef struct PadAst PadAST;
+struct PadAST;
+typedef struct PadAST PadAST;
 
 struct PadCcArgs;
 typedef struct PadCcArgs PadCcArgs;

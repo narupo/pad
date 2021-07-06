@@ -11,7 +11,7 @@ builtin_opts_get(PadBltFuncArgs *fargs) {
     PadObjAry *args = actual_args->objarr;
 
     if (PadObjAry_Len(args) != 1) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
@@ -19,7 +19,7 @@ builtin_opts_get(PadBltFuncArgs *fargs) {
     assert(objname);
 
     if (objname->type != PAD_OBJ_TYPE__UNICODE) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
@@ -43,7 +43,7 @@ builtin_PadOpts_Has(PadBltFuncArgs *fargs) {
     PadObjAry *args = actual_args->objarr;
 
     if (PadObjAry_Len(args) != 1) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. need one argument");
         return NULL;
     }
 
@@ -51,7 +51,7 @@ builtin_PadOpts_Has(PadBltFuncArgs *fargs) {
     assert(objname);
 
     if (objname->type != PAD_OBJ_TYPE__UNICODE) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.get. argument is not string");
         return NULL;
     }
 
@@ -70,13 +70,13 @@ builtin_opts_args(PadBltFuncArgs *fargs) {
     PadObjAry *args = actual_args->objarr;
 
     if (PadObjAry_Len(args) != 1) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.args. need one argument");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke opts.args. need one argument");
         return NULL;
     }
 
     const PadObj *arg = PadObjAry_Getc(args, 0);
     if (arg->type != PAD_OBJ_TYPE__INT) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "invalid argument type. argument is not int");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "invalid argument type. argument is not int");
         return NULL;
     }
 
@@ -100,7 +100,7 @@ builtin_func_infos[] = {
 PadObj *
 Pad_NewBltOptsMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
-    PadAST *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAST_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 

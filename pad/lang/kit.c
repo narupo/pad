@@ -28,7 +28,7 @@ PadKit_Del(PadKit *self) {
 
     free(self->program_source);
     PadTkr_Del(self->tkr);
-    PadAst_Del(self->ast);
+    PadAST_Del(self->ast);
     PadCtx_Del(self->ctx);
     if (!self->gc_is_reference) {
         PadGC_Del(self->gc);
@@ -50,7 +50,7 @@ PadKit_New(const PadConfig *config) {
         return NULL;
     }
 
-    self->ast = PadAst_New(config);
+    self->ast = PadAST_New(config);
     if (!self->ast) {
         PadKit_Del(self);
         return NULL;
@@ -97,7 +97,7 @@ PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc) {
         return NULL;
     }
 
-    self->ast = PadAst_New(config);
+    self->ast = PadAST_New(config);
     if (!self->ast) {
         PadKit_Del(self);
         return NULL;
@@ -187,22 +187,22 @@ PadKit_CompileFromStrArgs(
         return NULL;
     }
 
-    PadAst_Clear(self->ast);
+    PadAST_Clear(self->ast);
     if (opts) {
-        PadAst_MoveOpts(self->ast, PadMem_Move(opts));
+        PadAST_MoveOpts(self->ast, PadMem_Move(opts));
         opts = NULL;
     }
 
     PadCc_Compile(self->ast, PadTkr_GetToks(self->tkr));
-    if (PadAst_HasErrs(self->ast)) {
-        const PadErrStack *err = PadAst_GetcErrStack(self->ast);
+    if (PadAST_HasErrs(self->ast)) {
+        const PadErrStack *err = PadAST_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }
 
     PadTrv_Trav(self->ast, self->ctx);
-    if (PadAst_HasErrs(self->ast)) {
-        const PadErrStack *err = PadAst_GetcErrStack(self->ast);
+    if (PadAST_HasErrs(self->ast)) {
+        const PadErrStack *err = PadAST_GetcErrStack(self->ast);
         PadErrStack_ExtendFrontOther(self->errstack, err);
         return NULL;
     }

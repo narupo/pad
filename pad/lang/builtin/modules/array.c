@@ -11,26 +11,26 @@ builtin_array_push(PadBltFuncArgs *fargs) {
 
     PadObjAry *args = actual_args->objarr;
     if (PadObjAry_Len(args) != 1) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke array.push. need one argument");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke array.push. need one argument");
         return NULL;
     }
 
     if (!ref_owners) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners is null. can't push");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners is null. can't push");
         return NULL;
     }
 
     int32_t nowns = PadObjAry_Len(ref_owners);
     PadObj *ref_owner = PadObjAry_Get(ref_owners, nowns-1);
     if (!ref_owner) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't push");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't push");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't push", ref_owner->type);
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't push", ref_owner->type);
         return NULL;
         break;
     case PAD_OBJ_TYPE__OWNERS_METHOD:
@@ -40,7 +40,7 @@ again:
     case PAD_OBJ_TYPE__IDENT:
         ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
-            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't push");
+            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't push");
             return NULL;
         }
         goto again;
@@ -63,7 +63,7 @@ again2:
         const char *idn = PadObj_GetcIdentName(arg);
         arg = Pad_PullRef(arg);
         if (!arg) {
-            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
+            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
         }
         push_arg = arg;
@@ -86,21 +86,21 @@ builtin_array_pop(PadBltFuncArgs *fargs) {
     PadObjAry *ref_owners = fargs->ref_owners;
 
     if (!ref_owners) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners inull. can't pop");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owners inull. can't pop");
         return NULL;
     }
 
     int32_t nowns = PadObjAry_Len(ref_owners);
     PadObj *ref_owner = PadObjAry_Get(ref_owners, nowns-1);
     if (!ref_owner) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't pop");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "owner is null. can't pop");
         return NULL;
     }
 
 again:
     switch (ref_owner->type) {
     default:
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't pop", ref_owner->type);
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported object type (%d). can't pop", ref_owner->type);
         return NULL;
         break;
     case PAD_OBJ_TYPE__OWNERS_METHOD:
@@ -110,7 +110,7 @@ again:
     case PAD_OBJ_TYPE__IDENT:
         ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
-            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't pop");
+            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't pop");
             return NULL;
         }
         goto again;
@@ -136,7 +136,7 @@ builtin_func_infos[] = {
 PadObj *
 Pad_NewBltAryMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
-    PadAST *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAST_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;  // set reference
 

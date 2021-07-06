@@ -11,22 +11,22 @@ builtin_alias_set(PadBltFuncArgs *fargs) {
     PadObjAry *args = actual_args->objarr;
 
     if (PadObjAry_Len(args) < 2) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. too few arguments");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. too few arguments");
         return NULL;
     } else if (PadObjAry_Len(args) >= 4) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. too many arguments");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. too many arguments");
         return NULL;
     }
 
     const PadObj *keyobj = PadObjAry_Getc(args, 0);
     if (keyobj->type != PAD_OBJ_TYPE__UNICODE) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. key is not string");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. key is not string");
         return NULL;
     }
 
     const PadObj *valobj = PadObjAry_Getc(args, 1);
     if (valobj->type != PAD_OBJ_TYPE__UNICODE) {
-        PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. value is not string");
+        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. value is not string");
         return NULL;
     }
 
@@ -34,7 +34,7 @@ builtin_alias_set(PadBltFuncArgs *fargs) {
     if (PadObjAry_Len(args) == 3) {
         descobj = PadObjAry_Getc(args, 2);
         if (descobj->type != PAD_OBJ_TYPE__UNICODE) {
-            PadAst_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. description is not unicode");
+            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't invoke alias.set. description is not unicode");
             return NULL;
         }
     }
@@ -58,7 +58,7 @@ PadObj *
 Pad_NewBltAliasMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadCtx *ctx = PadCtx_New(ref_gc);
-    PadAST *ast = PadAst_New(ref_config);
+    PadAST *ast = PadAST_New(ref_config);
     ast->ref_context = ctx;
 
     return PadObj_NewModBy(
