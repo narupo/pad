@@ -13,7 +13,7 @@ How to build of the pad.
     $ make init && make
     $ ./build/pad -h
 
-On Windows, Need `ws2_32` dll.
+In Windows, Recommend using TDM-GCC.
 
 # Syntax and feature
 
