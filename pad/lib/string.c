@@ -11,17 +11,17 @@
 * string structure *
 *******************/
 
-struct string {
+struct PadStr {
     int length;
     int capacity;
-    string_type_t *buffer;
+    PadStrType *buffer;
 };
 
 /*************
 * str macros *
 *************/
 
-#define NCHAR (sizeof(string_type_t))
+#define NCHAR (sizeof(PadStrType))
 #define NIL ('\0')
 
 /**************************
@@ -37,7 +37,7 @@ enum {
 *********************/
 
 void
-str_del(string_t *self) {
+PadStr_Del(PadStr *self) {
     if (!self) {
         return;
     }
@@ -46,20 +46,20 @@ str_del(string_t *self) {
     free(self);
 }
 
-string_type_t *
-str_esc_del(string_t *self) {
+PadStrType *
+PadStr_EscDel(PadStr *self) {
     if (!self) {
         return NULL;
     }
 
-    string_type_t *buf = self->buffer;
+    PadStrType *buf = self->buffer;
     free(self);
     return buf;
 }
 
-string_t *
-str_new(void) {
-    string_t *self = calloc(1, sizeof(string_t));
+PadStr *
+PadStr_New(void) {
+    PadStr *self = calloc(1, sizeof(PadStr));
     if (!self) {
         return NULL;
     }
@@ -77,24 +77,24 @@ str_new(void) {
     return self;
 }
 
-string_t *
-str_new_cstr(const string_type_t *str) {
+PadStr *
+PadStr_NewCStr(const PadStrType *str) {
     if (!str) {
         return NULL;
     }
 
-    string_t *self = str_new();
-    str_set(self, str);
+    PadStr *self = PadStr_New();
+    PadStr_Set(self, str);
     return self;
 }
 
-string_t *
-str_deep_copy(const string_t *other) {
+PadStr *
+PadStr_DeepCopy(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
-    string_t *self = calloc(1, sizeof(string_t));
+    PadStr *self = calloc(1, sizeof(PadStr));
     if (!self) {
         return NULL;
     }
@@ -115,9 +115,9 @@ str_deep_copy(const string_t *other) {
     return self;
 }
 
-string_t *
-str_shallow_copy(const string_t *other) {
-    return str_deep_copy(other);
+PadStr *
+PadStr_ShallowCopy(const PadStr *other) {
+    return PadStr_DeepCopy(other);
 }
 
 /*************
@@ -125,7 +125,7 @@ str_shallow_copy(const string_t *other) {
 *************/
 
 int32_t
-str_len(const string_t *self) {
+PadStr_Len(const PadStr *self) {
     if (!self) {
         return -1;
     }
@@ -133,15 +133,15 @@ str_len(const string_t *self) {
 }
 
 int32_t
-str_capa(const string_t *self) {
+PadStr_Capa(const PadStr *self) {
     if (!self) {
         return -1;
     }
     return self->capacity;
 }
 
-const string_type_t *
-str_getc(const string_t *self) {
+const PadStrType *
+PadStr_Getc(const PadStr *self) {
     if (!self) {
         return NULL;
     }
@@ -149,7 +149,7 @@ str_getc(const string_t *self) {
 }
 
 int32_t
-str_empty(const string_t *self) {
+PadStr_Empty(const PadStr *self) {
     if (!self) {
         return 0;
     }
@@ -161,7 +161,7 @@ str_empty(const string_t *self) {
 *************/
 
 void
-str_clear(string_t *self) {
+PadStr_Clear(PadStr *self) {
     if (!self) {
         return;
     }
@@ -170,15 +170,15 @@ str_clear(string_t *self) {
     self->buffer[self->length] = NIL;
 }
 
-string_t *
-str_set(string_t *self, const string_type_t *src) {
+PadStr *
+PadStr_Set(PadStr *self, const PadStrType *src) {
     if (!self || !src) {
         return NULL;
     }
 
     int srclen = strlen(src);
     if (srclen >= self->length) {
-        if (!str_resize(self, srclen)) {
+        if (!PadStr_Resize(self, srclen)) {
             return NULL;
         }
     }
@@ -192,8 +192,8 @@ str_set(string_t *self, const string_type_t *src) {
     return self;
 }
 
-string_t *
-str_resize(string_t *self, int32_t newcapa) {
+PadStr *
+PadStr_Resize(PadStr *self, int32_t newcapa) {
     if (!self) {
         return NULL;
     }
@@ -202,9 +202,9 @@ str_resize(string_t *self, int32_t newcapa) {
         newcapa = 0;
     }
 
-    string_type_t *tmp = realloc(self->buffer, newcapa*NCHAR + NCHAR); // +NCHAR for final nil
+    PadStrType *tmp = realloc(self->buffer, newcapa*NCHAR + NCHAR); // +NCHAR for final nil
     if (!tmp) {
-        str_del(self);
+        PadStr_Del(self);
         return NULL;
     }
 
@@ -218,14 +218,14 @@ str_resize(string_t *self, int32_t newcapa) {
     return self;
 }
 
-string_t *
-str_pushb(string_t *self, string_type_t ch) {
+PadStr *
+PadStr_PushBack(PadStr *self, PadStrType ch) {
     if (!self || ch == NIL) {
         return NULL;
     }
 
     if (self->length >= self->capacity-1) {
-        if (!str_resize(self, self->length*2)) {
+        if (!PadStr_Resize(self, self->length*2)) {
             return NULL;
         }
     }
@@ -236,14 +236,14 @@ str_pushb(string_t *self, string_type_t ch) {
     return self;
 }
 
-string_type_t
-str_popb(string_t *self) {
+PadStrType
+PadStr_PopBack(PadStr *self) {
     if (!self) {
         return NIL;
     }
 
     if (self->length > 0) {
-        string_type_t ret = self->buffer[--self->length];
+        PadStrType ret = self->buffer[--self->length];
         self->buffer[self->length] = NIL;
         return ret;
     }
@@ -251,14 +251,14 @@ str_popb(string_t *self) {
     return NIL;
 }
 
-string_t *
-str_pushf(string_t *self, string_type_t ch) {
+PadStr *
+PadStr_PushFront(PadStr *self, PadStrType ch) {
     if (!self || ch == NIL) {
         return NULL;
     }
 
     if (self->length >= self->capacity-1) {
-        if (!str_resize(self, self->length*2)) {
+        if (!PadStr_Resize(self, self->length*2)) {
             return NULL;
         }
     }
@@ -272,13 +272,13 @@ str_pushf(string_t *self, string_type_t ch) {
     return self;
 }
 
-string_type_t
-str_popf(string_t *self) {
+PadStrType
+PadStr_PopFront(PadStr *self) {
     if (!self || self->length == 0) {
         return NIL;
     }
 
-    string_type_t ret = self->buffer[0];
+    PadStrType ret = self->buffer[0];
 
     for (int32_t i = 0; i < self->length-1; ++i) {
         self->buffer[i] = self->buffer[i+1];
@@ -290,8 +290,8 @@ str_popf(string_t *self) {
     return ret;
 }
 
-string_t *
-str_app(string_t *self, const string_type_t *src) {
+PadStr *
+PadStr_App(PadStr *self, const PadStrType *src) {
     if (!self || !src) {
         return NULL;
     }
@@ -299,12 +299,12 @@ str_app(string_t *self, const string_type_t *src) {
     int32_t srclen = strlen(src);
 
     if (self->length + srclen >= self->capacity-1) {
-        if (!str_resize(self, (self->length + srclen) * 2)) {
+        if (!PadStr_Resize(self, (self->length + srclen) * 2)) {
             return NULL;
         }
     }
 
-    for (const string_type_t *sp = src; *sp; ++sp) {
+    for (const PadStrType *sp = src; *sp; ++sp) {
         self->buffer[self->length++] = *sp;
     }
     self->buffer[self->length] = NIL;
@@ -312,14 +312,14 @@ str_app(string_t *self, const string_type_t *src) {
     return self;
 }
 
-string_t *
-str_app_stream(string_t *self, FILE *fin) {
+PadStr *
+PadStr_AppStream(PadStr *self, FILE *fin) {
     if (!self || !fin) {
         return NULL;
     }
 
     for (int32_t ch; (ch = fgetc(fin)) != EOF; ) {
-        if (!str_pushb(self, ch)) {
+        if (!PadStr_PushBack(self, ch)) {
             return NULL;
         }
     }
@@ -327,33 +327,33 @@ str_app_stream(string_t *self, FILE *fin) {
     return self;
 }
 
-string_t *
-str_app_other(string_t *self, const string_t *_other) {
+PadStr *
+PadStr_AppOther(PadStr *self, const PadStr *_other) {
     if (!self || !_other) {
         return NULL;
     }
 
-    string_t *other = str_deep_copy(_other);
-    string_t *ret = NULL;
+    PadStr *other = PadStr_DeepCopy(_other);
+    PadStr *ret = NULL;
 
     if (self == other) {
-        string_type_t *buf = PadCStr_Dup(self->buffer);
+        PadStrType *buf = PadCStr_Dup(self->buffer);
         if (!buf) {
-            str_del(other);
+            PadStr_Del(other);
             return ret;
         }
-        ret = str_app(self, buf);
+        ret = PadStr_App(self, buf);
         free(buf);
     } else {
-        ret = str_app(self, other->buffer);
+        ret = PadStr_App(self, other->buffer);
     }
 
-    str_del(other);
+    PadStr_Del(other);
     return ret;
 }
 
-string_t *
-str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...) {
+PadStr *
+PadStr_AppFmt(PadStr *self, PadStrType *buf, int32_t nbuf, const PadStrType *fmt, ...) {
     if (!self || !buf || !fmt || nbuf == 0) {
         return NULL;
     }
@@ -364,7 +364,7 @@ str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_
     va_end(args);
 
     for (int32_t i = 0; i < buflen; ++i) {
-        if (!str_pushb(self, buf[i])) {
+        if (!PadStr_PushBack(self, buf[i])) {
             return NULL;
         }
     }
@@ -372,8 +372,8 @@ str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_
     return self;
 }
 
-static string_t *
-_str_rstrip(string_t *self, const string_type_t *rems) {
+static PadStr *
+_PadStr_RStrip(PadStr *self, const PadStrType *rems) {
     if (!self || !rems) {
         return NULL;
     }
@@ -389,30 +389,30 @@ _str_rstrip(string_t *self, const string_type_t *rems) {
     return self;
 }
 
-string_t *
-str_rstrip(const string_t *other, const string_type_t *rems) {
+PadStr *
+PadStr_RStrip(const PadStr *other, const PadStrType *rems) {
     if (!other || !rems) {
         return NULL;
     }
 
-    string_t *dst = str_deep_copy(other);
-    if (!_str_rstrip(dst, rems)) {
-        str_del(dst);
+    PadStr *dst = PadStr_DeepCopy(other);
+    if (!_PadStr_RStrip(dst, rems)) {
+        PadStr_Del(dst);
         return NULL;
     }
 
     return dst;
 }
 
-static string_t *
-_str_lstrip(string_t *self, const string_type_t *rems) {
+static PadStr *
+_PadStr_LStrip(PadStr *self, const PadStrType *rems) {
     if (!self || !rems) {
         return NULL;
     }
 
     for (; self->length; ) {
         if (strchr(rems, self->buffer[0])) {
-            str_popf(self);
+            PadStr_PopFront(self);
         } else {
             break;
         }
@@ -421,36 +421,36 @@ _str_lstrip(string_t *self, const string_type_t *rems) {
     return self;
 }
 
-string_t *
-str_lstrip(const string_t *other, const string_type_t *rems) {
+PadStr *
+PadStr_LStrip(const PadStr *other, const PadStrType *rems) {
     if (!other || !rems) {
         return NULL;
     }
 
-    string_t *dst = str_deep_copy(other);
-    if (!_str_lstrip(dst, rems)) {
-        str_del(dst);
+    PadStr *dst = PadStr_DeepCopy(other);
+    if (!_PadStr_LStrip(dst, rems)) {
+        PadStr_Del(dst);
         return NULL;
     }
 
     return dst;
 }
 
-string_t *
-str_strip(const string_t *other, const string_type_t *rems) {
+PadStr *
+PadStr_Strip(const PadStr *other, const PadStrType *rems) {
     if (!other || !rems) {
         return NULL;
     }
 
-    string_t *dst = str_deep_copy(other);
+    PadStr *dst = PadStr_DeepCopy(other);
 
-    if (!_str_rstrip(dst, rems)) {
-        str_del(dst);
+    if (!_PadStr_RStrip(dst, rems)) {
+        PadStr_Del(dst);
         return NULL;
     }
 
-    if (!_str_lstrip(dst, rems)) {
-        str_del(dst);
+    if (!_PadStr_LStrip(dst, rems)) {
+        PadStr_Del(dst);
         return NULL;
     }
 
@@ -472,11 +472,11 @@ str_strip(const string_t *other, const string_type_t *rems) {
  * @return		  Success to pointer to found position in target string
  * @return		  Failed to NULL
  */
-static const string_type_t *
+static const PadStrType *
 bmfind(
-    const string_type_t *restrict tex,
+    const PadStrType *restrict tex,
     int32_t texlen,
-    const string_type_t *restrict pat,
+    const PadStrType *restrict pat,
     int32_t patlen
 ) {
     int32_t const max = CHAR_MAX+1;
@@ -515,8 +515,8 @@ bmfind(
 }
 #undef MAX
 
-const string_type_t *
-str_findc(const string_t *self, const string_type_t *target) {
+const PadStrType *
+PadStr_Findc(const PadStr *self, const PadStrType *target) {
     if (!self || !target) {
         return NULL;
     }
@@ -524,15 +524,15 @@ str_findc(const string_t *self, const string_type_t *target) {
     return bmfind(self->buffer, self->length, target, strlen(target));
 }
 
-string_t *
-str_lower(const string_t *other) {
+PadStr *
+PadStr_Lower(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
-    string_t *self = str_deep_copy(other);
+    PadStr *self = PadStr_DeepCopy(other);
     for (int32_t i = 0; i < self->length; ++i) {
-        string_type_t ch = self->buffer[i];
+        PadStrType ch = self->buffer[i];
         if (isupper(ch)) {
             self->buffer[i] = tolower(ch);
         }
@@ -541,15 +541,15 @@ str_lower(const string_t *other) {
     return self;
 }
 
-string_t *
-str_upper(const string_t *other) {
+PadStr *
+PadStr_Upper(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
-    string_t *self = str_deep_copy(other);
+    PadStr *self = PadStr_DeepCopy(other);
     for (int32_t i = 0; i < self->length; ++i) {
-        string_type_t ch = self->buffer[i];
+        PadStrType ch = self->buffer[i];
         if (islower(ch)) {
             self->buffer[i] = toupper(ch);
         }
@@ -558,15 +558,15 @@ str_upper(const string_t *other) {
     return self;
 }
 
-string_t *
-str_capitalize(const string_t *other) {
+PadStr *
+PadStr_Capi(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
-    string_t *self = str_deep_copy(other);
+    PadStr *self = PadStr_DeepCopy(other);
     if (self->length) {
-        string_type_t ch = self->buffer[0];
+        PadStrType ch = self->buffer[0];
         if (islower(ch)) {
             self->buffer[0] = toupper(ch);
         }
@@ -575,15 +575,15 @@ str_capitalize(const string_t *other) {
     return self;
 }
 
-string_t *
-str_snake(const string_t *other) {
+PadStr *
+PadStr_Snake(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
     int m = 0;
-    const string_type_t *p = str_getc(other);
-    string_t *self = str_new();
+    const PadStrType *p = PadStr_Getc(other);
+    PadStr *self = PadStr_New();
 
     for (; *p; ++p) {
         switch (m) {
@@ -591,7 +591,7 @@ str_snake(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 m = 10;
             } else {
-                str_pushb(self, tolower(*p));
+                PadStr_PushBack(self, tolower(*p));
                 m = 20;
             }
             break;
@@ -599,19 +599,19 @@ str_snake(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 // pass
             } else {
-                str_pushb(self, tolower(*p));
+                PadStr_PushBack(self, tolower(*p));
                 m = 20;
             }
             break;
         case 20: // found normal character
             if (isupper(*p)) {
-                str_pushb(self, '_');
-                str_pushb(self, tolower(*p));
+                PadStr_PushBack(self, '_');
+                PadStr_PushBack(self, tolower(*p));
             } else if (*p == '-' || *p == '_') {
-                str_pushb(self, '_');
+                PadStr_PushBack(self, '_');
                 m = 10;
             } else {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
             }
             break;
         }
@@ -620,15 +620,15 @@ str_snake(const string_t *other) {
     return self;
 }
 
-string_t *
-str_camel(const string_t *other) {
+PadStr *
+PadStr_Camel(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
     int m = 0;
-    string_t *self = str_new();
-    const string_type_t *p = str_getc(other);
+    PadStr *self = PadStr_New();
+    const PadStrType *p = PadStr_Getc(other);
 
     for (; *p; ++p) {
         switch (m) {
@@ -636,7 +636,7 @@ str_camel(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 m = 10;
             } else {
-                str_pushb(self, tolower(*p));
+                PadStr_PushBack(self, tolower(*p));
                 m = 20;
             }
             break;
@@ -644,7 +644,7 @@ str_camel(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 // pass
             } else {
-                str_pushb(self, tolower(*p));
+                PadStr_PushBack(self, tolower(*p));
                 m = 20;
             }
             break;
@@ -652,7 +652,7 @@ str_camel(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 // pass
             } else {
-                str_pushb(self, toupper(*p));
+                PadStr_PushBack(self, toupper(*p));
                 m = 30;
             }
             break;
@@ -660,19 +660,19 @@ str_camel(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 m = 15;
             } else if (isupper(*p)) {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
                 m = 30;
             } else {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
             }
             break;
         case 30:  // readed upper character
             if (*p == '-' || *p == '_') {
                 m = 15;
             } else if (isupper(*p)) {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
             } else {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
                 m = 20;
             }
             break;
@@ -682,14 +682,14 @@ str_camel(const string_t *other) {
     return self;
 }
 
-string_t *
-str_hacker(const string_t *other) {
+PadStr *
+PadStr_Hacker(const PadStr *other) {
     if (!other) {
         return NULL;
     }
 
-    string_t *self = str_new();
-    const string_type_t *p = str_getc(other);
+    PadStr *self = PadStr_New();
+    const PadStrType *p = PadStr_Getc(other);
     int m = 0;
 
     for (; *p; ++p) {
@@ -698,13 +698,13 @@ str_hacker(const string_t *other) {
             if (*p == '-' || *p == '_') {
                 m = 100;
             } else if (isupper(*p)) {
-                str_pushb(self, tolower(*p));
+                PadStr_PushBack(self, tolower(*p));
             } else if (islower(*p)) {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
             } else if (isdigit(*p)) {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
             } else {
-                str_pushb(self, *p);
+                PadStr_PushBack(self, *p);
             }
             break;
         case 100:  // skip '-' or '_'
@@ -721,23 +721,23 @@ str_hacker(const string_t *other) {
     return self;
 }
 
-string_t *
-str_mul(const string_t *self, int32_t n) {
+PadStr *
+PadStr_Mul(const PadStr *self, int32_t n) {
     if (!self) {
         return NULL;
     }
     
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
 
     for (int32_t i = 0; i < n; ++i) {
-        str_app(buf, self->buffer);
+        PadStr_App(buf, self->buffer);
     }
 
     return buf;
 }
 
-string_t *
-str_indent(const string_t *other, int32_t ch, int32_t n, int32_t tabsize) {
+PadStr *
+PadStr_Indent(const PadStr *other, int32_t ch, int32_t n, int32_t tabsize) {
     if (!other || ch < 0 || n < 0 || tabsize < 0) {
         return NULL;
     }
@@ -756,24 +756,24 @@ str_indent(const string_t *other, int32_t ch, int32_t n, int32_t tabsize) {
         value[n] = '\0';
     }
 
-    string_t *self = str_new();
-    const char *p = str_getc(other);
+    PadStr *self = PadStr_New();
+    const char *p = PadStr_Getc(other);
 
-    str_app(self, value);
+    PadStr_App(self, value);
     for (; *p; ++p) {
         if (*p == '\r' && *(p + 1) == '\n') {
             ++p;
-            str_app(self, "\r\n");
+            PadStr_App(self, "\r\n");
             if (*(p + 1)) {
-                str_app(self, value);
+                PadStr_App(self, value);
             }
         } else if (*p == '\r' || *p == '\n') {
-            str_pushb(self, *p);
+            PadStr_PushBack(self, *p);
             if (*(p + 1)) {
-                str_app(self, value);
+                PadStr_App(self, value);
             }
         } else {
-            str_pushb(self, *p);
+            PadStr_PushBack(self, *p);
         }
     }
 

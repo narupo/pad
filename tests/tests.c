@@ -570,7 +570,7 @@ test_PadCmdline_Parse(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -578,7 +578,7 @@ test_PadCmdline_Parse(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(!strcmp(PadStr_Getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
     obj = PadCmdline_Getc(cmdline, 3);
     assert(obj);
@@ -586,7 +586,7 @@ test_PadCmdline_Parse(void) {
     obj = PadCmdline_Getc(cmdline, 4);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "ghi"));
+    assert(!strcmp(PadStr_Getc(obj->command), "ghi"));
     assert(PadCL_Len(obj->cl) == 1);
     obj = PadCmdline_Getc(cmdline, 5);
     assert(obj);
@@ -594,7 +594,7 @@ test_PadCmdline_Parse(void) {
     obj = PadCmdline_Getc(cmdline, 6);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "jkl"));
+    assert(!strcmp(PadStr_Getc(obj->command), "jkl"));
     assert(PadCL_Len(obj->cl) == 1);
 
     PadCmdline_Del(cmdline);
@@ -612,7 +612,7 @@ test_PadCmdline_Parse_pipe(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
 
     assert(PadCmdline_Parse(cmdline, "abc | def"));
@@ -620,7 +620,7 @@ test_PadCmdline_Parse_pipe(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -628,7 +628,7 @@ test_PadCmdline_Parse_pipe(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(!strcmp(PadStr_Getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
 
     assert(PadCmdline_Parse(cmdline, "abc -d efg | hij -d \"klm\""));
@@ -636,7 +636,7 @@ test_PadCmdline_Parse_pipe(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc -d efg"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc -d efg"));
     assert(PadCL_Len(obj->cl) == 3);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -644,7 +644,7 @@ test_PadCmdline_Parse_pipe(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
+    assert(!strcmp(PadStr_Getc(obj->command), "hij -d \"klm\""));
     assert(PadCL_Len(obj->cl) == 3);
 
     assert(PadCmdline_Parse(cmdline, "a | b | c | d | e"));
@@ -665,7 +665,7 @@ test_PadCmdline_Parse_and(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -673,7 +673,7 @@ test_PadCmdline_Parse_and(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(!strcmp(PadStr_Getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
 
     assert(PadCmdline_Parse(cmdline, "abc -d efg && hij -d \"klm\""));
@@ -681,7 +681,7 @@ test_PadCmdline_Parse_and(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc -d efg"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc -d efg"));
     assert(PadCL_Len(obj->cl) == 3);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -689,7 +689,7 @@ test_PadCmdline_Parse_and(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
+    assert(!strcmp(PadStr_Getc(obj->command), "hij -d \"klm\""));
     assert(PadCL_Len(obj->cl) == 3);
 
     assert(PadCmdline_Parse(cmdline, "a && b && c && d && e"));
@@ -710,7 +710,7 @@ test_PadCmdline_Parse_redirect(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc"));
     assert(PadCL_Len(obj->cl) == 1);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -718,7 +718,7 @@ test_PadCmdline_Parse_redirect(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "def"));
+    assert(!strcmp(PadStr_Getc(obj->command), "def"));
     assert(PadCL_Len(obj->cl) == 1);
 
     assert(PadCmdline_Parse(cmdline, "abc -d efg > hij -d \"klm\""));
@@ -726,7 +726,7 @@ test_PadCmdline_Parse_redirect(void) {
     obj = PadCmdline_Getc(cmdline, 0);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "abc -d efg"));
+    assert(!strcmp(PadStr_Getc(obj->command), "abc -d efg"));
     assert(PadCL_Len(obj->cl) == 3);
     obj = PadCmdline_Getc(cmdline, 1);
     assert(obj);
@@ -734,7 +734,7 @@ test_PadCmdline_Parse_redirect(void) {
     obj = PadCmdline_Getc(cmdline, 2);
     assert(obj);
     assert(obj->type == PAD_CMDLINE_OBJ_TYPE__CMD);
-    assert(!strcmp(str_getc(obj->command), "hij -d \"klm\""));
+    assert(!strcmp(PadStr_Getc(obj->command), "hij -d \"klm\""));
     assert(PadCL_Len(obj->cl) == 3);
 
     assert(PadCmdline_Parse(cmdline, "a > b > c > d > e"));
@@ -1054,7 +1054,7 @@ test_cstring_PadCStr_IsDigit(void) {
 }
 
 static const struct testcase
-cstring_tests[] = {
+cPadStrests[] = {
     {"PadCStr_Copy", test_cstring_PadCStr_Copy},
     {"PadCStr_PopNewline", test_cstring_PadCStr_PopNewline},
     {"PadCStr_CopyWithout", test_cstring_PadCStr_CopyWithout},
@@ -1072,199 +1072,199 @@ cstring_tests[] = {
 *********/
 
 static void
-test_str_del(void) {
-    string_t *s = str_new();
+test_PadStr_Del(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    str_del(NULL);
-    str_del(s);
+    PadStr_Del(NULL);
+    PadStr_Del(s);
 }
 
 static void
-test_str_esc_del(void) {
-    string_t *s = str_new();
+test_PadStr_EscDel(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_esc_del(NULL) == NULL);
-    char *ptr = str_esc_del(s);
+    assert(PadStr_EscDel(NULL) == NULL);
+    char *ptr = PadStr_EscDel(s);
     assert(ptr != NULL);
     free(ptr);
 }
 
 static void
-test_str_new(void) {
-    string_t *s = str_new();
+test_PadStr_New(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_new_cstr(void) {
-    assert(str_new_cstr(NULL) == NULL);
+test_PadStr_NewCStr(void) {
+    assert(PadStr_NewCStr(NULL) == NULL);
     
-    string_t *s = str_new_cstr("abc");
+    PadStr *s = PadStr_NewCStr("abc");
     assert(s);
-    assert(!strcmp(str_getc(s), "abc"));
-    str_del(s);
+    assert(!strcmp(PadStr_Getc(s), "abc"));
+    PadStr_Del(s);
 }
 
 static void
-test_str_deep_copy(void) {
-    string_t *s = str_new();
+test_PadStr_DeepCopy(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "1234") != NULL);
-    assert(str_deep_copy(NULL) == NULL);
-    string_t *o = str_deep_copy(s);
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(PadStr_DeepCopy(NULL) == NULL);
+    PadStr *o = PadStr_DeepCopy(s);
     assert(o != NULL);
-    assert(strcmp(str_getc(o), "1234") == 0);
-    str_del(o);
-    str_del(s);
+    assert(strcmp(PadStr_Getc(o), "1234") == 0);
+    PadStr_Del(o);
+    PadStr_Del(s);
 }
 
 static void
-test_str_len(void) {
-    string_t *s = str_new();
+test_PadStr_Len(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_len(NULL) == -1);
-    assert(str_len(s) == 0);
-    assert(str_app(s, "abc") != NULL);
-    assert(str_len(s) == 3);
-    str_del(s);
+    assert(PadStr_Len(NULL) == -1);
+    assert(PadStr_Len(s) == 0);
+    assert(PadStr_App(s, "abc") != NULL);
+    assert(PadStr_Len(s) == 3);
+    PadStr_Del(s);
 }
 
 static void
-test_str_capa(void) {
-    string_t *s = str_new();
+test_PadStr_Capa(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_capa(NULL) == -1);
-    assert(str_capa(s) == 4);
-    assert(str_app(s, "1234") != NULL);
-    assert(str_capa(s) == 8);
-    str_del(s);
+    assert(PadStr_Capa(NULL) == -1);
+    assert(PadStr_Capa(s) == 4);
+    assert(PadStr_App(s, "1234") != NULL);
+    assert(PadStr_Capa(s) == 8);
+    PadStr_Del(s);
 }
 
 static void
-test_str_getc(void) {
-    string_t *s = str_new();
+test_PadStr_Getc(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_getc(NULL) == NULL);
-    assert(strcmp(str_getc(s), "") == 0);
-    assert(str_app(s, "1234") != NULL);
-    assert(strcmp(str_getc(s), "1234") == 0);
-    str_del(s);
+    assert(PadStr_Getc(NULL) == NULL);
+    assert(strcmp(PadStr_Getc(s), "") == 0);
+    assert(PadStr_App(s, "1234") != NULL);
+    assert(strcmp(PadStr_Getc(s), "1234") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_empty(void) {
-    string_t *s = str_new();
+test_PadStr_Empty(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_empty(NULL) == 0);
-    assert(str_empty(s) == 1);
-    assert(str_app(s, "1234") != NULL);
-    assert(str_empty(s) == 0);
-    str_del(s);
+    assert(PadStr_Empty(NULL) == 0);
+    assert(PadStr_Empty(s) == 1);
+    assert(PadStr_App(s, "1234") != NULL);
+    assert(PadStr_Empty(s) == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_clear(void) {
-    string_t *s = str_new();
+test_PadStr_Clear(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_app(NULL, "1234") == NULL);
-    assert(str_app(s, NULL) == NULL);
-    assert(str_app(s, "1234") != NULL);
-    assert(str_len(s) == 4);
-    str_clear(s);
-    assert(str_len(s) == 0);
-    str_del(s);
+    assert(PadStr_App(NULL, "1234") == NULL);
+    assert(PadStr_App(s, NULL) == NULL);
+    assert(PadStr_App(s, "1234") != NULL);
+    assert(PadStr_Len(s) == 4);
+    PadStr_Clear(s);
+    assert(PadStr_Len(s) == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_set(void) {
-    string_t *s = str_new();
+test_PadStr_Set(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(NULL, "1234") == NULL);
-    assert(str_set(s, NULL) == NULL);
-    assert(str_set(s, "1234") != NULL);
-    assert(strcmp(str_getc(s), "1234") == 0);
-    assert(str_set(s, "12") != NULL);
-    assert(strcmp(str_getc(s), "12") == 0);
-    str_del(s);
+    assert(PadStr_Set(NULL, "1234") == NULL);
+    assert(PadStr_Set(s, NULL) == NULL);
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(strcmp(PadStr_Getc(s), "1234") == 0);
+    assert(PadStr_Set(s, "12") != NULL);
+    assert(strcmp(PadStr_Getc(s), "12") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_resize(void) {
-    string_t *s = str_new();
+test_PadStr_Resize(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_capa(NULL) == -1);
-    assert(str_capa(s) == 4);
-    assert(str_resize(s, 4*2) != NULL);
-    assert(str_capa(s) == 8);
-    str_del(s);
+    assert(PadStr_Capa(NULL) == -1);
+    assert(PadStr_Capa(s) == 4);
+    assert(PadStr_Resize(s, 4*2) != NULL);
+    assert(PadStr_Capa(s) == 8);
+    PadStr_Del(s);
 }
 
 static void
-test_str_pushb(void) {
-    string_t *s = str_new();
+test_PadStr_PushBack(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_pushb(NULL, '1') == NULL);
-    assert(str_pushb(s, 0) == NULL);
-    assert(str_pushb(s, '\0') == NULL);
-    assert(str_pushb(s, '1') != NULL);
-    assert(str_pushb(s, '2') != NULL);
-    assert(strcmp(str_getc(s), "12") == 0);
-    str_del(s);
+    assert(PadStr_PushBack(NULL, '1') == NULL);
+    assert(PadStr_PushBack(s, 0) == NULL);
+    assert(PadStr_PushBack(s, '\0') == NULL);
+    assert(PadStr_PushBack(s, '1') != NULL);
+    assert(PadStr_PushBack(s, '2') != NULL);
+    assert(strcmp(PadStr_Getc(s), "12") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_popb(void) {
-    string_t *s = str_new();
+test_PadStr_PopBack(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_popb(NULL) == '\0');
-    assert(str_set(s, "1234") != NULL);
-    assert(strcmp(str_getc(s), "1234") == 0);
-    assert(str_popb(s) == '4');
-    assert(str_popb(s) == '3');
-    assert(strcmp(str_getc(s), "12") == 0);
-    str_del(s);
+    assert(PadStr_PopBack(NULL) == '\0');
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(strcmp(PadStr_Getc(s), "1234") == 0);
+    assert(PadStr_PopBack(s) == '4');
+    assert(PadStr_PopBack(s) == '3');
+    assert(strcmp(PadStr_Getc(s), "12") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_pushf(void) {
-    string_t *s = str_new();
+test_PadStr_PushFront(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_pushf(NULL, '1') == NULL);
-    assert(str_pushf(s, 0) == NULL);
-    assert(str_pushf(s, '\0') == NULL);
-    assert(str_pushf(s, '1') != NULL);
-    assert(str_pushf(s, '2') != NULL);
-    assert(strcmp(str_getc(s), "21") == 0);
-    str_del(s);
+    assert(PadStr_PushFront(NULL, '1') == NULL);
+    assert(PadStr_PushFront(s, 0) == NULL);
+    assert(PadStr_PushFront(s, '\0') == NULL);
+    assert(PadStr_PushFront(s, '1') != NULL);
+    assert(PadStr_PushFront(s, '2') != NULL);
+    assert(strcmp(PadStr_Getc(s), "21") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_popf(void) {
-    string_t *s = str_new();
+test_PadStr_PopFront(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_popf(NULL) == '\0');
-    assert(str_set(s, "1234") != NULL);
-    assert(str_popf(s) == '1');
-    assert(str_popf(s) == '2');
-    assert(strcmp(str_getc(s), "34") == 0);
-    str_del(s);
+    assert(PadStr_PopFront(NULL) == '\0');
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(PadStr_PopFront(s) == '1');
+    assert(PadStr_PopFront(s) == '2');
+    assert(strcmp(PadStr_Getc(s), "34") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_app(void) {
-    string_t *s = str_new();
+test_PadStr_App(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_app(NULL, "1234") == NULL);
-    assert(str_app(s, NULL) == NULL);
-    assert(str_app(s, "1234") != NULL);
-    assert(strcmp(str_getc(s), "1234") == 0);
-    str_del(s);
+    assert(PadStr_App(NULL, "1234") == NULL);
+    assert(PadStr_App(s, NULL) == NULL);
+    assert(PadStr_App(s, "1234") != NULL);
+    assert(strcmp(PadStr_Getc(s), "1234") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_app_stream(void) {
-    string_t *s = str_new();
+test_PadStr_AppStream(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
 
     char curdir[1024];
@@ -1274,467 +1274,467 @@ test_str_app_stream(void) {
 
     FILE *fin = fopen(path, "r");
     assert(fin != NULL);
-    assert(str_app_stream(NULL, fin) == NULL);
-    assert(str_app_stream(s, NULL) == NULL);
-    assert(str_app_stream(s, fin) != NULL);
+    assert(PadStr_AppStream(NULL, fin) == NULL);
+    assert(PadStr_AppStream(s, NULL) == NULL);
+    assert(PadStr_AppStream(s, fin) != NULL);
     assert(fclose(fin) == 0);
 
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_app_other(void) {
-    string_t *s = str_new();
+test_PadStr_AppOther(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "1234") != NULL);
-    string_t *o = str_new();
+    assert(PadStr_Set(s, "1234") != NULL);
+    PadStr *o = PadStr_New();
     assert(o != NULL);
-    assert(str_set(o, "1234") != NULL);
-    assert(str_app_other(NULL, o) == NULL);
-    assert(str_app_other(s, NULL) == NULL);
-    assert(str_app_other(s, o) != NULL);
-    assert(strcmp(str_getc(s), "12341234") == 0);
-    str_del(o);
-    str_del(s);
+    assert(PadStr_Set(o, "1234") != NULL);
+    assert(PadStr_AppOther(NULL, o) == NULL);
+    assert(PadStr_AppOther(s, NULL) == NULL);
+    assert(PadStr_AppOther(s, o) != NULL);
+    assert(strcmp(PadStr_Getc(s), "12341234") == 0);
+    PadStr_Del(o);
+    PadStr_Del(s);
 
-    s = str_new();
-    assert(str_set(s, "1234") != NULL);
-    assert(str_app_other(s, s) != NULL);
-    assert(strcmp(str_getc(s), "12341234") == 0);
-    str_del(s);
+    s = PadStr_New();
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(PadStr_AppOther(s, s) != NULL);
+    assert(strcmp(PadStr_Getc(s), "12341234") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_app_fmt(void) {
-    string_t *s = str_new();
+test_PadStr_AppFmt(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
     char buf[1024];
-    assert(str_app_fmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
-    assert(str_app_fmt(s, NULL, sizeof buf, "%s", "test") == NULL);
-    assert(str_app_fmt(s, buf, 0, "%s", "test") == NULL);
-    assert(str_app_fmt(s, buf, sizeof buf, NULL, "test") == NULL);
-    assert(str_app_fmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
-    assert(strcmp(str_getc(s), "1234 1 2") == 0);
-    str_del(s);
+    assert(PadStr_AppFmt(NULL, buf, sizeof buf, "%s", "test") == NULL);
+    assert(PadStr_AppFmt(s, NULL, sizeof buf, "%s", "test") == NULL);
+    assert(PadStr_AppFmt(s, buf, 0, "%s", "test") == NULL);
+    assert(PadStr_AppFmt(s, buf, sizeof buf, NULL, "test") == NULL);
+    assert(PadStr_AppFmt(s, buf, sizeof buf, "%s %d %c", "1234", 1, '2') != NULL);
+    assert(strcmp(PadStr_Getc(s), "1234 1 2") == 0);
+    PadStr_Del(s);
 }
 
 static void
-test_str_rstrip(void) {
-    string_t *s = str_new();
+test_PadStr_RStrip(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "1234") != NULL);
-    assert(str_rstrip(NULL, "34") == NULL);
-    assert(str_rstrip(s, NULL) == NULL);
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(PadStr_RStrip(NULL, "34") == NULL);
+    assert(PadStr_RStrip(s, NULL) == NULL);
 
-    string_t *o = str_rstrip(s, "34");
+    PadStr *o = PadStr_RStrip(s, "34");
     assert(o);
-    assert(strcmp(str_getc(o), "12") == 0);
+    assert(strcmp(PadStr_Getc(o), "12") == 0);
 
-    str_del(o);
-    str_del(s);
+    PadStr_Del(o);
+    PadStr_Del(s);
 }
 
 static void
-test_str_lstrip(void) {
-    string_t *s = str_new();
+test_PadStr_LStrip(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "1234") != NULL);
-    assert(str_lstrip(NULL, "12") == NULL);
-    assert(str_lstrip(s, NULL) == NULL);
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(PadStr_LStrip(NULL, "12") == NULL);
+    assert(PadStr_LStrip(s, NULL) == NULL);
 
-    string_t *o = str_lstrip(s, "12");
+    PadStr *o = PadStr_LStrip(s, "12");
     assert(o);
-    assert(strcmp(str_getc(o), "34") == 0);
+    assert(strcmp(PadStr_Getc(o), "34") == 0);
 
-    str_del(o);
-    str_del(s);
+    PadStr_Del(o);
+    PadStr_Del(s);
 }
 
 static void
-test_str_strip(void) {
-    string_t *s = str_new();
+test_PadStr_Strip(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "--1234--") != NULL);
-    assert(str_strip(NULL, "-") == NULL);
-    assert(str_strip(s, NULL) == NULL);
+    assert(PadStr_Set(s, "--1234--") != NULL);
+    assert(PadStr_Strip(NULL, "-") == NULL);
+    assert(PadStr_Strip(s, NULL) == NULL);
 
-    string_t *o = str_strip(s, "-");
+    PadStr *o = PadStr_Strip(s, "-");
     assert(o);
-    assert(strcmp(str_getc(o), "1234") == 0);
+    assert(strcmp(PadStr_Getc(o), "1234") == 0);
 
-    str_del(o);
-    str_del(s);
+    PadStr_Del(o);
+    PadStr_Del(s);
 }
 
 static void
-test_str_findc(void) {
-    string_t *s = str_new();
+test_PadStr_Findc(void) {
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "1234") != NULL);
-    assert(str_findc(NULL, "") == NULL);
-    assert(str_findc(s, NULL) == NULL);
-    const char *fnd = str_findc(s, "23");
+    assert(PadStr_Set(s, "1234") != NULL);
+    assert(PadStr_Findc(NULL, "") == NULL);
+    assert(PadStr_Findc(s, NULL) == NULL);
+    const char *fnd = PadStr_Findc(s, "23");
     assert(fnd != NULL);
     assert(strcmp(fnd, "234") == 0);
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_lower(void) {
-    assert(str_lower(NULL) == NULL);
-    string_t *s = str_new();
+test_PadStr_Lower(void) {
+    assert(PadStr_Lower(NULL) == NULL);
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "ABC") != NULL);
-    string_t *cp = str_lower(s);
+    assert(PadStr_Set(s, "ABC") != NULL);
+    PadStr *cp = PadStr_Lower(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc"));
-    str_del(cp);
-    str_del(s);
+    assert(!strcmp(PadStr_Getc(cp), "abc"));
+    PadStr_Del(cp);
+    PadStr_Del(s);
 }
 
 static void
-test_str_upper(void) {
-    assert(str_upper(NULL) == NULL);
-    string_t *s = str_new();
+test_PadStr_Upper(void) {
+    assert(PadStr_Upper(NULL) == NULL);
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "abc") != NULL);
-    string_t *cp = str_upper(s);
+    assert(PadStr_Set(s, "abc") != NULL);
+    PadStr *cp = PadStr_Upper(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "ABC"));
-    str_del(cp);
-    str_del(s);
+    assert(!strcmp(PadStr_Getc(cp), "ABC"));
+    PadStr_Del(cp);
+    PadStr_Del(s);
 }
 
 static void
-test_str_capitalize(void) {
-    assert(str_capitalize(NULL) == NULL);
-    string_t *s = str_new();
+test_PadStr_Capi(void) {
+    assert(PadStr_Capi(NULL) == NULL);
+    PadStr *s = PadStr_New();
     assert(s != NULL);
-    assert(str_set(s, "abc") != NULL);
-    string_t *cp = str_capitalize(s);
+    assert(PadStr_Set(s, "abc") != NULL);
+    PadStr *cp = PadStr_Capi(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "Abc"));
-    str_del(cp);
-    str_del(s);
+    assert(!strcmp(PadStr_Getc(cp), "Abc"));
+    PadStr_Del(cp);
+    PadStr_Del(s);
 }
 
 static void
-test_str_snake(void) {
-    assert(str_snake(NULL) == NULL);
-    string_t *s = str_new();
+test_PadStr_Snake(void) {
+    assert(PadStr_Snake(NULL) == NULL);
+    PadStr *s = PadStr_New();
     assert(s != NULL);
 
-    assert(str_set(s, "abc") != NULL);
-    string_t *cp = str_snake(s);
+    assert(PadStr_Set(s, "abc") != NULL);
+    PadStr *cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "abcDefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "AbcDefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "AbcDefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abc-def-ghi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "abc-def-ghi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "_abcDefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "_abcDefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "-abcDefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "-abcDefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "_-abcDefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "_-abcDefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi_abc-DefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "abcDefGhi_abc-DefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi_abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi_abc_def_ghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
-    cp = str_snake(s);
+    assert(PadStr_Set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = PadStr_Snake(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc_def_ghi_abc_def_ghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc_def_ghi_abc_def_ghi"));
+    PadStr_Del(cp);
 
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_camel(void) {
+test_PadStr_Camel(void) {
 #undef showcp
-#define showcp() printf("cp[%s]\n", str_getc(cp))
+#define showcp() printf("cp[%s]\n", PadStr_Getc(cp))
 
-    assert(str_camel(NULL) == NULL);
-    string_t *s = str_new();
+    assert(PadStr_Camel(NULL) == NULL);
+    PadStr *s = PadStr_New();
     assert(s != NULL);
 
-    assert(str_set(s, "abc") != NULL);
-    string_t *cp = str_camel(s);
+    assert(PadStr_Set(s, "abc") != NULL);
+    PadStr *cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "ABC") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "ABC") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "aBC"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "aBC"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "AFormatB") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "AFormatB") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "aFormatB"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "aFormatB"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "ABFormat") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "ABFormat") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "aBFormat"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "aBFormat"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "abcDefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "AbcDefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "AbcDefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abc-def-ghi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "abc-def-ghi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "_abcDefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "_abcDefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "-abcDefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "-abcDefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "_-abcDefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "_-abcDefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi_abc-DefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "abcDefGhi_abc-DefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhiAbcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhiAbcDefGhi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
-    cp = str_camel(s);
+    assert(PadStr_Set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = PadStr_Camel(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcDefGhiAbcDefGhi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcDefGhiAbcDefGhi"));
+    PadStr_Del(cp);
 
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_hacker(void) {
+test_PadStr_Hacker(void) {
 #undef showcp
-#define showcp() printf("cp[%s]\n", str_getc(cp))
+#define showcp() printf("cp[%s]\n", PadStr_Getc(cp))
 
-    assert(str_hacker(NULL) == NULL);
-    string_t *s = str_new();
+    assert(PadStr_Hacker(NULL) == NULL);
+    PadStr *s = PadStr_New();
     assert(s != NULL);
 
-    assert(str_set(s, "abc") != NULL);
-    string_t *cp = str_hacker(s);
+    assert(PadStr_Set(s, "abc") != NULL);
+    PadStr *cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "ABC") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "ABC") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "AFormatB") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "AFormatB") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "aformatb"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "aformatb"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "ABFormat") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "ABFormat") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abformat"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abformat"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "abcDefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "AbcDefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "AbcDefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abc-def-ghi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "abc-def-ghi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "_abcDefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "_abcDefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "-abcDefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "-abcDefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "_-abcDefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "_-abcDefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi_abc-DefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "abcDefGhi_abc-DefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghiabcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghiabcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghiabcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghiabcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abcDefGhi__abc--DefGhi") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "abcDefGhi__abc--DefGhi") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abcdefghiabcdefghi"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abcdefghiabcdefghi"));
+    PadStr_Del(cp);
 
-    assert(str_set(s, "abc0_12def_gh34i") != NULL);
-    cp = str_hacker(s);
+    assert(PadStr_Set(s, "abc0_12def_gh34i") != NULL);
+    cp = PadStr_Hacker(s);
     assert(cp);
-    assert(!strcmp(str_getc(cp), "abc012defgh34i"));
-    str_del(cp);
+    assert(!strcmp(PadStr_Getc(cp), "abc012defgh34i"));
+    PadStr_Del(cp);
 
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_mul(void) {
-    string_t *s = str_new();
-    str_set(s, "abc");
+test_PadStr_Mul(void) {
+    PadStr *s = PadStr_New();
+    PadStr_Set(s, "abc");
 
-    assert(str_mul(NULL, 0) == NULL);
+    assert(PadStr_Mul(NULL, 0) == NULL);
 
-    string_t *m = str_mul(s, 2);
-    assert(!strcmp(str_getc(m), "abcabc"));
+    PadStr *m = PadStr_Mul(s, 2);
+    assert(!strcmp(PadStr_Getc(m), "abcabc"));
 
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static void
-test_str_indent(void) {
-    string_t *s = str_new();
-    str_set(s, "abc");
+test_PadStr_Indent(void) {
+    PadStr *s = PadStr_New();
+    PadStr_Set(s, "abc");
 
-    string_t *ss = str_indent(s, ' ', 2, 4);
+    PadStr *ss = PadStr_Indent(s, ' ', 2, 4);
     assert(ss);
-    assert(!strcmp(str_getc(ss), "        abc"));
-    str_del(ss);
+    assert(!strcmp(PadStr_Getc(ss), "        abc"));
+    PadStr_Del(ss);
 
-    ss = str_indent(s, '\t', 2, 0);
+    ss = PadStr_Indent(s, '\t', 2, 0);
     assert(ss);
-    assert(!strcmp(str_getc(ss), "\t\tabc"));
-    str_del(ss);
+    assert(!strcmp(PadStr_Getc(ss), "\t\tabc"));
+    PadStr_Del(ss);
 
-    str_set(s, "abc\ndef\n");
+    PadStr_Set(s, "abc\ndef\n");
 
-    ss = str_indent(s, ' ', 1, 4);
+    ss = PadStr_Indent(s, ' ', 1, 4);
     assert(ss);
-    printf("[%s]\n", str_getc(ss));
-    assert(!strcmp(str_getc(ss), "    abc\n    def\n"));
-    str_del(ss);
+    printf("[%s]\n", PadStr_Getc(ss));
+    assert(!strcmp(PadStr_Getc(ss), "    abc\n    def\n"));
+    PadStr_Del(ss);
 
-    str_del(s);
+    PadStr_Del(s);
 }
 
 static const struct testcase
-string_tests[] = {
-    {"str_del", test_str_del},
-    {"str_esc_del", test_str_esc_del},
-    {"str_new", test_str_new},
-    {"str_new_cstr", test_str_new_cstr},
-    {"str_deep_copy", test_str_deep_copy},
-    {"str_deep_copy", test_str_deep_copy},
-    {"str_len", test_str_len},
-    {"str_capa", test_str_capa},
-    {"str_getc", test_str_getc},
-    {"str_empty", test_str_empty},
-    {"str_clear", test_str_clear},
-    {"str_set", test_str_set},
-    {"str_resize", test_str_resize},
-    {"str_pushb", test_str_pushb},
-    {"str_popb", test_str_popb},
-    {"str_pushf", test_str_pushf},
-    {"str_popf", test_str_popf},
-    {"str_app", test_str_app},
-    {"str_app_stream", test_str_app_stream},
-    {"str_app_other", test_str_app_other},
-    {"str_app_fmt", test_str_app_fmt},
-    {"str_rstrip", test_str_rstrip},
-    {"str_lstrip", test_str_lstrip},
-    {"str_strip", test_str_strip},
-    {"str_findc", test_str_findc},
-    {"str_lower", test_str_lower},
-    {"str_upper", test_str_upper},
-    {"str_capitalize", test_str_capitalize},
-    {"str_snake", test_str_snake},
-    {"str_camel", test_str_camel},
-    {"str_hacker", test_str_hacker},
-    {"str_mul", test_str_mul},
-    {"str_indent", test_str_indent},
+PadStrests[] = {
+    {"PadStr_Del", test_PadStr_Del},
+    {"PadStr_EscDel", test_PadStr_EscDel},
+    {"PadStr_New", test_PadStr_New},
+    {"PadStr_NewCStr", test_PadStr_NewCStr},
+    {"PadStr_DeepCopy", test_PadStr_DeepCopy},
+    {"PadStr_DeepCopy", test_PadStr_DeepCopy},
+    {"PadStr_Len", test_PadStr_Len},
+    {"PadStr_Capa", test_PadStr_Capa},
+    {"PadStr_Getc", test_PadStr_Getc},
+    {"PadStr_Empty", test_PadStr_Empty},
+    {"PadStr_Clear", test_PadStr_Clear},
+    {"PadStr_Set", test_PadStr_Set},
+    {"PadStr_Resize", test_PadStr_Resize},
+    {"PadStr_PushBack", test_PadStr_PushBack},
+    {"PadStr_PopBack", test_PadStr_PopBack},
+    {"PadStr_PushFront", test_PadStr_PushFront},
+    {"PadStr_PopFront", test_PadStr_PopFront},
+    {"PadStr_App", test_PadStr_App},
+    {"PadStr_AppStream", test_PadStr_AppStream},
+    {"PadStr_AppOther", test_PadStr_AppOther},
+    {"PadStr_AppFmt", test_PadStr_AppFmt},
+    {"PadStr_RStrip", test_PadStr_RStrip},
+    {"PadStr_LStrip", test_PadStr_LStrip},
+    {"PadStr_Strip", test_PadStr_Strip},
+    {"PadStr_Findc", test_PadStr_Findc},
+    {"PadStr_Lower", test_PadStr_Lower},
+    {"PadStr_Upper", test_PadStr_Upper},
+    {"PadStr_Capi", test_PadStr_Capi},
+    {"PadStr_Snake", test_PadStr_Snake},
+    {"PadStr_Camel", test_PadStr_Camel},
+    {"PadStr_Hacker", test_PadStr_Hacker},
+    {"PadStr_Mul", test_PadStr_Mul},
+    {"PadStr_Indent", test_PadStr_Indent},
     {0},
 };
 
@@ -2565,8 +2565,8 @@ test_char16_strcmp(void) {
 
 static const struct testcase
 unicode_tests[] = {
-    {"uni_del", test_str_del},
-    {"uni_esc_del", test_str_esc_del},
+    {"uni_del", test_PadStr_Del},
+    {"uni_esc_del", test_PadStr_EscDel},
     {"uni_new", test_uni_new},
     {"uni_deep_copy", test_uni_deep_copy},
     {"uni_deep_copy", test_uni_deep_copy},
@@ -31176,9 +31176,9 @@ test_PadErrStack_TrimAround(void) {
     _PadErrStack_PushBack(stack, NULL, 0, src, pos, "file1", 1, "func1", "this is dog");
     _PadErrStack_PushBack(stack, NULL, 0, src, pos, "file1", 1, "func1", "this is bird");
 
-    string_t *s = PadErrStack_TrimAround(src, pos);
+    PadStr *s = PadErrStack_TrimAround(src, pos);
     assert(s);
-    assert(!strcmp(str_getc(s),
+    assert(!strcmp(PadStr_Getc(s),
 "the source strings\n"
 "         ^"));
 
@@ -31519,8 +31519,8 @@ static const struct testmodule
 testmodules[] = {
     // lib
     {"cstring_array", cstrarr_tests},
-    {"cstring", cstring_tests},
-    {"string", string_tests},
+    {"cstring", cPadStrests},
+    {"string", PadStrests},
     {"unicode", unicode_tests},
     {"file", file_tests},
     {"cl", PadCLests},

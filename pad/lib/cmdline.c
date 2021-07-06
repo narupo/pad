@@ -10,7 +10,7 @@ PadCmdlineObj_Del(PadCmdlineObj *self) {
         return;
     }
 
-    str_del(self->command);
+    PadStr_Del(self->command);
     PadCL_Del(self->cl);
     free(self);
 }
@@ -23,7 +23,7 @@ PadCmdlineObj_New(PadCmdlineObjType type) {
     }
 
     self->type = type;
-    self->command = str_new();
+    self->command = PadStr_New();
     if (!self->command) {
         PadCmdlineObj_Del(self);
         return NULL;
@@ -187,7 +187,7 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
         return NULL;
     }
 
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
     int32_t m = 0;
     PadCmdline_Clear(self);
 
@@ -197,39 +197,39 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
             if (*p == '\\') {
                 ++p;
                 if (*p != '\0') {
-                    str_pushb(buf, *p);
+                    PadStr_PushBack(buf, *p);
                 } else {
                     --p;
                 }
             } else if (*p == '"') {
-                str_pushb(buf, *p);
+                PadStr_PushBack(buf, *p);
                 m = 10;
             } else if (*p == '|') {
-                if (!str_len(buf)) {
+                if (!PadStr_Len(buf)) {
                     snprintf(self->what, sizeof self->what, "invalid command line");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
 
                 // move back cmd object
                 PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
-                if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
+                if (!PadCmdlineObj_Parse(obj, PadStr_Getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
 
-                string_t *copied = str_strip(buf, " ");
-                str_del(buf);
+                PadStr *copied = PadStr_Strip(buf, " ");
+                PadStr_Del(buf);
                 buf = copied;
 
-                str_del(obj->command);
+                PadStr_Del(obj->command);
                 obj->command = PadMem_Move(buf);
-                buf = str_new();
+                buf = PadStr_New();
 
                 if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back command object");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
                 obj = NULL;
@@ -239,37 +239,37 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
 
                 if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back PIPE object");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
             } else if (*p == '&' && *(p+1) == '&') {
                 ++p;
 
-                if (!str_len(buf)) {
+                if (!PadStr_Len(buf)) {
                     snprintf(self->what, sizeof self->what, "invalid command line (2)");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
 
                 // move back cmd object
                 PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
-                if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
+                if (!PadCmdlineObj_Parse(obj, PadStr_Getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
 
-                string_t *copied = str_strip(buf, " ");
-                str_del(buf);
+                PadStr *copied = PadStr_Strip(buf, " ");
+                PadStr_Del(buf);
                 buf = copied;
 
-                str_del(obj->command);
+                PadStr_Del(obj->command);
                 obj->command = buf;
-                buf = str_new();
+                buf = PadStr_New();
 
                 if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back command object");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
                 obj = NULL;
@@ -279,35 +279,35 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
 
                 if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back AND object");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
             } else if (*p == '>') {
-                if (!str_len(buf)) {
+                if (!PadStr_Len(buf)) {
                     snprintf(self->what, sizeof self->what, "invalid command line (3)");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
 
                 // move back cmd object
                 PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
-                if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
+                if (!PadCmdlineObj_Parse(obj, PadStr_Getc(buf))) {
                     snprintf(self->what, sizeof self->what, "failed to parse mini command line");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
 
-                string_t *copied = str_strip(buf, " ");
-                str_del(buf);
+                PadStr *copied = PadStr_Strip(buf, " ");
+                PadStr_Del(buf);
                 buf = copied;
 
-                str_del(obj->command);
+                PadStr_Del(obj->command);
                 obj->command = buf;
-                buf = str_new();
+                buf = PadStr_New();
 
                 if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back command object");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
                 obj = NULL;
@@ -317,57 +317,57 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
 
                 if (!PadCmdline_MoveBack(self, obj)) {
                     snprintf(self->what, sizeof self->what, "failed to move back REDIRECT object");
-                    str_del(buf);
+                    PadStr_Del(buf);
                     return NULL;
                 }
             } else {
-                str_pushb(buf, *p);
+                PadStr_PushBack(buf, *p);
             }
             break;
         case 10: // found "
             if (*p == '\\') {
                 ++p;
                 if (*p != '\0') {
-                    str_pushb(buf, *p);
+                    PadStr_PushBack(buf, *p);
                 } else {
                     --p;
                 }
             } else if (*p == '"') {
-                str_pushb(buf, *p);
+                PadStr_PushBack(buf, *p);
                 m = 0;
             } else {
-                str_pushb(buf, *p);
+                PadStr_PushBack(buf, *p);
             }
             break;
         }
     }
 
-    if (str_len(buf)) {
+    if (PadStr_Len(buf)) {
         // move back cmd object
         PadCmdlineObj *obj = PadCmdlineObj_New(PAD_CMDLINE_OBJ_TYPE__CMD);
-        if (!PadCmdlineObj_Parse(obj, str_getc(buf))) {
+        if (!PadCmdlineObj_Parse(obj, PadStr_Getc(buf))) {
             snprintf(self->what, sizeof self->what, "failed to parse mini command line (2)");
             PadCmdlineObj_Del(obj);
-            str_del(buf);
+            PadStr_Del(buf);
             return NULL;
         }
 
-        string_t *copied = str_strip(buf, " ");
-        str_del(buf);
+        PadStr *copied = PadStr_Strip(buf, " ");
+        PadStr_Del(buf);
         buf = copied;
         
-        str_del(obj->command);
+        PadStr_Del(obj->command);
         obj->command = PadMem_Move(buf);
         buf = NULL;
 
         if (!PadCmdline_MoveBack(self, obj)) {
             snprintf(self->what, sizeof self->what, "failed to move back command object (2)");
             PadCmdlineObj_Del(obj);
-            str_del(buf);
+            PadStr_Del(buf);
             return NULL;
         }
     }
 
-    str_del(buf);
+    PadStr_Del(buf);
     return self;
 }

@@ -81,7 +81,7 @@ struct PadTkr {
     const char *program_source;
     const char *ptr;
     PadTok **tokens;
-    string_t *buf;
+    PadStr *buf;
     PadTkrOpt *option;
     int32_t tokens_len;
     int32_t tokens_capa;
@@ -101,7 +101,7 @@ PadTkr_Del(PadTkr *self) {
     free(self->program_filename);
     free(self->tokens);
     PadErrStack_Del(self->error_stack);
-    str_del(self->buf);
+    PadStr_Del(self->buf);
     PadTkrOpt_Del(self->option);
     free(self);
 }
@@ -127,7 +127,7 @@ PadTkr_New(PadTkrOpt *move_option) {
         return NULL;
     }
 
-    self->buf = str_new();
+    self->buf = PadStr_New();
     if (!self->buf) {
         PadTkr_Del(self);
         return NULL;
@@ -163,7 +163,7 @@ PadTkr_DeepCopy(const PadTkr *other) {
     self->program_lineno = other->program_lineno;
     self->program_source = other->program_source;
     self->ptr = other->ptr;
-    self->buf = str_deep_copy(other->buf);
+    self->buf = PadStr_DeepCopy(other->buf);
     if (!self->buf) {
         PadTkr_Del(self);
         return NULL;
@@ -363,28 +363,28 @@ tkr_is_identifier_char(PadTkr *self, int c) {
 
 static PadTok *
 tkr_read_identifier(PadTkr *self) {
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
 
     for (; *self->ptr; ) {
         char c = tkr_next(self);
         if (tkr_is_identifier_char(self, c)) {
-            str_pushb(buf, c);
+            PadStr_PushBack(buf, c);
         } else {
             tkr_prev(self);
             break;
         }
     }
 
-    if (!str_len(buf)) {
+    if (!PadStr_Len(buf)) {
         PadErr_Die("impossible. identifier is empty");
     }
 
     PadTok *token = tok_new(PAD_TOK_TYPE__IDENTIFIER);
-    PadTok_MoveTxt(token, str_esc_del(buf));
+    PadTok_MoveTxt(token, PadStr_EscDel(buf));
     return token;
 }
 
-static string_t *
+static PadStr *
 tkr_read_Pad_Escape(PadTkr *self) {
     if (*self->ptr != '\\') {
         pushb_error("not found \\ in read Pad_Escape");
@@ -393,23 +393,23 @@ tkr_read_Pad_Escape(PadTkr *self) {
 
     tkr_next(self);
     char c = tkr_next(self);
-    string_t *esc = str_new();
+    PadStr *esc = PadStr_New();
 
     switch (c) {
     default:
-        str_pushb(esc, '\\');
-        str_pushb(esc, c);
+        PadStr_PushBack(esc, '\\');
+        PadStr_PushBack(esc, c);
         break;
-    case '0': str_pushb(esc, '\0'); break;
-    case 'a': str_pushb(esc, '\a'); break;
-    case 'b': str_pushb(esc, '\b'); break;
-    case 'f': str_pushb(esc, '\f'); break;
-    case 'n': str_pushb(esc, '\n'); break;
-    case 'r': str_pushb(esc, '\r'); break;
-    case 't': str_pushb(esc, '\t'); break;
-    case '\\': str_pushb(esc, '\\'); break;
-    case '\'': str_pushb(esc, '\''); break;
-    case '"': str_pushb(esc, '"'); break;
+    case '0': PadStr_PushBack(esc, '\0'); break;
+    case 'a': PadStr_PushBack(esc, '\a'); break;
+    case 'b': PadStr_PushBack(esc, '\b'); break;
+    case 'f': PadStr_PushBack(esc, '\f'); break;
+    case 'n': PadStr_PushBack(esc, '\n'); break;
+    case 'r': PadStr_PushBack(esc, '\r'); break;
+    case 't': PadStr_PushBack(esc, '\t'); break;
+    case '\\': PadStr_PushBack(esc, '\\'); break;
+    case '\'': PadStr_PushBack(esc, '\''); break;
+    case '"': PadStr_PushBack(esc, '"'); break;
     }
 
     return esc;
@@ -423,7 +423,7 @@ tkr_read_dq_string(PadTkr *self) {
         PadErr_Die("impossible. should be begin by double quote");
     }
 
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
 
     for (; *self->ptr; ) {
         char c = tkr_next(self);
@@ -436,16 +436,16 @@ tkr_read_dq_string(PadTkr *self) {
         case 10:
             if (c == '\\') {
                 tkr_prev(self);
-                string_t *esc = tkr_read_Pad_Escape(self);
+                PadStr *esc = tkr_read_Pad_Escape(self);
                 if (!esc) {
                     goto fail;
                 }
-                str_app(buf, str_getc(esc));
-                str_del(esc);
+                PadStr_App(buf, PadStr_Getc(esc));
+                PadStr_Del(esc);
             } else if (c == '"') {
                 goto done;
             } else {
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
             }
             break;
         }
@@ -453,11 +453,11 @@ tkr_read_dq_string(PadTkr *self) {
 
 done: {
         PadTok *token = tok_new(PAD_TOK_TYPE__DQ_STRING);
-        PadTok_MoveTxt(token, str_esc_del(buf));
+        PadTok_MoveTxt(token, PadStr_EscDel(buf));
         return token;
     }
 fail:
-    str_del(buf);
+    PadStr_Del(buf);
     return NULL;
 }
 
@@ -528,13 +528,13 @@ PadTkr_Parse_identifier(PadTkr *self) {
 
 static PadTkr *
 tkr_store_textblock(PadTkr *self) {
-    if (!str_len(self->buf)) {
+    if (!PadStr_Len(self->buf)) {
         return self;
     }
     PadTok *textblock = tok_new(PAD_TOK_TYPE__TEXT_BLOCK);
-    PadTok_MoveTxt(textblock, PadMem_Move(str_esc_del(self->buf)));
+    PadTok_MoveTxt(textblock, PadMem_Move(PadStr_EscDel(self->buf)));
     tkr_move_token(self, PadMem_Move(textblock));
-    self->buf = str_new();
+    self->buf = PadStr_New();
     return self;
 }
 
@@ -568,7 +568,7 @@ static PadTkr *
 PadTkr_Parse_int_or_float(PadTkr *self) {
     const char *save = self->ptr;
     int m = 0;
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
     PadTokType type = PAD_TOK_TYPE__INTEGER;
 
     for (; *self->ptr; ) {
@@ -577,7 +577,7 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
         case 0:
             if (isdigit(c)) {
                 m = 200;
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
             } else {
                 self->ptr = save;
                 pushb_error("invalid statement");
@@ -587,7 +587,7 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
         case 100:  // found sign
             if (isdigit(c)) {
                 m = 200;
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
             } else {
                 self->ptr = save;
                 pushb_error("invalid sign");
@@ -596,11 +596,11 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
             break;
         case 200:  // found int
             if (isdigit(c)) {
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
             } else if (c == '.') {
                 m = 300;
                 type = PAD_TOK_TYPE__FLOAT;
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
             } else {
                 self->ptr--;
                 goto done;
@@ -608,7 +608,7 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
             break;
         case 300:  // found .
             if (isdigit(c)) {
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
                 m = 400;
             } else {
                 self->ptr = save;
@@ -618,7 +618,7 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
             break;
         case 400:  // found digit
             if (isdigit(c)) {
-                str_pushb(buf, c);
+                PadStr_PushBack(buf, c);
             } else {
                 self->ptr--;
                 goto done;
@@ -631,12 +631,12 @@ PadTkr_Parse_int_or_float(PadTkr *self) {
 done:
     token = tok_new(type);
     if (type == PAD_TOK_TYPE__INTEGER) {
-        token->lvalue = strtol(str_getc(buf), NULL, 10);
+        token->lvalue = strtol(PadStr_Getc(buf), NULL, 10);
     } else {
-        token->float_value = strtod(str_getc(buf), NULL);
+        token->float_value = strtod(PadStr_Getc(buf), NULL);
     }
 
-    token->text = str_esc_del(buf);
+    token->text = PadStr_EscDel(buf);
     tkr_move_token(self, PadMem_Move(token));
 
     return self;
@@ -647,7 +647,7 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
     self->program_source = program_source;
     self->ptr = program_source;
     PadErrStack_Clear(self->error_stack);
-    str_clear(self->buf);
+    PadStr_Clear(self->buf);
     tkr_clear_tokens(self);
 
     if (!tkropt_validate(self->option)) {
@@ -660,7 +660,7 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
     for (; *self->ptr ;) {
         char c = tkr_next(self);
         if (self->debug) {
-            fprintf(stderr, "m[%d] c[%c] buf[%s]\n", m, c, str_getc(self->buf));
+            fprintf(stderr, "m[%d] c[%c] buf[%s]\n", m, c, PadStr_Getc(self->buf));
         }
 
         if (m == 0) { // first
@@ -681,18 +681,18 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
                 bool next_is_eos = *(self->ptr + 1) == '\0';
                 tkr_next(self);
                 if (!next_is_eos) {
-                    str_app(self->buf, "\r\n");
+                    PadStr_App(self->buf, "\r\n");
                     self->program_lineno++;                    
                 }
             } else if ((c == '\r' && *self->ptr != '\n') ||
                        (c == '\n')) {
                 bool next_is_eos = *(self->ptr) == '\0';
                 if (!next_is_eos) {
-                    str_pushb(self->buf, c);
+                    PadStr_PushBack(self->buf, c);
                     self->program_lineno++;                    
                 }
             } else {
-                str_pushb(self->buf, c);
+                PadStr_PushBack(self->buf, c);
             }
         } else if (m == 10) { // found '{@'
             if (c == '"') {
@@ -934,7 +934,7 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
     }
 
     if (self->debug) {
-        fprintf(stderr, "end m[%d] buf[%s]\n", m, str_getc(self->buf));
+        fprintf(stderr, "end m[%d] buf[%s]\n", m, PadStr_Getc(self->buf));
     }
 
     tkr_store_textblock(self);

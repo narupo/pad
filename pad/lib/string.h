@@ -25,16 +25,16 @@
 **********/
 
 enum {
-    STR_FMT_SIZE = 2048,
+    PAD_STR__FMT_SIZE = 2048,
 };
 
 /***********
-* string_t *
+* PadStr *
 ***********/
 
-struct string;
-typedef struct string string_t;
-typedef char string_type_t;
+struct PadStr;
+typedef struct PadStr PadStr;
+typedef char PadStrType;
 
 /**
  * destring
@@ -42,7 +42,7 @@ typedef char string_type_t;
  * @param[in] self
  */
 void
-str_del(string_t *self);
+PadStr_Del(PadStr *self);
 
 /**
  * destring with move semantics
@@ -51,16 +51,16 @@ str_del(string_t *self);
  *
  * @return pointer to buffer
  */
-string_type_t *
-str_esc_del(string_t *self);
+PadStrType *
+PadStr_EscDel(PadStr *self);
 
 /**
  * constring
  *
  * @return pointer to dynamic allocate memory of string
  */
-string_t *
-str_new(void);
+PadStr *
+PadStr_New(void);
 
 /**
  * deep copy
@@ -69,11 +69,11 @@ str_new(void);
  *
  * @return
  */
-string_t *
-str_deep_copy(const string_t *other);
+PadStr *
+PadStr_DeepCopy(const PadStr *other);
 
-string_t *
-str_shallow_copy(const string_t *other);
+PadStr *
+PadStr_ShallowCopy(const PadStr *other);
 
 /**
  * construct from C strings
@@ -82,8 +82,8 @@ str_shallow_copy(const string_t *other);
  *
  * @return pointer to dynamic allocate memory of string
  */
-string_t *
-str_new_cstr(const string_type_t *str);
+PadStr *
+PadStr_NewCStr(const PadStrType *str);
 
 /**
  * get number of length of buffer in string
@@ -93,7 +93,7 @@ str_new_cstr(const string_type_t *str);
  * @return number of length
  */
 int32_t
-str_len(const string_t *self);
+PadStr_Len(const PadStr *self);
 
 /**
  * get number of capacity of buffer in string
@@ -103,7 +103,7 @@ str_len(const string_t *self);
  * @return number of capacity
  */
 int32_t
-str_capa(const string_t *self);
+PadStr_Capa(const PadStr *self);
 
 /**
  * get read-only pointer to buffer in string
@@ -112,8 +112,8 @@ str_capa(const string_t *self);
  *
  * @return pointer to memory of buffer in string
  */
-const string_type_t *
-str_getc(const string_t *self);
+const PadStrType *
+PadStr_Getc(const PadStr *self);
 
 /**
  * check empty of buffer in string
@@ -124,7 +124,7 @@ str_getc(const string_t *self);
  * @return not empty to false
  */
 int32_t
-str_empty(const string_t *self);
+PadStr_Empty(const PadStr *self);
 
 /**
  * clear buffer in string
@@ -133,7 +133,7 @@ str_empty(const string_t *self);
  * @param[in] self
  */
 void
-str_clear(string_t *self);
+PadStr_Clear(PadStr *self);
 
 /**
  * set c string to buffer of string
@@ -144,8 +144,8 @@ str_clear(string_t *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_set(string_t *self, const string_type_t *src);
+PadStr *
+PadStr_Set(PadStr *self, const PadStrType *src);
 
 /**
  * resize buffer in string by number of new length of buffer
@@ -156,8 +156,8 @@ str_set(string_t *self, const string_type_t *src);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_resize(string_t *self, int32_t newcapa);
+PadStr *
+PadStr_Resize(PadStr *self, int32_t newcapa);
 
 /**
  * push data to back of buffer in string
@@ -168,8 +168,8 @@ str_resize(string_t *self, int32_t newcapa);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_pushb(string_t *self, string_type_t ch);
+PadStr *
+PadStr_PushBack(PadStr *self, PadStrType ch);
 
 /**
  * pop data at back of buffer in string
@@ -179,8 +179,8 @@ str_pushb(string_t *self, string_type_t ch);
  * @return success to data at back
  * @return failed to NIL
  */
-string_type_t
-str_popb(string_t *self);
+PadStrType
+PadStr_PopBack(PadStr *self);
 
 /**
  * push data at front of buffer in string
@@ -191,8 +191,8 @@ str_popb(string_t *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_pushf(string_t *self, string_type_t ch);
+PadStr *
+PadStr_PushFront(PadStr *self, PadStrType ch);
 
 /**
  * pop data at front of buffer in string
@@ -202,8 +202,8 @@ str_pushf(string_t *self, string_type_t ch);
  * @return success to front data of buffer
  * @return failed to NIL
  */
-string_type_t
-str_popf(string_t *self);
+PadStrType
+PadStr_PopFront(PadStr *self);
 
 /**
  * append c string at back of buffer in string
@@ -214,8 +214,8 @@ str_popf(string_t *self);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_app(string_t *self, const string_type_t *src);
+PadStr *
+PadStr_App(PadStr *self, const PadStrType *src);
 
 /**
  * append stream at back of buffer in string
@@ -226,8 +226,8 @@ str_app(string_t *self, const string_type_t *src);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_app_stream(string_t *self, FILE *fin);
+PadStr *
+PadStr_AppStream(PadStr *self, FILE *fin);
 
 /**
  * append other string at back of buffer in string
@@ -238,8 +238,8 @@ str_app_stream(string_t *self, FILE *fin);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_app_other(string_t *self, const string_t *_other);
+PadStr *
+PadStr_AppOther(PadStr *self, const PadStr *_other);
 
 /**
  * append format string at back of buffer in string
@@ -253,8 +253,8 @@ str_app_other(string_t *self, const string_t *_other);
  * @return success to pointer to self
  * @return failed to NULL
  */
-string_t *
-str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_t *fmt, ...);
+PadStr *
+PadStr_AppFmt(PadStr *self, PadStrType *buf, int32_t nbuf, const PadStrType *fmt, ...);
 
 /**
  * strip elements at right of string
@@ -262,11 +262,11 @@ str_app_fmt(string_t *self, string_type_t *buf, int32_t nbuf, const string_type_
  * @param[in] other
  * @param[in] rems  target characters
  *
- * @return success to pointer to string_t (dynamic allocate memory)
+ * @return success to pointer to PadStr (dynamic allocate memory)
  * @return failed to NULL
  */
-string_t *
-str_rstrip(const string_t *other, const string_type_t *rems);
+PadStr *
+PadStr_RStrip(const PadStr *other, const PadStrType *rems);
 
 /**
  * strip elements at left of string
@@ -274,11 +274,11 @@ str_rstrip(const string_t *other, const string_type_t *rems);
  * @param[in] other
  * @param[in] rems  target characters
  *
- * @return success to pointer to string_t (dynamic allocate memory)
+ * @return success to pointer to PadStr (dynamic allocate memory)
  * @return failed to NULL
  */
-string_t *
-str_lstrip(const string_t *other, const string_type_t *rems);
+PadStr *
+PadStr_LStrip(const PadStr *other, const PadStrType *rems);
 
 /**
  * strip elements at both sides of string
@@ -286,11 +286,11 @@ str_lstrip(const string_t *other, const string_type_t *rems);
  * @param[in] other
  * @param[in] rems  target characters
  *
- * @return success to pointer to string_t (dynamic allocate memory)
+ * @return success to pointer to PadStr (dynamic allocate memory)
  * @return failed to NULL
  */
-string_t *
-str_strip(const string_t *other, const string_type_t *rems);
+PadStr *
+PadStr_Strip(const PadStr *other, const PadStrType *rems);
 
 /**
  * find token of string from front of buffer in string
@@ -301,95 +301,95 @@ str_strip(const string_t *other, const string_type_t *rems);
  * @return found to pointer to memory of found string
  * @return not found to NULL
  */
-const string_type_t *
-str_findc(const string_t *self, const string_type_t *target);
+const PadStrType *
+PadStr_Findc(const PadStr *self, const PadStrType *target);
 
 /**
  * convert strings to lower case and copy it
  *
  * @param[in] *other
  *
- * @return success to pointer to string_t (copied)
+ * @return success to pointer to PadStr (copied)
  * @return failed to pointer to NULL
  */
-string_t *
-str_lower(const string_t *other);
+PadStr *
+PadStr_Lower(const PadStr *other);
 
 /**
  * convert strings to upper case and copy it
  *
  * @param[in] *other
  *
- * @return success to pointer to string_t (copied)
+ * @return success to pointer to PadStr (copied)
  * @return failed to pointer to NULL
  */
-string_t *
-str_upper(const string_t *other);
+PadStr *
+PadStr_Upper(const PadStr *other);
 
 /**
  * capitalize strings and copy it
  *
  * @param[in] *other
  *
- * @return success to pointer to string_t (copied)
+ * @return success to pointer to PadStr (copied)
  * @return failed to pointer to NULL
  */
-string_t *
-str_capitalize(const string_t *other);
+PadStr *
+PadStr_Capi(const PadStr *other);
 
 /**
  * convert to scake case and copy it
  *
  * @param[in] *other
  *
- * @return success to pointer to string_t (copied)
+ * @return success to pointer to PadStr (copied)
  * @return failed to pointer to NULL
  */
-string_t *
-str_snake(const string_t *other);
+PadStr *
+PadStr_Snake(const PadStr *other);
 
 /**
  * convert to camel case and copy it
  *
  * @param[in] *other
  *
- * @return success to pointer to string_t (copied)
+ * @return success to pointer to PadStr (copied)
  * @return failed to pointer to NULL
  */
-string_t *
-str_camel(const string_t *other);
+PadStr *
+PadStr_Camel(const PadStr *other);
 
 /**
  * convert to hacker style and copy it
  *
  * @param[in] *other
  *
- * @return success to pointer to string_t (copied)
+ * @return success to pointer to PadStr (copied)
  * @return failed to pointer to NULL
  */
-string_t *
-str_hacker(const string_t *other);
+PadStr *
+PadStr_Hacker(const PadStr *other);
 
 /**
  * mul string with copy
  *
- * @param[in] *self pointer to string_t
+ * @param[in] *self pointer to PadStr
  *
- * @return sucess to pointer to string_t (copied)
+ * @return sucess to pointer to PadStr (copied)
  * @return failed to poitner to NULL
  */
-string_t *
-str_mul(const string_t *self, int32_t n);
+PadStr *
+PadStr_Mul(const PadStr *self, int32_t n);
 
-string_t *
-str_indent(const string_t *other, int32_t ch, int32_t n, int32_t tabsize);
+PadStr *
+PadStr_Indent(const PadStr *other, int32_t ch, int32_t n, int32_t tabsize);
 
 /********
 * uint8 *
 ********/
 
 static inline int32_t
-uint8len(const uint8_t *str) {
+PadStr_Uint8Len(const uint8_t *str) {
     if (!str) {
         return 0;
     }
@@ -397,7 +397,7 @@ uint8len(const uint8_t *str) {
 }
 
 static inline int32_t
-uint8toint32(const uint8_t *str) {
+PadStr_Uint8ToInt32(const uint8_t *str) {
     if (!str) {
         return 0;
     }

@@ -141,24 +141,24 @@ builtin_eputs(PadBltFuncArgs *fargs) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
-        str_pushb(s, ' ');
-        PadCtx_PushBackStderrBuf(context, str_getc(s));
-        str_del(s);
+        PadStr_PushBack(s, ' ');
+        PadCtx_PushBackStderrBuf(context, PadStr_Getc(s));
+        PadStr_Del(s);
     }
     if (arrlen) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
-        PadCtx_PushBackStderrBuf(context, str_getc(s));
-        str_del(s);
+        PadCtx_PushBackStderrBuf(context, PadStr_Getc(s));
+        PadStr_Del(s);
     }
 
 done:
@@ -195,13 +195,13 @@ builtin_puts(PadBltFuncArgs *fargs) {
             push_error("failed to get argument");
             return NULL;
         }
-        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
-        str_pushb(s, ' ');
-        PadCtx_PushBackStdoutBuf(context, str_getc(s));
-        str_del(s);
+        PadStr_PushBack(s, ' ');
+        PadCtx_PushBackStdoutBuf(context, PadStr_Getc(s));
+        PadStr_Del(s);
     }
     if (arrlen) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
@@ -211,12 +211,12 @@ builtin_puts(PadBltFuncArgs *fargs) {
             push_error("failed to get argument");
             return NULL;
         }
-        string_t *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
-        PadCtx_PushBackStdoutBuf(context, str_getc(s));
-        str_del(s);
+        PadCtx_PushBackStdoutBuf(context, PadStr_Getc(s));
+        PadStr_Del(s);
     }
 
 done:

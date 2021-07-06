@@ -14,8 +14,8 @@ struct PadObjDict {
 void
 PadObj_Del(PadObj *self);
 
-typedef struct string string_t;
-string_t * PadObj_ToStr(const PadObj *self);
+typedef struct PadStr PadStr;
+PadStr * PadObj_ToStr(const PadObj *self);
 
 void
 PadObjDict_Del(PadObjDict *self) {
@@ -315,9 +315,9 @@ PadObjDict_Dump(const PadObjDict *self, FILE *fout) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         const PadObjDictItem *item = &self->map[i];
-        string_t *s = PadObj_ToStr(item->value);
-        fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
-        str_del(s);
+        PadStr *s = PadObj_ToStr(item->value);
+        fprintf(fout, "[%s] = [%s]\n", item->key, PadStr_Getc(s));
+        PadStr_Del(s);
         PadObj_Dump(item->value, fout);
     }
 }

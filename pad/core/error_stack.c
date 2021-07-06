@@ -175,13 +175,13 @@ PadErrStack_Getc(const PadErrStack *self, int32_t idx) {
     return &self->stack[idx];
 }
 
-string_t *
+PadStr *
 PadErrStack_TrimAround(const char *src, int32_t pos) {
     if (!src || pos < 0) {
         return NULL;
     }
 
-    string_t *s = str_new();
+    PadStr *s = PadStr_New();
     const char *beg = src;
     const char *end = src + strlen(src);
     const char *curs = &src[pos];
@@ -215,17 +215,17 @@ PadErrStack_TrimAround(const char *src, int32_t pos) {
             (*p == '\r')) {
             break;
         }
-        str_pushb(s, *p);
+        PadStr_PushBack(s, *p);
     }
 
     // set cursor
-    str_pushb(s, '\n');
+    PadStr_PushBack(s, '\n');
     for (int32_t i = 0; i < len; ++i) {
         if (i == curspos) {
-            str_pushb(s, '^');
+            PadStr_PushBack(s, '^');
             break;
         } else {
-            str_pushb(s, ' ');
+            PadStr_PushBack(s, ' ');
         }
     }
 
@@ -238,11 +238,11 @@ show_trim_around(const PadErrElem *elem, FILE *fout) {
         return;
     }
 
-    string_t *s = PadErrStack_TrimAround(elem->program_source, elem->program_source_pos);
-    string_t *ss = str_indent(s, ' ', 1, 4);
-    str_del(s);
-    fprintf(fout, "%s\n", str_getc(ss));
-    str_del(ss);
+    PadStr *s = PadErrStack_TrimAround(elem->program_source, elem->program_source_pos);
+    PadStr *ss = PadStr_Indent(s, ' ', 1, 4);
+    PadStr_Del(s);
+    fprintf(fout, "%s\n", PadStr_Getc(ss));
+    PadStr_Del(ss);
 }
 
 void

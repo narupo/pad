@@ -12,11 +12,11 @@ typedef struct {
     // d ... dot ('.')
     // s ... space (' ')
     char type;
-    string_t *token;
+    PadStr *token;
 } err_PadTok;
 
 static err_PadTok *
-gen_token(char type, string_t *move_token) {
+gen_token(char type, PadStr *move_token) {
     err_PadTok *tok = PadMem_Calloc(1, sizeof(*tok));
     if (!tok) {
         return NULL;
@@ -29,12 +29,12 @@ gen_token(char type, string_t *move_token) {
 }
 
 static char
-infer_type(const string_t *tok) {
-    if (!str_len(tok)) {
+infer_type(const PadStr *tok) {
+    if (!PadStr_Len(tok)) {
         return 0;
     }
 
-    const char *s = str_getc(tok);
+    const char *s = PadStr_Getc(tok);
     char last = s[strlen(s) - 1];
     switch (last) {
     default: return 't'; break;
@@ -51,7 +51,7 @@ tokenize(const char *src) {
     if (!tokens) {
         return NULL;
     }
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
     char bef = 0;
 
 #define push(t) \
@@ -69,46 +69,46 @@ tokenize(const char *src) {
     tokens[cursize] = NULL; \
 
 #define store \
-    if (str_len(buf)) { \
+    if (PadStr_Len(buf)) { \
         char type = infer_type(buf); \
         err_PadTok *tok = gen_token(type, PadMem_Move(buf)); \
         if (!tok) { \
             return NULL; \
         } \
         push(tok); \
-        buf = str_new(); \
+        buf = PadStr_New(); \
     } \
 
     for (const char *p = src; *p; ++p) {
         if (*p == ' ') {
             store;
             if (bef != *p) {
-                str_pushb(buf, *p);
+                PadStr_PushBack(buf, *p);
                 store;
             }
         } else if (*p == '.') {
             store;
             for (; *p == '.'; ++p) {
-                str_pushb(buf, *p);
+                PadStr_PushBack(buf, *p);
             }
             --p;
             store;
         } else if (*p == '"') {
             store;
-            str_pushb(buf, *p++);
+            PadStr_PushBack(buf, *p++);
             for (; *p; ++p) {
                 if (*p == '\\') {
-                    str_pushb(buf, *p++);
-                    str_pushb(buf, *p);
+                    PadStr_PushBack(buf, *p++);
+                    PadStr_PushBack(buf, *p);
                 } else if (*p == '"') {
-                    str_pushb(buf, *p);
+                    PadStr_PushBack(buf, *p);
                     break;
                 } else {
-                    str_pushb(buf, *p);
+                    PadStr_PushBack(buf, *p);
                 }
             }            
         } else {
-            str_pushb(buf, *p);
+            PadStr_PushBack(buf, *p);
         }
 
         bef = *p;
@@ -116,7 +116,7 @@ tokenize(const char *src) {
 
     store;
 
-    str_del(buf);
+    PadStr_Del(buf);
     return tokens;
 }
 
@@ -153,18 +153,18 @@ PadErr_FixTxt(char *dst, uint32_t dstsz, const char *src) {
     for (err_PadTok **p = tokens; *p; ++p) {
         err_PadTok *tok = *p;
         if (debug) {
-            printf("m[%d] type[%c] token[%s]\n", m, tok->type, str_getc(tok->token));
+            printf("m[%d] type[%c] token[%s]\n", m, tok->type, PadStr_Getc(tok->token));
         }
 
         switch (m) {
         case 0:  // ended of dot
             if (tok->type == 't') {
                 if (!look_fname_ext(p)) {
-                    string_t *copied = str_capitalize(tok->token);
-                    PadCStr_App(dst, dstsz, str_getc(copied));
-                    str_del(copied);
+                    PadStr *copied = PadStr_Capi(tok->token);
+                    PadCStr_App(dst, dstsz, PadStr_Getc(copied));
+                    PadStr_Del(copied);
                 } else {
-                    PadCStr_App(dst, dstsz, str_getc(tok->token));
+                    PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
                 }
                 m = 10;
             } else if (tok->type == 's') {
@@ -175,22 +175,22 @@ PadErr_FixTxt(char *dst, uint32_t dstsz, const char *src) {
             break;
         case 10:  // found token
             if (tok->type == 't') {
-                PadCStr_App(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
             } else if (tok->type == 's') {
-                PadCStr_App(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
             } else if (tok->type == 'd') {
-                PadCStr_App(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
                 m = 20;
             }
             break;
         case 20:  // found token -> dot
             if (tok->type == 't') {
-                PadCStr_App(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
             } else if (tok->type == 's') {
-                PadCStr_App(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
                 m = 0;
             } else if (tok->type == 'd') {
-                PadCStr_App(dst, dstsz, str_getc(tok->token));
+                PadCStr_App(dst, dstsz, PadStr_Getc(tok->token));
             }
             break;
         }

@@ -79,9 +79,9 @@ Pad_PullRefAll(const PadObj *idn_obj);
  * if error to set ast error detail
  *
  * @return failed to NULL
- * @return success to pointer to string_t copied (can delete)
+ * @return success to pointer to PadStr copied (can delete)
  */
-string_t *
+PadStr *
 Pad_ObjToString(PadErrStack *err, const PadNode *ref_node, const PadObj *obj);
 
 /**

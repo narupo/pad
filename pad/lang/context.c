@@ -18,8 +18,8 @@ struct PadCtx {
     // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
     // その他ref_blockやtext_blockなどの出力もルートのcontextに保存されるようになっている
     // 2020/10/06以前はコンテキストごとにputsの出力を保存していた
-    string_t *stdout_buf;  // stdout buffer in context
-    string_t *stderr_buf;  // stderr buffer in context
+    PadStr *stdout_buf;  // stdout buffer in context
+    PadStr *stderr_buf;  // stderr buffer in context
 
     // コンテキストはスコープを管理する
     // 関数などのブロックに入るとスコープがプッシュされ、関数のスコープになる
@@ -41,8 +41,8 @@ PadCtx_Del(PadCtx *self) {
 
     // do not delete ref_gc (this is reference)
     PadAliasInfo_Del(self->alinfo);
-    str_del(self->stdout_buf);
-    str_del(self->stderr_buf);
+    PadStr_Del(self->stdout_buf);
+    PadStr_Del(self->stderr_buf);
     PadScope_Del(self->scope);
     free(self);
 }
@@ -54,8 +54,8 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self) {
     }
 
     PadAliasInfo_Del(self->alinfo);
-    str_del(self->stdout_buf);
-    str_del(self->stderr_buf);
+    PadStr_Del(self->stdout_buf);
+    PadStr_Del(self->stderr_buf);
     PadObjDict *varmap = PadScope_EscDelHeadVarmap(self->scope);
     free(self);
 
@@ -76,13 +76,13 @@ PadCtx_New(PadGC *ref_gc) {
         return NULL;
     }
 
-    self->stdout_buf = str_new();
+    self->stdout_buf = PadStr_New();
     if (!self->stdout_buf) {
         PadCtx_Del(self);
         return NULL;
     }
 
-    self->stderr_buf = str_new();
+    self->stderr_buf = PadStr_New();
     if (!self->stderr_buf) {
         PadCtx_Del(self);
         return NULL;
@@ -102,8 +102,8 @@ PadCtx_New(PadGC *ref_gc) {
 void
 PadCtx_Clear(PadCtx *self) {
     PadAliasInfo_Clear(self->alinfo);
-    str_clear(self->stdout_buf);
-    str_clear(self->stderr_buf);
+    PadStr_Clear(self->stdout_buf);
+    PadStr_Clear(self->stderr_buf);
     PadScope_Clear(self->scope);
     self->is_use_buf = true;
 }
@@ -136,7 +136,7 @@ PadCtx_GetAliasDesc(PadCtx *self, const char *key) {
 PadCtx *
 PadCtx_PushBackStdoutBuf(PadCtx *self, const char *str) {
     if (self->is_use_buf) {
-        str_app(self->stdout_buf, str);
+        PadStr_App(self->stdout_buf, str);
     } else {
         fprintf(stdout, "%s", str);
     }
@@ -146,7 +146,7 @@ PadCtx_PushBackStdoutBuf(PadCtx *self, const char *str) {
 PadCtx *
 PadCtx_PushBackStderrBuf(PadCtx *self, const char *str) {
     if (self->is_use_buf) {
-        str_app(self->stderr_buf, str);
+        PadStr_App(self->stderr_buf, str);
     } else {
         fprintf(stderr, "%s", str);
     }
@@ -155,12 +155,12 @@ PadCtx_PushBackStderrBuf(PadCtx *self, const char *str) {
 
 const char *
 PadCtx_GetcStdoutBuf(const PadCtx *self) {
-    return str_getc(self->stdout_buf);
+    return PadStr_Getc(self->stdout_buf);
 }
 
 const char *
 PadCtx_GetcStderrBuf(const PadCtx *self) {
-    return str_getc(self->stderr_buf);
+    return PadStr_Getc(self->stderr_buf);
 }
 
 const PadAliasInfo *
@@ -260,24 +260,24 @@ PadCtx_GetGc(PadCtx *self) {
 
 void
 PadCtx_ClearStdoutBuf(PadCtx *self) {
-    str_clear(self->stdout_buf);
+    PadStr_Clear(self->stdout_buf);
 }
 
 void
 PadCtx_ClearStderrBuf(PadCtx *self) {
-    str_clear(self->stderr_buf);
+    PadStr_Clear(self->stderr_buf);
 }
 
-string_t *
-PadCtx_SwapStdoutBuf(PadCtx *self, string_t *stdout_buf) {
-    string_t *Pad_Escape = self->stdout_buf;
+PadStr *
+PadCtx_SwapStdoutBuf(PadCtx *self, PadStr *stdout_buf) {
+    PadStr *Pad_Escape = self->stdout_buf;
     self->stdout_buf = stdout_buf;
     return Pad_Escape;
 }
 
-string_t *
-PadCtx_SwapStderrBuf(PadCtx *self, string_t *stderr_buf) {
-    string_t *Pad_Escape = self->stderr_buf;
+PadStr *
+PadCtx_SwapStderrBuf(PadCtx *self, PadStr *stderr_buf) {
+    PadStr *Pad_Escape = self->stderr_buf;
     self->stderr_buf = stderr_buf;
     return Pad_Escape;
 }
@@ -321,24 +321,24 @@ PadCtx_PopNewlineOfStdoutBuf(PadCtx *self) {
         return;
     }
 
-    const char *s = str_getc(self->stdout_buf);
-    int32_t len = str_len(self->stdout_buf);
+    const char *s = PadStr_Getc(self->stdout_buf);
+    int32_t len = PadStr_Len(self->stdout_buf);
     if (!len) {
         return;
     }
 
     if (len >= 2) {
         if (s[len - 2] == '\r' && s[len - 1] == '\n') {
-            str_popb(self->stdout_buf);
-            str_popb(self->stdout_buf);
+            PadStr_PopBack(self->stdout_buf);
+            PadStr_PopBack(self->stdout_buf);
         } else if (s[len - 1] == '\r' ||
                    s[len - 1] == '\n') {
-            str_popb(self->stdout_buf);
+            PadStr_PopBack(self->stdout_buf);
         }
     } else {
         if (s[len - 1] == '\n' ||
             s[len - 1] == '\r') {
-            str_popb(self->stdout_buf);
+            PadStr_PopBack(self->stdout_buf);
         } 
     }
 }
@@ -386,8 +386,8 @@ PadCtx_DeepCopy(const PadCtx *other) {
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
     self->alinfo = PadAliasInfo_DeepCopy(other->alinfo);
-    self->stdout_buf = str_deep_copy(other->stdout_buf);
-    self->stderr_buf = str_deep_copy(other->stderr_buf);
+    self->stdout_buf = PadStr_DeepCopy(other->stdout_buf);
+    self->stderr_buf = PadStr_DeepCopy(other->stderr_buf);
     self->scope = PadScope_DeepCopy(other->scope);
     self->do_break = other->do_break;
     self->do_continue = other->do_continue;
@@ -408,8 +408,8 @@ PadCtx_ShallowCopy(const PadCtx *other) {
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
     self->alinfo = PadAliasInfo_ShallowCopy(other->alinfo);
-    self->stdout_buf = str_shallow_copy(other->stdout_buf);
-    self->stderr_buf = str_shallow_copy(other->stderr_buf);
+    self->stdout_buf = PadStr_ShallowCopy(other->stdout_buf);
+    self->stderr_buf = PadStr_ShallowCopy(other->stderr_buf);
     self->scope = PadScope_ShallowCopy(other->scope);
     self->do_break = other->do_break;
     self->do_continue = other->do_continue;

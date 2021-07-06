@@ -121,7 +121,7 @@ Pad_PullRefAll(const PadObj *idn_obj) {
     return _Pad_PullRef(idn_obj, true);
 }
 
-string_t *
+PadStr *
 Pad_ObjToString(PadErrStack *err, const PadNode *ref_node, const PadObj *obj) {
     if (!err || !obj) {
         return NULL;
@@ -277,8 +277,8 @@ again1:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs_obj);
-        string_t *methname = str_new();
-        str_set(methname, idn);
+        PadStr *methname = PadStr_New();
+        PadStr_Set(methname, idn);
 
         PadObj_IncRef(own);
         PadObj *owners_method = PadObj_NewOwnsMethod(
@@ -469,7 +469,7 @@ invoke_owner_func_obj(
         return NULL;
     }
 
-    const char *funcname = str_getc(own->owners_method.method_name);
+    const char *funcname = PadStr_Getc(own->owners_method.method_name);
     own = own->owners_method.owner;
     assert(own && funcname);
 
@@ -705,7 +705,7 @@ extract_func_args(
     for (int32_t i = 0; i < PadObjAry_Len(formal_args); ++i) {
         const PadObj *farg = PadObjAry_Getc(formal_args, i);
         assert(farg->type == PAD_OBJ_TYPE__IDENT);
-        const char *fargname = str_getc(farg->identifier.name);
+        const char *fargname = PadStr_Getc(farg->identifier.name);
 
         // extract actual argument
         PadObj *aarg = PadObjAry_Get(actual_args, i);
@@ -1096,13 +1096,13 @@ invoke_type_obj(
         if (PadObjAry_Len(args)) {
             PadObj *obj = PadObjAry_Get(args, 0);
             if (obj->type != PAD_OBJ_TYPE__UNICODE) {
-                string_t *s = PadObj_ToStr(obj);
+                PadStr *s = PadObj_ToStr(obj);
                 if (!s) {
                     pushb_error("failed to convert to string");
                     return NULL;
                 }
                 u = uni_new();
-                uni_set_mb(u, str_getc(s));
+                uni_set_mb(u, PadStr_Getc(s));
             } else {
                 u = uni_shallow_copy(obj->unicode);
             }
@@ -1156,7 +1156,7 @@ again:
         goto again;
     }
     case PAD_OBJ_TYPE__OWNERS_METHOD: {
-        return str_getc(PadObj_GetcOwnsMethodName(obj));
+        return PadStr_Getc(PadObj_GetcOwnsMethodName(obj));
     } break;
     }
 }
@@ -1751,7 +1751,7 @@ fail:
     return NULL;
 }
 
-// const char *idn = str_getc(lastown->identifier.name);
+// const char *idn = PadStr_Getc(lastown->identifier.name);
 // PadObjDict *varmap = PadCtx_GetVarmap(lastown->identifier.ref_context);
 // Pad_SetRef(varmap, idn, ref);
 
@@ -1917,9 +1917,9 @@ Pad_DumpAryObj(const PadObj *arrobj) {
 
     for (int32_t i = 0; i < PadObjAry_Len(objarr); ++i) {
         const PadObj *obj = PadObjAry_Getc(objarr, i);
-        string_t *s = PadObj_ToStr(obj);
-        printf("arr[%d] = [%s]\n", i, str_getc(s));
-        str_del(s);
+        PadStr *s = PadObj_ToStr(obj);
+        printf("arr[%d] = [%s]\n", i, PadStr_Getc(s));
+        PadStr_Del(s);
     }
 }
 

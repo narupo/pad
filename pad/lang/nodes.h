@@ -530,7 +530,7 @@ PadNode_GetcReal(const PadNode *self);
  *
  * @return pointer to string
  */
-string_t *
+PadStr *
 PadNode_ToStr(const PadNode *self);
 
 /**

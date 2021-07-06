@@ -306,8 +306,8 @@ PadCtx_ClearStderrBuf(PadCtx *self);
  *
  * @return pointer to stdout buffer of swapped
  */
-string_t *
-PadCtx_SwapStdoutBuf(PadCtx *self, string_t *stdout_buf);
+PadStr *
+PadCtx_SwapStdoutBuf(PadCtx *self, PadStr *stdout_buf);
 
 /**
  * swap stderr buffer
@@ -317,8 +317,8 @@ PadCtx_SwapStdoutBuf(PadCtx *self, string_t *stdout_buf);
  *
  * @return pointer to stderr buffer of swapped
  */
-string_t *
-PadCtx_SwapStderrBuf(PadCtx *self, string_t *stderr_buf);
+PadStr *
+PadCtx_SwapStderrBuf(PadCtx *self, PadStr *stderr_buf);
 
 /**
  * dump PadCtx at stream

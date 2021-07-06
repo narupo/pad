@@ -42,7 +42,7 @@ typedef enum {
  */
 struct PadCmdlineObj {
     PadCmdlineObjType type;
-    string_t *command;
+    PadStr *command;
     PadCL *cl;
 };
 

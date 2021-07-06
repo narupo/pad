@@ -203,5 +203,5 @@ PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *other);
 PadErrStack *
 PadErrStack_ExtendBackOther(PadErrStack *self, const PadErrStack *other);
 
-string_t *
+PadStr *
 PadErrStack_TrimAround(const char *src, int32_t pos);

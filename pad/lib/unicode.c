@@ -574,7 +574,7 @@ uni_to_mb(const unicode_t *self) {
     }
 
     mbstate_t mbstate = {0};
-    string_t *buf = str_new();
+    PadStr *buf = PadStr_New();
 
     for (int32_t i = 0; i < self->length; ++i) {
         char mb[MB_LEN_MAX + 1];
@@ -590,11 +590,11 @@ uni_to_mb(const unicode_t *self) {
         mb[result] = '\0';
 
         for (const char *p = mb; *p; ++p) {
-            str_pushb(buf, *p);
+            PadStr_PushBack(buf, *p);
         }
     }
 
-    return str_esc_del(buf);
+    return PadStr_EscDel(buf);
 }
 
 unicode_t *

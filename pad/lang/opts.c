@@ -110,7 +110,7 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
     }
 
     int m = 0;
-    string_t *key = str_new();
+    PadStr *key = PadStr_New();
     if (!key) {
         return NULL;
     }
@@ -123,10 +123,10 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
         switch (m) {
         case 0:
             if (arg[0] == '-' && arg[1] == '-') {
-                str_set(key, arg+2);
+                PadStr_Set(key, arg+2);
                 m = 10;
             } else if (arg[0] == '-') {
-                str_set(key, arg+1);
+                PadStr_Set(key, arg+1);
                 m = 20;
             } else {
                 if (!PadCStrAry_PushBack(self->args, arg)) {
@@ -136,44 +136,44 @@ PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
             break;
         case 10: // found long option
             if (arg[0] == '-' && arg[1] == '-') {
-                PadDict_Set(self->opts, str_getc(key), "");
-                str_set(key, arg+2);
+                PadDict_Set(self->opts, PadStr_Getc(key), "");
+                PadStr_Set(key, arg+2);
                 // keep current mode
             } else if (arg[0] == '-') {
-                PadDict_Set(self->opts, str_getc(key), "");
-                str_set(key, arg+1);
+                PadDict_Set(self->opts, PadStr_Getc(key), "");
+                PadStr_Set(key, arg+1);
                 m = 20;
             } else {
                 // store option value
-                PadDict_Set(self->opts, str_getc(key), arg);
-                str_clear(key);
+                PadDict_Set(self->opts, PadStr_Getc(key), arg);
+                PadStr_Clear(key);
                 m = 0;
             }
             break;
         case 20: // found short option
             if (arg[0] == '-' && arg[1] == '-') {
-                PadDict_Set(self->opts, str_getc(key), "");
-                str_set(key, arg+2);
+                PadDict_Set(self->opts, PadStr_Getc(key), "");
+                PadStr_Set(key, arg+2);
                 m = 10;
             } else if (arg[0] == '-') {
-                PadDict_Set(self->opts, str_getc(key), "");
-                str_set(key, arg+1);
+                PadDict_Set(self->opts, PadStr_Getc(key), "");
+                PadStr_Set(key, arg+1);
                 // keep current mode
             } else {
                 // store option value
-                PadDict_Set(self->opts, str_getc(key), arg);
-                str_clear(key);
+                PadDict_Set(self->opts, PadStr_Getc(key), arg);
+                PadStr_Clear(key);
                 m = 0;
             }
             break;
         }
     }
 
-    if (str_len(key)) {
-        PadDict_Set(self->opts, str_getc(key), "");
+    if (PadStr_Len(key)) {
+        PadDict_Set(self->opts, PadStr_Getc(key), "");
     }
 
-    str_del(key);
+    PadStr_Del(key);
     return self;
 }
 

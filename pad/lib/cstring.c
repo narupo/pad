@@ -8,7 +8,7 @@
 #include <pad/lib/cstring.h>
 
 enum {
-    CSTR_FMT_SIZE = 2048,
+    CPAD_STR__FMT_SIZE = 2048,
 };
 
 char *
@@ -66,7 +66,7 @@ PadCStr_AppFmt(char *dst, int32_t dstsz, const char *fmt, ...) {
         return NULL;
     }
 
-    char tmp[CSTR_FMT_SIZE];
+    char tmp[CPAD_STR__FMT_SIZE];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(tmp, sizeof tmp, fmt, ap);

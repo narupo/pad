@@ -19,7 +19,7 @@
 
 #define return_trav(obj) \
     if (ast->debug) { \
-        string_t *s = NULL; \
+        PadStr *s = NULL; \
         if (obj) s = PadObj_ToStr(obj); \
         fprintf(stderr, \
             "debug: line[%5d]: %*s: %3d: return %p (%s): msg[%s]\n", \
@@ -28,9 +28,9 @@
             __func__, \
             targs->depth, \
             obj, \
-            (s ? str_getc(s) : "null"), \
+            (s ? PadStr_Getc(s) : "null"), \
             PadAst_GetcLastErrMsg(ast)); \
-        if (obj) str_del(s); \
+        if (obj) PadStr_Del(s); \
         fflush(stderr); \
     } \
     return obj; \
@@ -324,9 +324,9 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
             pushb_error("\"%s\" is not defined in ref block", PadObj_GetcIdentName(result));
             return_trav(NULL);
         }
-        string_t *str = PadObj_ToStr(obj);
-        PadCtx_PushBackStdoutBuf(context, str_getc(str));
-        str_del(str);
+        PadStr *str = PadObj_ToStr(obj);
+        PadCtx_PushBackStdoutBuf(context, PadStr_Getc(str));
+        PadStr_Del(str);
     } break;
     case PAD_OBJ_TYPE__UNICODE: {
         PadCtx_PushBackStdoutBuf(context, uni_getc_mb(result->unicode));
@@ -2448,7 +2448,7 @@ trv_compare_or_bool(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__IDENT: {
         PadObj *rvar = PadCtx_FindVarRef(ast->ref_context, PadObj_GetcIdentName(rhs));
         if (!rvar) {
-            pushb_error("%s is not defined compare or bool", str_getc(rhs->identifier.name));
+            pushb_error("%s is not defined compare or bool", PadStr_Getc(rhs->identifier.name));
             return_trav(NULL);
         }
 
@@ -4369,9 +4369,9 @@ trv_compare_not(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *var = PadCtx_FindVarRef(ast->ref_context, str_getc(operand->identifier.name));
+        PadObj *var = PadCtx_FindVarRef(ast->ref_context, PadStr_Getc(operand->identifier.name));
         if (!var) {
-            pushb_error("\"%s\" is not defined compare not", str_getc(operand->identifier.name));
+            pushb_error("\"%s\" is not defined compare not", PadStr_Getc(operand->identifier.name));
             return_trav(NULL);
         }
 
@@ -8148,7 +8148,7 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs && rhs);
     assert(lhs->type == PAD_OBJ_TYPE__IDENT);
     PadObjAry *ref_owners = targs->ref_owners;
-    const char *idn = str_getc(lhs->identifier.name);
+    const char *idn = PadStr_Getc(lhs->identifier.name);
 
     switch (rhs->type) {
     default: {
@@ -8205,7 +8205,7 @@ static PadObj *
 trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObj *intobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
@@ -8262,7 +8262,7 @@ static PadObj *
 trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObj *floatobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
@@ -8318,7 +8318,7 @@ static PadObj *
 trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObj *boolobj = Pad_PullRefAll(idnobj);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *rhs = targs->rhs_obj;
@@ -8377,7 +8377,7 @@ static PadObj *
 trv_calc_asscalc_add_ass_identifier_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *unicodeobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9107,7 +9107,7 @@ static PadObj *
 trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *intobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9154,7 +9154,7 @@ static PadObj *
 trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *floatobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9200,7 +9200,7 @@ static PadObj *
 trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *boolobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9317,7 +9317,7 @@ static PadObj *
 trv_calc_asscalc_mul_ass_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *intobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9364,7 +9364,7 @@ static PadObj *
 trv_calc_asscalc_mul_ass_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *floatobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9410,7 +9410,7 @@ static PadObj *
 trv_calc_asscalc_mul_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *boolobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -9459,7 +9459,7 @@ static PadObj *
 trv_calc_asscalc_mul_ass_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = str_getc(idnobj->identifier.name);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     PadObj *unicodeobj = Pad_PullRefAll(idnobj);
     PadObj *rhs = targs->rhs_obj;
@@ -10340,7 +10340,7 @@ trv_dict_elems(PadAST *ast, PadTrvArgs *targs) {
         PadObj *val = PadObjAry_Get(objarr, 1);
 
         if (val->type == PAD_OBJ_TYPE__IDENT) {
-            const char *idn = str_getc(val->identifier.name);
+            const char *idn = PadStr_Getc(val->identifier.name);
             val = Pad_PullRefAll(val);
             if (!val) {
                 pushb_error("\"%s\" is not defined. can not store to dict elements", idn);

@@ -239,14 +239,14 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     PadTkr_Del(tkr);
     PadAst_Del(ast);
 
-    string_t *buf = str_new();
-    str_app(buf, PadCtx_GetcStdoutBuf(ctx));
-    str_app(buf, PadCtx_GetcStderrBuf(ctx));
+    PadStr *buf = PadStr_New();
+    PadStr_App(buf, PadCtx_GetcStdoutBuf(ctx));
+    PadStr_App(buf, PadCtx_GetcStderrBuf(ctx));
 
     PadCtx_Del(ctx);
     PadGC_Del(gc);
 
-    return str_esc_del(buf);
+    return PadStr_EscDel(buf);
 }
 
 void
@@ -328,24 +328,24 @@ Pad_SplitToArray(const char *str, int ch) {
     }
 
     PadCStrAry *arr = PadCStrAry_New();
-    string_t *s = str_new();
+    PadStr *s = PadStr_New();
 
     for (const char *p = str; *p; ++p) {
         if (*p == ch) {
-            if (str_len(s)) {
-                PadCStrAry_PushBack(arr, str_getc(s));
-                str_clear(s);
+            if (PadStr_Len(s)) {
+                PadCStrAry_PushBack(arr, PadStr_Getc(s));
+                PadStr_Clear(s);
             }
         } else {
-            str_pushb(s, *p);
+            PadStr_PushBack(s, *p);
         }
     }
 
-    if (str_len(s)) {
-        PadCStrAry_PushBack(arr, str_getc(s));
+    if (PadStr_Len(s)) {
+        PadCStrAry_PushBack(arr, PadStr_Getc(s));
     }
 
-    str_del(s);
+    PadStr_Del(s);
     return arr;
 }
 

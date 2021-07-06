@@ -13,8 +13,8 @@ struct PadNodeDict {
 void
 PadNode_Del(PadNode *self);
 
-typedef struct string string_t;
-string_t * PadNode_ToStr(const PadNode *self);
+typedef struct PadStr PadStr;
+PadStr * PadNode_ToStr(const PadNode *self);
 
 void
 PadNodeDict_Del(PadNodeDict *self) {
@@ -304,9 +304,9 @@ PadNodeDict_Dump(const PadNodeDict *self, FILE *fout) {
 
     for (int32_t i = 0; i < self->len; ++i) {
         const PadNodeDictItem *item = &self->map[i];
-        string_t *s = PadNode_ToStr(item->value);
-        fprintf(fout, "[%s] = [%s]\n", item->key, str_getc(s));
-        str_del(s);
+        PadStr *s = PadNode_ToStr(item->value);
+        fprintf(fout, "[%s] = [%s]\n", item->key, PadStr_Getc(s));
+        PadStr_Del(s);
         PadNode_Dump(item->value, fout);
     }
 }

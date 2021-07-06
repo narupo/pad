@@ -123,7 +123,7 @@ struct PadModObj {
  */
 struct PadIdentObj {
     PadCtx *ref_context;
-    string_t *name;
+    PadStr *name;
 };
 
 /**
@@ -139,7 +139,7 @@ struct PadRingObj {
  */
 struct PadOwnsMethodObj {
     PadObj *owner;
-    string_t *method_name;
+    PadStr *method_name;
 };
 
 /**
@@ -304,13 +304,13 @@ PadObj_NewCIdent(
 );
 
 /**
- * construct identifier object by string_t
+ * construct identifier object by PadStr
  * if failed to allocate memory then exit from process
  *
  * @param[in]     *ref_gc          reference to PadGC (do not delete)
  * @param[in|out] *ref_ast         reference to PadAST current context (do not delete)
  * @param [in|out] *ref_context    reference to PadCtx
- * @param[in]     *move_identifier pointer to string_t (with move semantics)
+ * @param[in]     *move_identifier pointer to PadStr (with move semantics)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
@@ -319,7 +319,7 @@ PadObj *
 PadObj_NewIdent(
     PadGC *ref_gc,
     PadCtx *ref_context,
-    string_t *move_identifier
+    PadStr *move_identifier
 );
 
 /**
@@ -340,7 +340,7 @@ PadObj_NewUnicodeCStr(PadGC *ref_gc, const char *str);
  * if failed to allocate memory then exit from process
  *
  * @param[in] *ref_gc   reference to PadGC (do not delete)
- * @param[in] *move_str pointer to string_t (with move semantics)
+ * @param[in] *move_str pointer to PadStr (with move semantics)
  *
  * @return success to pointer to PadObj (new object)
  * @return failed to NULL
@@ -522,7 +522,7 @@ PadObj_NewModBy(
  * @return pointer to PadObj
  */
 PadObj *
-PadObj_NewOwnsMethod(PadGC *ref_gc, PadObj *owner, string_t *move_method_name);
+PadObj_NewOwnsMethod(PadGC *ref_gc, PadObj *owner, PadStr *move_method_name);
 
 PadObj *
 PadObj_NewType(PadGC *ref_gc, PadObjType type);
@@ -531,14 +531,14 @@ PadObj *
 PadObj_NewBltFunc(PadGC *ref_gc, const char *funcname);
 
 /**
- * object to string_t
+ * object to PadStr
  *
  * @param[in] *self
  *
- * @return pointer to string_t (new string_t)
+ * @return pointer to PadStr (new PadStr)
  * @return failed to NULL
  */
-string_t *
+PadStr *
 PadObj_ToStr(const PadObj *self);
 
 /**
@@ -593,9 +593,9 @@ PadObj_Dump(const PadObj *self, FILE *fout);
  *
  * @param[in] *self
  *
- * @return pointer to new string_t
+ * @return pointer to new PadStr
  */
-string_t *
+PadStr *
 PadObj_TypeToStr(const PadObj *self);
 
 /**
@@ -746,9 +746,9 @@ PadObj_GetModBltFuncInfos(const PadObj *self);
  *
  * @param[in] *self
  *
- * @return pointer to string_t
+ * @return pointer to PadStr
  */
-const string_t *
+const PadStr *
 PadObj_GetcOwnsMethodName(const PadObj *self);
 
 /**
