@@ -25,6 +25,8 @@ ifeq ($(OS), Windows_NT)
 		-I$(INCLUDE) \
 		-LD:\\lib \
 		-lws2_32
+
+	OUTLIB := libpad.dll
 else
 	CFLAGS := -Wall \
 		-g \
@@ -33,13 +35,16 @@ else
 		-Wno-unused-function \
 		-Wno-unused-result \
 		-D_DEBUG \
-		-I$(INCLUDE)
+		-I$(INCLUDE) \
+		-fPIC
+
+	OUTLIB := libpad.so
 endif
 
 # this is benri tool
 # $(warning $(wildcard pad/*.c))
 
-all: tests pad
+all: tests pad lib
 
 .PHONY: clean
 clean:
@@ -119,6 +124,9 @@ tests: build/tests.o $(OBJS)
 
 pad: build/app.o $(OBJS)
 	$(CC) $(CFLAGS) -o build/pad $^
+
+lib: $(OBJS)
+	$(CC) $(CFLAGS) -shared -o build/$(OUTLIB) $^
 
 build/app.o: pad/app.c pad/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
