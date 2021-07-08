@@ -414,3 +414,130 @@ Pad_PopTailSlash(char *path) {
     }
 #endif
 }
+
+void
+Pad_Unescape(PadStr *dst, const char **p, const char *ignore) {
+    if (**p != '\\') {
+        return;
+    }
+
+    *p += 1;
+
+    switch (**p) {
+    default:
+        PadStr_PushBack(dst, '\\');
+        PadStr_PushBack(dst, **p);
+        break;
+    case 'a':
+        if (!ignore || !strchr(ignore, 'a')) {
+            PadStr_PushBack(dst, '\a');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case 'b':
+        if (!ignore || !strchr(ignore, 'b')) {
+            PadStr_PushBack(dst, '\b');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case 'n':
+        if (!ignore || !strchr(ignore, 'n')) {
+            PadStr_PushBack(dst, '\n');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case 'r':
+        if (!ignore || !strchr(ignore, 'r')) {
+            PadStr_PushBack(dst, '\r');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case 'f':
+        if (!ignore || !strchr(ignore, 'f')) {
+            PadStr_PushBack(dst, '\f');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case 't':
+        if (!ignore || !strchr(ignore, 't')) {
+            PadStr_PushBack(dst, '\t');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case 'v':
+        if (!ignore || !strchr(ignore, 'v')) {
+            PadStr_PushBack(dst, '\v');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case '\\':
+        if (!ignore || !strchr(ignore, '\\')) {
+            PadStr_PushBack(dst, '\\');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case '?':
+        if (!ignore || !strchr(ignore, '?')) {
+            PadStr_PushBack(dst, '\?');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case '0':
+        if (!ignore || !strchr(ignore, '0')) {
+            PadStr_PushBack(dst, '\0');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case '\'':
+        if (!ignore || !strchr(ignore, '\'')) {
+            PadStr_PushBack(dst, '\'');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    case '"':
+        if (!ignore || !strchr(ignore, '"')) {
+            PadStr_PushBack(dst, '"');
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, **p);            
+        }
+        break;
+    }
+}
+
+void
+Pad_UnescapeText(PadStr *dst, const char *s, const char *ignore) {
+    if (!dst || !s) {
+        return;
+    }
+
+    for (const char *p = s; *p; p += 1) {
+        if (*p == '\\') {
+            Pad_Unescape(dst, &p, ignore);
+        } else {
+            PadStr_PushBack(dst, *p);
+        }
+    }
+}

@@ -206,3 +206,24 @@ Pad_SplitToArray(const char *str, int ch);
  */
 char *
 Pad_PopTailSlash(char *path);
+
+/**
+ * Unescape character
+ * 
+ * @param[in] *dst    pointer to destination 
+ * @param[in] **p     pointer to string
+ * @param[in] *ignore ignore characters
+ */
+void
+Pad_Unescape(PadStr *dst, const char **p, const char *ignore);
+
+/**
+ * Unescape text
+ * 
+ * @param[in] *dst    pointer to destination 
+ * @param[in] *p      pointer to text
+ * @param[in] *ignore ignore characters
+ */
+void
+Pad_UnescapeText(PadStr *dst, const char *s, const char *ignore);
+
