@@ -52,7 +52,6 @@ clean:
 
 .PHONY: init
 init:
-	$(RMDIR) build
 	$(MKDIR) \
 	build \
 	build$(SEP)tests \
