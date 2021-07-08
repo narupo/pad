@@ -46,10 +46,10 @@
 **********/
 
 enum {
-    PAD_SAFESYSTEM_DEFAULT = 1 << 0,
-    PAD_SAFESYSTEM_EDIT = 1 << 1,
-    PAD_SAFESYSTEM_DETACH = 1 << 2,
-    PAD_SAFESYSTEM_UNSAFE = 1 << 3,
+    PAD_SAFESYSTEM__DEFAULT = 1 << 0,
+    PAD_SAFESYSTEM__EDIT = 1 << 1,
+    PAD_SAFESYSTEM__DETACH = 1 << 2,
+    PAD_SAFESYSTEM__UNSAFE = 1 << 3,
 };
 
 /************

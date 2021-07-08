@@ -3545,7 +3545,7 @@ test_util_Pad_SafeSystem(void) {
         assert(remove(path) == 0);
     }
     assert(PadFile_SolveFmt(cmd, sizeof cmd, "/bin/sh -c \"touch %s\"", path) != NULL);
-    assert(Pad_SafeSystem(cmd, PAD_SAFESYSTEM_DEFAULT) == 0);
+    assert(Pad_SafeSystem(cmd, PAD_SAFESYSTEM__DEFAULT) == 0);
     assert(PadFile_IsExists(path));
 #endif
 }

@@ -31,13 +31,13 @@ Pad_RandRange(int min, int max) {
 
 int
 Pad_SafeSystem(const char *cmdline, int option) {
-    if (option & PAD_SAFESYSTEM_UNSAFE) {
+    if (option & PAD_SAFESYSTEM__UNSAFE) {
         return system(cmdline);
     }
 
 #ifdef PAD__WINDOWS
     int flag = 0;
-    if (option & PAD_SAFESYSTEM_EDIT) {
+    if (option & PAD_SAFESYSTEM__EDIT) {
         // option for edit command
         flag = CREATE_NEW_CONSOLE;
     } else {
@@ -63,12 +63,12 @@ Pad_SafeSystem(const char *cmdline, int option) {
         return 1;
     }
 
-    if (option & PAD_SAFESYSTEM_EDIT) {
+    if (option & PAD_SAFESYSTEM__EDIT) {
         // case of edit command, to not wait exit of child process
         return 0;
     }
 
-    if (option & PAD_SAFESYSTEM_DETACH) {
+    if (option & PAD_SAFESYSTEM__DETACH) {
         // not wait child process
         return 0;
     }
