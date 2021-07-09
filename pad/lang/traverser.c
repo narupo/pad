@@ -1247,7 +1247,7 @@ trv_def_struct(PadAST *ast, PadTrvArgs *targs) {
 
     PadAST *struct_ast = PadAST_New(ast->ref_config);
     PadAST_SetRefCtx(struct_ast, struct_ctx);
-    PadAST_SetRefGc(struct_ast, ast->ref_gc);
+    PadAST_SetRefGC(struct_ast, ast->ref_gc);
 
     PadObj *result = _PadTrv_Trav(struct_ast, &(PadTrvArgs) {
         .ref_node = struct_->elems,
@@ -10987,7 +10987,7 @@ trv_define_builtin_types(PadAST *ast) {
 void
 PadTrv_Trav(PadAST *ast, PadCtx *context) {
     PadAST_SetRefCtx(ast, context);
-    PadAST_SetRefGc(ast, PadCtx_GetGc(context));
+    PadAST_SetRefGC(ast, PadCtx_GetGC(context));
 
     if (!PadTrv_ImportBltMods(ast)) {
         Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to import builtin modules");

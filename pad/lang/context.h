@@ -280,7 +280,7 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key);
  * @return reference to PadGC (this is reference, DO NOT DELETE)
  */
 PadGC *
-PadCtx_GetGc(PadCtx *self);
+PadCtx_GetGC(PadCtx *self);
 
 /**
  * clear stdout buffer

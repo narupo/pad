@@ -254,7 +254,7 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
 }
 
 PadGC *
-PadCtx_GetGc(PadCtx *self) {
+PadCtx_GetGC(PadCtx *self) {
     return self->ref_gc;
 }
 
