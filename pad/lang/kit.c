@@ -18,6 +18,7 @@ struct PadKit {
     PadCtx *ctx;
     PadErrStack *errstack;
     bool gc_is_reference;
+    PadBltFuncInfo *blt_func_infos;
 };
 
 void
@@ -200,6 +201,7 @@ PadKit_CompileFromStrArgs(
         return NULL;
     }
 
+    self->ast->builtin_func_infos = self->blt_func_infos
     PadTrv_Trav(self->ast, self->ctx);
     if (PadAST_HasErrs(self->ast)) {
         const PadErrStack *err = PadAST_GetcErrStack(self->ast);
@@ -272,3 +274,13 @@ void
 PadKit_SetUseBuf(PadKit *self, bool use_buf) {
     PadCtx_SetUseBuf(self->ctx, use_buf);  // no use stdout/stderr buffer
 }
+
+void
+PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos) {
+    if (!self || !infos) {
+        return;
+    }
+
+    self->blt_func_infos = infos;
+}
+

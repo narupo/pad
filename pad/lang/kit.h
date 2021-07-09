@@ -11,6 +11,8 @@
 #include <pad/lang/gc.h>
 #include <pad/lang/opts.h>
 #include <pad/lang/types.h>
+#include <pad/lang/builtin/func_info.h>
+#include <pad/lang/builtin/module.h>
 
 void
 PadKit_Del(PadKit *self);
@@ -65,3 +67,7 @@ PadKit_SetImporterFixPathFunc(PadKit *self, PadImporterFixPathFunc func);
 
 void
 PadKit_SetUseBuf(PadKit *self, bool use_buf);
+
+void
+PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos);
+
