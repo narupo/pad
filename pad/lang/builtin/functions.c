@@ -779,7 +779,7 @@ builtin_func_infos[] = {
 };
 
 PadObj *
-Pad_NewBltMod(
+Pad_NewBltFuncsMod(
     const PadConfig *ref_config,
     PadGC *ref_gc,
     PadBltFuncInfo *infos

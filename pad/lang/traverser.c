@@ -10921,8 +10921,8 @@ PadTrv_ImportBltMods(PadAST *ast) {
     PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
     PadObj *mod = NULL;
 
-    // builtin functions module
-    mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc, ast->blt_func_infos);
+    // builtin functions module (__builtin__)
+    mod = Pad_NewBltFuncsMod(ast->ref_config, ast->ref_gc, ast->blt_func_infos);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // set builtin functions to varmap
@@ -10935,15 +10935,15 @@ PadTrv_ImportBltMods(PadAST *ast) {
         }
     }
 
-    // builtin unicode module
+    // builtin unicode module (__unicode__)
     mod = Pad_NewBltUnicodeMod(ast->ref_config, ast->ref_gc);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin array module
+    // builtin array module (__array__)
     mod = Pad_NewBltAryMod(ast->ref_config, ast->ref_gc);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin dict module
+    // builtin dict module (__dict__)
     mod = Pad_NewBltDictMod(ast->ref_config, ast->ref_gc);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
