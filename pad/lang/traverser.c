@@ -11004,9 +11004,3 @@ PadTrv_Trav(PadAST *ast, PadCtx *context) {
     PadObj *result = _PadTrv_Trav(ast, &targs);
     PadObj_Del(result);
 }
-
-#undef tready
-#undef return_trav
-#undef check
-#undef viss
-#undef vissf
