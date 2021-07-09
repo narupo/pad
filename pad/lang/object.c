@@ -145,7 +145,7 @@ PadObj_GetGc(PadObj *self) {
 }
 
 PadGC *
-PadObj_SetGc(PadObj *self, PadGC *ref_gc) {
+PadObj_SetGC(PadObj *self, PadGC *ref_gc) {
     if (!self) {
         return NULL;
     }
