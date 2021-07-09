@@ -50,6 +50,7 @@ enum {
     PAD_SAFESYSTEM__EDIT = 1 << 1,
     PAD_SAFESYSTEM__DETACH = 1 << 2,
     PAD_SAFESYSTEM__UNSAFE = 1 << 3,
+    PAD_SAFESYSTEM__UNSAFE_UNIX_ONLY = 1 << 3,
 };
 
 /************

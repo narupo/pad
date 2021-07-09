@@ -108,6 +108,10 @@ Pad_SafeSystem(const char *cmdline, int option) {
     return exit_code;
 
 #else
+    if (option & PAD_SAFESYSTEM__UNSAFE_UNIX_ONLY) {
+        return system(cmdline);
+    }
+
     PadCL *cl = PadCL_New();
     if (!PadCL_ParseStrOpts(cl, cmdline, 0)) {
         PadErr_Err("failed to parse command line \"%s\"", cmdline);
