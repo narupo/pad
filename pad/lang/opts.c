@@ -196,7 +196,7 @@ PadOpts_Has(const PadOpts *self, const char *optname) {
         return NULL;
     }
 
-    return dict_has_key(self->opts, optname);
+    return PadDict_HasKey(self->opts, optname);
 }
 
 const char *

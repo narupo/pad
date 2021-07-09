@@ -52,10 +52,10 @@ size_t
 PadDict_Len(const PadDict *self);
 
 const PadDictItem *
-PadDict_Getc_index(const PadDict *self, size_t index);
+PadDict_GetcIndex(const PadDict *self, size_t index);
 
 bool
-dict_has_key(const PadDict *self, const char *key);
+PadDict_HasKey(const PadDict *self, const char *key);
 
 void
-dict_show(const PadDict *self, FILE *fout);
+PadDict_Show(const PadDict *self, FILE *fout);
