@@ -201,7 +201,7 @@ PadKit_CompileFromStrArgs(
         return NULL;
     }
 
-    self->ast->builtin_func_infos = self->blt_func_infos
+    self->ast->blt_func_infos = self->blt_func_infos;
     PadTrv_Trav(self->ast, self->ctx);
     if (PadAST_HasErrs(self->ast)) {
         const PadErrStack *err = PadAST_GetcErrStack(self->ast);
