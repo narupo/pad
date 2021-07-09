@@ -25,7 +25,6 @@ ifeq ($(OS), Windows_NT)
 		-I$(INCLUDE) \
 		-LD:\\lib \
 		-lws2_32
-
 	OUTLIB := libpad.dll
 else
 	CFLAGS := -Wall \
@@ -37,7 +36,6 @@ else
 		-D_DEBUG \
 		-I$(INCLUDE) \
 		-fPIC
-
 	OUTLIB := libpad.so
 endif
 
@@ -111,6 +109,7 @@ SRCS := build/lib/error.c \
 	build/lang/builtin/structs.c \
 	build/lang/builtin/functions.c \
 	build/lang/builtin/func_info_array.c \
+	build/lang/builtin/module.c \
 	build/lang/builtin/modules/unicode.c \
 	build/lang/builtin/modules/array.c \
 	build/lang/builtin/modules/dict.c \
@@ -227,6 +226,8 @@ build/lang/builtin/structs.o: pad/lang/builtin/structs.c
 build/lang/builtin/functions.o: pad/lang/builtin/functions.c pad/lang/builtin/functions.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/func_info_array.o: pad/lang/builtin/func_info_array.c pad/lang/builtin/func_info_array.h pad/lang/builtin/func_info.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/module.o: pad/lang/builtin/module.c pad/lang/builtin/module.h 
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/modules/unicode.o: pad/lang/builtin/modules/unicode.c pad/lang/builtin/modules/unicode.h
 	$(CC) $(CFLAGS) -c $< -o $@
