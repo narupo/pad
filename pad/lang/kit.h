@@ -74,3 +74,6 @@ PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos);
 PadGC *
 PadKit_GetRefGC(PadKit *self);
 
+PadKit *
+PadKit_MoveBltMod(PadKit *self, PadObj *move_mod);
+

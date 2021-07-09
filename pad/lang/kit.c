@@ -292,3 +292,15 @@ PadKit_GetRefGC(PadKit *self) {
 
     return self->gc;
 }
+
+PadKit *
+PadKit_MoveBltMod(PadKit *self, PadObj *move_mod) {
+    if (!self || !move_mod) {
+        return NULL;
+    }
+
+    PadObjDict *varmap = PadCtx_GetVarmap(self->ctx);
+    PadObjDict_Move(varmap, move_mod->module.name, PadMem_Move(move_mod));
+
+    return self;
+}
