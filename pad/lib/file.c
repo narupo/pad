@@ -39,6 +39,36 @@ PadFile_Copy(FILE *dst, FILE *src) {
     return fseek(src, tell, SEEK_SET) == 0;
 }
 
+bool
+PadFile_CopyPath(const char *dst, const char *src) {
+    if (!dst || !src) {
+        return false;
+    }
+
+    FILE *fin = NULL;
+    FILE *fout = NULL;
+
+    fin = fopen(src, "rb");
+    if (fin == NULL) {
+        goto error;
+    }
+
+    fout = fopen(dst, "wb");
+    if (fout == NULL) {
+        goto error;
+    }
+
+    bool result = PadFile_Copy(fout, fin);
+
+    fclose(fout);
+    fclose(fin);
+    return result;
+error:
+    if (fout) fclose(fout);
+    if (fin) fclose(fin);
+    return false;
+}
+
 char *
 PadFile_RealPath(char *dst, uint32_t dstsz, const char *src) {
     if (!dst || dstsz == 0 || !src) {

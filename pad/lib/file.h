@@ -79,6 +79,17 @@ bool
 PadFile_Copy(FILE *dst, FILE *src);
 
 /**
+ * copy file by path
+ * 
+ * @param[in] *dst destination file path
+ * @param[in] *src  source file path
+ * 
+ * @return 
+ */
+bool
+PadFile_CopyPath(const char *dst, const char *src);
+
+/**
  * Wrapper of closedir
  */
 int32_t
