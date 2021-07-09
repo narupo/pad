@@ -102,6 +102,8 @@ PadObj_Del(PadObj *self) {
         self->module.ast = NULL;
         PadCtx_Del(self->module.context);
         self->module.context = NULL;
+        PadBltFuncInfoAry_Del(self->module.builtin_func_infos);
+        self->module.builtin_func_infos = NULL;
         break;
     case PAD_OBJ_TYPE__DEF_STRUCT:
         PadObj_Del(self->def_struct.identifier);
@@ -245,7 +247,9 @@ PadObj_DeepCopy(const PadObj *other) {
         self->module.tokenizer = PadTkr_DeepCopy(other->module.tokenizer);
         self->module.ast = PadAST_DeepCopy(other->module.ast);
         self->module.context = PadCtx_DeepCopy(other->module.context);
-        self->module.builtin_func_infos = other->module.builtin_func_infos;
+        if (other->module.builtin_func_infos) {
+            self->module.builtin_func_infos = PadBltFuncInfoAry_DeepCopy(other->module.builtin_func_infos);
+        }
         break;
     case PAD_OBJ_TYPE__DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
@@ -361,7 +365,7 @@ PadObj_ShallowCopy(const PadObj *other) {
         self->module.tokenizer = PadTkr_ShallowCopy(other->module.tokenizer);
         self->module.ast = PadAST_ShallowCopy(other->module.ast);
         self->module.context = PadCtx_ShallowCopy(other->module.context);
-        self->module.builtin_func_infos = other->module.builtin_func_infos;
+        self->module.builtin_func_infos = PadBltFuncInfoAry_ShallowCopy(other->module.builtin_func_infos);
         break;
     case PAD_OBJ_TYPE__DEF_STRUCT:
         self->def_struct.ref_ast = other->def_struct.ref_ast;
@@ -754,7 +758,7 @@ PadObj_NewModBy(
     PadTkr *move_tkr,
     PadAST *move_ast,
     PadCtx *move_context,
-    PadBltFuncInfo *infos  // allow null
+    PadBltFuncInfoAry *move_infos  // allow null
 ) {
     if (!ref_gc || !name || !move_tkr || !move_ast || !move_context) {
         return NULL;
@@ -784,7 +788,7 @@ PadObj_NewModBy(
     self->module.tokenizer = PadMem_Move(move_tkr);
     self->module.ast = PadMem_Move(move_ast);
     self->module.context = PadMem_Move(move_context);
-    self->module.builtin_func_infos = infos;
+    self->module.builtin_func_infos = PadMem_Move(move_infos);
 
     return self;
 }
@@ -1228,7 +1232,7 @@ PadObj_GetcUnicode(const PadObj *self) {
     return self->unicode;
 }
 
-PadBltFuncInfo *
+PadBltFuncInfoAry *
 PadObj_GetModBltFuncInfos(const PadObj *self) {
     return self->module.builtin_func_infos;
 }

@@ -10919,7 +10919,7 @@ PadTrv_ImportBltMods(PadAST *ast) {
     PadObj *mod = NULL;
 
     // builtin functions
-    mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc);
+    mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc, NULL);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // builtin unicode
@@ -10935,12 +10935,12 @@ PadTrv_ImportBltMods(PadAST *ast) {
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // builtin alias
-    mod = Pad_NewBltAliasMod(ast->ref_config, ast->ref_gc);
-    PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
+    // mod = Pad_NewBltAliasMod(ast->ref_config, ast->ref_gc);
+    // PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // builtin opts
-    mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
-    PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
+    // mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
+    // PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     return ast;
 }

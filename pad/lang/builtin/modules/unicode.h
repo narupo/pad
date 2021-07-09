@@ -10,6 +10,8 @@
 #include <pad/lang/context.h>
 #include <pad/lang/utils.h>
 #include <pad/lang/arguments.h>
+#include <pad/lang/builtin/func_info.h>
+#include <pad/lang/builtin/func_info_array.h>
 
 /**
  * construct PadStr module

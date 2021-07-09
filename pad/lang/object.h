@@ -14,9 +14,9 @@
 #include <pad/lang/object_array.h>
 #include <pad/lang/object_dict.h>
 #include <pad/lang/gc.h>
-#include <pad/lang/builtin/function.h>
 #include <pad/lang/chain_object.h>
 #include <pad/lang/chain_objects.h>
+#include <pad/lang/builtin/func_info_array.h>
 
 typedef enum {
     // A nil object
@@ -115,7 +115,7 @@ struct PadModObj {
     PadTkr *tokenizer;
     PadAST *ast;
     PadCtx *context;
-    PadBltFuncInfo *builtin_func_infos;  // builtin functions
+    PadBltFuncInfoAry *builtin_func_infos;  // builtin functions
 };
 
 /**
@@ -508,7 +508,7 @@ PadObj_NewModBy(
     PadTkr *move_tkr,
     PadAST *move_ast,
     PadCtx *move_context,
-    PadBltFuncInfo *func_infos
+    PadBltFuncInfoAry *func_infos
 );
 
 /**
@@ -738,7 +738,7 @@ PadObj_GetUnicode(PadObj *self);
  *
  * @return pointer to PadBltFuncInfo
  */
-PadBltFuncInfo *
+PadBltFuncInfoAry *
 PadObj_GetModBltFuncInfos(const PadObj *self);
 
 /**

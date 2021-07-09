@@ -6,3 +6,4 @@ struct PadBltFuncInfo {
     const char *name;
     PadBltFunc func;
 };
+

@@ -518,9 +518,14 @@ invoke_builtin_module_func(
     assert(mod && funcname && ref_args);
     assert(mod->type == PAD_OBJ_TYPE__MODULE);
 
-    PadBltFuncInfo *infos = PadObj_GetModBltFuncInfos(mod);
-    if (!infos) {
+    PadBltFuncInfoAry *info_ary = PadObj_GetModBltFuncInfos(mod);
+    if (info_ary == NULL) {
         // allow null of bultin_func_infos. not error
+        return NULL;
+    }
+
+    const PadBltFuncInfo *infos = PadBltFuncInfoAry_GetcInfos(info_ary);
+    if (infos == NULL) {
         return NULL;
     }
 
@@ -531,7 +536,7 @@ invoke_builtin_module_func(
         .ref_owners = owns,
     };
     
-    for (PadBltFuncInfo *info = infos; info->name; ++info) {
+    for (const PadBltFuncInfo *info = infos; info->name; ++info) {
         if (PadCStr_Eq(info->name, funcname)) {
             return info->func(&fargs);
         }

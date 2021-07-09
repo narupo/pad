@@ -10,14 +10,17 @@
 #include <pad/lang/tokenizer.h>
 #include <pad/lang/compiler.h>
 #include <pad/lang/traverser.h>
+#include <pad/lang/builtin/func_info.h>
+#include <pad/lang/builtin/func_info_array.h>
 
 /**
  * construct module
  *
  * @param[in] *ref_config
  * @param[in] *ref_gc
+ * @param[in] *infos      function infos
  *
  * @return
  */
 PadObj *
-Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc);
+Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc, PadBltFuncInfo infos[]);

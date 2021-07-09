@@ -293,6 +293,9 @@ Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 
+    PadBltFuncInfoAry *func_info_ary = PadBltFuncInfoAry_New();
+    PadBltFuncInfoAry_ExtendBackAry(func_info_ary, builtin_func_infos);
+
     return PadObj_NewModBy(
         ref_gc,
         "__unicode__",
@@ -301,6 +304,6 @@ Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGC *ref_gc) {
         PadMem_Move(tkr),
         PadMem_Move(ast),
         PadMem_Move(ctx),
-        builtin_func_infos
+        PadMem_Move(func_info_ary)
     );
 }

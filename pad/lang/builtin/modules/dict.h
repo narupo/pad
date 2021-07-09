@@ -9,6 +9,8 @@
 #include <pad/lang/tokenizer.h>
 #include <pad/lang/context.h>
 #include <pad/lang/arguments.h>
+#include <pad/lang/builtin/func_info.h>
+#include <pad/lang/builtin/func_info_array.h>
 
 /**
  * construct PadDict module

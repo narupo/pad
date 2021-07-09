@@ -50,6 +50,5 @@
 #include <pad/lang/object_dict.h>
 #include <pad/lang/opts.h>
 #include <pad/lang/gc.h>
-#include <pad/lang/builtin/function.h>
 #include <pad/lang/builtin/modules/alias.h>
 #include <pad/lang/builtin/modules/opts.h>
