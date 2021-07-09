@@ -21,7 +21,7 @@ PadKit *
 PadKit_New(const PadConfig *config);
 
 PadKit *
-PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc);
+PadKit_NewRefGC(const PadConfig *config, PadGC *ref_gc);
 
 PadKit *
 PadKit_CompileFromPath(PadKit *self, const char *path);
@@ -70,4 +70,7 @@ PadKit_SetUseBuf(PadKit *self, bool use_buf);
 
 void
 PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos);
+
+PadGC *
+PadKit_GetRefGC(PadKit *self);
 

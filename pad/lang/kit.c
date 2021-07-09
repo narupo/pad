@@ -84,7 +84,7 @@ PadKit_SetImporterFixPathFunc(PadKit *self, PadImporterFixPathFunc func) {
 }
 
 PadKit *
-PadKit_NewRefGc(const PadConfig *config, PadGC *ref_gc) {
+PadKit_NewRefGC(const PadConfig *config, PadGC *ref_gc) {
     PadKit *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
@@ -284,3 +284,11 @@ PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos) {
     self->blt_func_infos = infos;
 }
 
+PadGC *
+PadKit_GetRefGC(PadKit *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->gc;
+}
