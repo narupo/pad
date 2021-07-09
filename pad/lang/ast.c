@@ -673,3 +673,12 @@ PadAST_PushBackErrTok(PadAST *self, PadTok *ref_token) {
     self->error_tokens[self->error_tokens_pos++] = ref_token;
     return self;
 }
+
+void
+PadAST_SetBltFuncInfos(PadAST *self, PadBltFuncInfo infos[]) {
+    if (!self || !infos) {
+        return;
+    }
+
+    self->blt_func_infos = infos;
+}

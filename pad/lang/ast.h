@@ -68,6 +68,8 @@ struct PadAST {
     bool is_in_loop;
 
     PadImporterFixPathFunc importer_fix_path;
+
+    PadBltFuncInfo *blt_func_infos;
 };
 
 /**
@@ -269,3 +271,6 @@ PadAST_GetRefGc(PadAST *self);
 
 PadAST *
 PadAST_PushBackErrTok(PadAST *self, PadTok *ref_token);
+
+void
+PadAST_SetBltFuncInfos(PadAST *self, PadBltFuncInfo infos[]);

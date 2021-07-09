@@ -779,16 +779,29 @@ builtin_func_infos[] = {
 };
 
 PadObj *
-Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc, PadBltFuncInfo infos[]) {
+Pad_NewBltMod(
+    const PadConfig *ref_config,
+    PadGC *ref_gc,
+    PadBltFuncInfo *infos
+) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAST_New(ref_config);
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 
+    // set built-in function infos
     PadBltFuncInfoAry *func_info_ary = PadBltFuncInfoAry_New();
     PadBltFuncInfoAry_ExtendBackAry(func_info_ary, builtin_func_infos);
     if (infos) {
         PadBltFuncInfoAry_ExtendBackAry(func_info_ary, infos);
+    }
+
+    // create built-in function objects 
+    const PadBltFuncInfo *infos_ = PadBltFuncInfoAry_GetcInfos(func_info_ary);
+    PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+    for (const PadBltFuncInfo *p = infos_; p->name; p += 1) {
+        PadObj *obj = PadObj_NewBltFunc(ast->ref_gc, p->name);
+        PadObjDict_Move(varmap, p->name, PadMem_Move(obj));
     }
 
     return PadObj_NewModBy(

@@ -9,6 +9,7 @@
 #include <pad/lang/arguments.h>
 #include <pad/lang/tokenizer.h>
 #include <pad/lang/compiler.h>
+#include <pad/lang/context.h>
 #include <pad/lang/traverser.h>
 #include <pad/lang/builtin/func_info.h>
 #include <pad/lang/builtin/func_info_array.h>
@@ -23,4 +24,8 @@
  * @return
  */
 PadObj *
-Pad_NewBltMod(const PadConfig *ref_config, PadGC *ref_gc, PadBltFuncInfo infos[]);
+Pad_NewBltMod(
+    const PadConfig *ref_config,
+    PadGC *ref_gc,
+    PadBltFuncInfo *infos
+);

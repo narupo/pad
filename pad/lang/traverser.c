@@ -349,6 +349,9 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__TYPE: {
         PadCtx_PushBackStdoutBuf(context, "(type)");
     } break;
+    case PAD_OBJ_TYPE__BUILTIN_FUNC: {
+        PadCtx_PushBackStdoutBuf(context, "(builtin-function)");
+    } break;
     } // switch
 
     return_trav(NULL);
@@ -10918,27 +10921,37 @@ PadTrv_ImportBltMods(PadAST *ast) {
     PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
     PadObj *mod = NULL;
 
-    // builtin functions
-    mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc, NULL);
+    // builtin functions module
+    mod = Pad_NewBltMod(ast->ref_config, ast->ref_gc, ast->blt_func_infos);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin unicode
+    // set builtin functions to varmap
+    const PadBltFuncInfoAry *info_ary = mod->module.builtin_func_infos;
+    if (info_ary) {
+        const PadBltFuncInfo *infos = PadBltFuncInfoAry_GetcInfos(info_ary);
+        for (const PadBltFuncInfo *p = infos; p->name; p += 1) {
+            PadObj *obj = PadObj_NewBltFunc(ast->ref_gc, p->name);
+            PadObjDict_Move(varmap, p->name, PadMem_Move(obj));
+        }
+    }
+
+    // builtin unicode module
     mod = Pad_NewBltUnicodeMod(ast->ref_config, ast->ref_gc);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin array
+    // builtin array module
     mod = Pad_NewBltAryMod(ast->ref_config, ast->ref_gc);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin dict
+    // builtin dict module
     mod = Pad_NewBltDictMod(ast->ref_config, ast->ref_gc);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin alias
+    // builtin alias module
     // mod = Pad_NewBltAliasMod(ast->ref_config, ast->ref_gc);
     // PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin opts
+    // builtin opts module
     // mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
     // PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
@@ -10971,65 +10984,6 @@ trv_define_builtin_types(PadAST *ast) {
     return ast;
 }
 
-PadAST *
-trv_define_builtin_funcs(PadAST *ast) {
-    PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
-    PadObj *obj = NULL;
-
-    obj = PadObj_NewBltFunc(ast->ref_gc, "dance");
-    PadObjDict_Move(varmap, "dance", PadMem_Move(obj));
-
-    obj = PadObj_NewBltFunc(ast->ref_gc, "id");
-    PadObjDict_Move(varmap, "id", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "type");
-    PadObjDict_Move(varmap, "type", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "puts");
-    PadObjDict_Move(varmap, "puts", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "eputs");
-    PadObjDict_Move(varmap, "eputs", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "len");
-    PadObjDict_Move(varmap, "len", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "die");
-    PadObjDict_Move(varmap, "die", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "exit");
-    PadObjDict_Move(varmap, "exit", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "copy");
-    PadObjDict_Move(varmap, "copy", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "deepcopy");
-    PadObjDict_Move(varmap, "deepcopy", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "assert");
-    PadObjDict_Move(varmap, "assert", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "extract");
-    PadObjDict_Move(varmap, "extract", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "setattr");
-    PadObjDict_Move(varmap, "setattr", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "getattr");
-    PadObjDict_Move(varmap, "getattr", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "dance");
-    PadObjDict_Move(varmap, "dance", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "ord");
-    PadObjDict_Move(varmap, "ord", PadMem_Move(obj));
-    
-    obj = PadObj_NewBltFunc(ast->ref_gc, "chr");
-    PadObjDict_Move(varmap, "chr", PadMem_Move(obj));
-    
-    return ast;
-}
-
 void
 PadTrv_Trav(PadAST *ast, PadCtx *context) {
     PadAST_SetRefCtx(ast, context);
@@ -11041,10 +10995,6 @@ PadTrv_Trav(PadAST *ast, PadCtx *context) {
     }
     if (!trv_define_builtin_types(ast)) {
         Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to define builtin types");
-        return;
-    }
-    if (!trv_define_builtin_funcs(ast)) {
-        Pad_PushBackErrNode(ast->error_stack, ast->root, "failed to define builtin funcs");
         return;
     }
 

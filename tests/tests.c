@@ -30509,8 +30509,19 @@ test_trv_mutable_and_immutable(void) {
     trv_cleanup;
 }
 
+static void
+test_trv_blt_funcs(void) {
+    trv_ready;
+
+    check_ok("{: dance :}", "(builtin-function)");
+    check_ok("{@ puts(dance) @}", "(builtin-function)\n");
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_tests[] = {
+    {"blt_funcs", test_trv_blt_funcs},
     {"scope_0", test_trv_scope_0},
     {"scope_1", test_trv_scope_1},
     {"scope_2", test_trv_scope_2},
