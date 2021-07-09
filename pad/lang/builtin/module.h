@@ -16,7 +16,7 @@
  * @param[in] *ref_gc                 reference of PadGC
  * @param[in] *infos                  builtin functions info
  * 
- * @return 
+ * @return success to pointer to PadObj, failed to NULL
  */
 PadObj *
 Pad_NewBltMod(
