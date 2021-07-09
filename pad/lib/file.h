@@ -359,8 +359,8 @@ PadFile_ConvLineEnc(const char *encoding, const char *text);
 * file_dirnode *
 ***************/
 
-struct PadFileDirNode;
-typedef struct PadFileDirNode PadFileDirNode;
+struct PadDirNode;
+typedef struct PadDirNode PadDirNode;
 
 /**
  * Delete node of dynamic allocate memory
@@ -368,7 +368,7 @@ typedef struct PadFileDirNode PadFileDirNode;
  * @param self
  */
 void
-PadFileDirNode_Del(PadFileDirNode *self);
+PadDirNode_Del(PadDirNode *self);
 
 /**
  * Get name of node
@@ -379,14 +379,14 @@ PadFileDirNode_Del(PadFileDirNode *self);
  * @return failed to NULL
  */
 const char *
-PadFileDirNode_Name(const PadFileDirNode* self);
+PadDirNode_Name(const PadDirNode* self);
 
 /***********
 * file_dir *
 ***********/
 
-struct PadFileDir;
-typedef struct PadFileDir PadFileDir;
+struct PadDir;
+typedef struct PadDir PadDir;
 
 /**
  * Close directory
@@ -397,29 +397,29 @@ typedef struct PadFileDir PadFileDir;
  * @return failed to number of under of zero
  */
 int32_t
-PadFileDir_Close(PadFileDir *self);
+PadDir_Close(PadDir *self);
 
 /**
  * Open directory
  *
  * @param path path of directory
  *
- * @return success to pointer to PadFileDir
+ * @return success to pointer to PadDir
  * @return failed to NULL
  */
-PadFileDir *
-PadFileDir_Open(const char *path);
+PadDir *
+PadDir_Open(const char *path);
 
 /**
  * Read next node in directory
  *
  * @param self
  *
- * @return success to pointer to PadFileDirNode
+ * @return success to pointer to PadDirNode
  * @return failed or end of read to NULL
  */
-PadFileDirNode *
-PadFileDir_Read(PadFileDir *self);
+PadDirNode *
+PadDir_Read(PadDir *self);
 
 /**
  * Get file number from FILE object

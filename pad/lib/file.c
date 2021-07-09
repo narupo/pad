@@ -490,7 +490,7 @@ PadFile_WriteLine(const char *line, const char *path) {
 * file file_dirnode *
 *********************/
 
-struct PadFileDirNode {
+struct PadDirNode {
 #if defined(PAD_FILE__WINDOWS)
     WIN32_FIND_DATA finddata;
 #else
@@ -503,15 +503,15 @@ struct PadFileDirNode {
 *******************************/
 
 void
-PadFileDirNode_Del(PadFileDirNode *self) {
+PadDirNode_Del(PadDirNode *self) {
     if (self) {
         free(self);
     }
 }
 
-PadFileDirNode *
+PadDirNode *
 file_dirnodenew(void) {
-    PadFileDirNode *self = calloc(1, sizeof(PadFileDirNode));
+    PadDirNode *self = calloc(1, sizeof(PadDirNode));
     if (!self) {
         return NULL;
     }
@@ -523,7 +523,7 @@ file_dirnodenew(void) {
 **********************/
 
 const char *
-PadFileDirNode_Name(const PadFileDirNode *self) {
+PadDirNode_Name(const PadDirNode *self) {
     if (!self) {
         return NULL;
     }
@@ -536,10 +536,10 @@ PadFileDirNode_Name(const PadFileDirNode *self) {
 }
 
 /***********************
-* file struct PadFileDir *
+* file struct PadDir *
 ***********************/
 
-struct PadFileDir {
+struct PadDir {
 #if defined(PAD_FILE__WINDOWS)
     HANDLE handle;
     char dirpath[PAD_FILE__NPATH];
@@ -549,11 +549,11 @@ struct PadFileDir {
 };
 
 /*********************************
-* struct PadFileDir close and open *
+* struct PadDir close and open *
 *********************************/
 
 int32_t
-PadFileDir_Close(PadFileDir *self) {
+PadDir_Close(PadDir *self) {
     if (self) {
         int32_t ret = 0;
 #if defined(PAD_FILE__WINDOWS)
@@ -582,13 +582,13 @@ PadFileDir_Close(PadFileDir *self) {
     return -1;
 }
 
-PadFileDir *
-PadFileDir_Open(const char *path) {
+PadDir *
+PadDir_Open(const char *path) {
     if (!path) {
         return NULL;
     }
 
-    PadFileDir *self = calloc(1, sizeof(PadFileDir));
+    PadDir *self = calloc(1, sizeof(PadDir));
     if (!self) {
         return NULL;
     }
@@ -611,16 +611,16 @@ PadFileDir_Open(const char *path) {
 }
 
 /********************
-* PadFileDir getter *
+* PadDir getter *
 ********************/
 
-PadFileDirNode *
-PadFileDir_Read(PadFileDir *self) {
+PadDirNode *
+PadDir_Read(PadDir *self) {
     if (!self) {
         return NULL;
     }
 
-    PadFileDirNode * node = file_dirnodenew();
+    PadDirNode * node = file_dirnodenew();
     if (!node) {
         return NULL;
     }
@@ -628,14 +628,14 @@ PadFileDir_Read(PadFileDir *self) {
 #if defined(PAD_FILE__WINDOWS)
     if (!self->handle) {
         if ((self->handle = FindFirstFile(self->dirpath, &node->finddata)) == INVALID_HANDLE_VALUE) {
-            PadFileDirNode_Del(node);
+            PadDirNode_Del(node);
             return NULL;
 
         }
 
     } else {
         if (!FindNextFile(self->handle, &node->finddata)) {
-            PadFileDirNode_Del(node);
+            PadDirNode_Del(node);
             return NULL; // Done to find
         }
     }
@@ -644,11 +644,11 @@ PadFileDir_Read(PadFileDir *self) {
     errno = 0;
     if (!(node->node = readdir(self->directory))) {
         if (errno != 0) {
-            PadFileDirNode_Del(node);
+            PadDirNode_Del(node);
             return NULL;
         } else {
             // Done to readdir
-            PadFileDirNode_Del(node);
+            PadDirNode_Del(node);
             return NULL;
         }
     }

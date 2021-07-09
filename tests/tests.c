@@ -2895,42 +2895,42 @@ test_PadFile_WriteLine(void) {
 }
 
 static void
-test_PadFileDirNode_Del(void) {
-    PadFileDir_Close(NULL);
-    assert(PadFileDir_Open(NULL) == NULL);
-    assert(PadFileDir_Read(NULL) == NULL);
-    PadFileDirNode_Del(NULL);
+test_PadDirNode_Del(void) {
+    PadDir_Close(NULL);
+    assert(PadDir_Open(NULL) == NULL);
+    assert(PadDir_Read(NULL) == NULL);
+    PadDirNode_Del(NULL);
 
-    struct PadFileDir *dir = PadFileDir_Open(get_test_dirpath());
+    struct PadDir *dir = PadDir_Open(get_test_dirpath());
     assert(dir != NULL);
 
-    for (struct PadFileDirNode *node; (node = PadFileDir_Read(dir)); ) {
-        const char *dname = PadFileDirNode_Name(node);
+    for (struct PadDirNode *node; (node = PadDir_Read(dir)); ) {
+        const char *dname = PadDirNode_Name(node);
         assert(dname != NULL);
-        PadFileDirNode_Del(node);
+        PadDirNode_Del(node);
     }
 
-    assert(PadFileDir_Close(dir) == 0);
+    assert(PadDir_Close(dir) == 0);
 }
 
 static void
-test_PadFileDirNode_Name(void) {
-    // test_PadFileDir_Close
+test_PadDirNode_Name(void) {
+    // test_PadDir_Close
 }
 
 static void
-test_PadFileDir_Close(void) {
-    // test_PadFileDir_Close
+test_PadDir_Close(void) {
+    // test_PadDir_Close
 }
 
 static void
-test_PadFileDir_Open(void) {
-    // test_PadFileDir_Close
+test_PadDir_Open(void) {
+    // test_PadDir_Close
 }
 
 static void
-test_PadFileDir_Read(void) {
-    // test_PadFileDir_Close
+test_PadDir_Read(void) {
+    // test_PadDir_Close
 }
 
 static void
@@ -3078,11 +3078,11 @@ file_tests[] = {
     {"PadFile_GetLine", test_PadFile_GetLine},
     {"PadFile_ReadLine", test_PadFile_ReadLine},
     {"PadFile_WriteLine", test_PadFile_WriteLine},
-    {"PadFileDirNode_Del", test_PadFileDirNode_Del},
-    {"PadFileDirNode_Name", test_PadFileDirNode_Name},
-    {"PadFileDir_Close", test_PadFileDir_Close},
-    {"PadFileDir_Open", test_PadFileDir_Open},
-    {"PadFileDir_Read", test_PadFileDir_Read},
+    {"PadDirNode_Del", test_PadDirNode_Del},
+    {"PadDirNode_Name", test_PadDirNode_Name},
+    {"PadDir_Close", test_PadDir_Close},
+    {"PadDir_Open", test_PadDir_Open},
+    {"PadDir_Read", test_PadDir_Read},
     {"PadFile_ConvLineEnc", test_PadFile_ConvLineEnc},
     {"PadFile_GetUserHome", test_PadFile_GetUserHome},
     {"PadFile_Remove", test_PadFile_Remove},
