@@ -387,7 +387,7 @@ tkr_read_identifier(PadTkr *self) {
 static PadStr *
 tkr_read_escape(PadTkr *self) {
     if (*self->ptr != '\\') {
-        pushb_error("not found \\ in read Pad_Escape");
+        pushb_error("not found \\ in read escape");
         return NULL;
     }
 

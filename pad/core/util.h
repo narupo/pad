@@ -163,15 +163,26 @@ Pad_PushFrontArgv(int argc, char *argv[], const char *front);
  * copy string of src with escape character by target
  *
  * @param[in] *dst    destination buffer
- * @param[in] dstsz   destination buffer size
- * @param[in] *src    source string
+ * @param[in] *p      source string
  * @param[in] *target target string like a ("abc")
  *
  * @return failed to NULL
  * @return success to pointer to destination buffer
  */
-char *
-Pad_Escape(char *dst, int32_t dstsz, const char *src, const char *target);
+PadStr *
+Pad_Escape(PadStr *dst, const char **p, const char *ignore);
+
+/**
+ * Escape text and save to dst
+ * 
+ * @param[in] *dst    destination buffer
+ * @param[in] *s      source string
+ * @param[in] *target target string like a ("abc")
+ * 
+ * @return 
+ */
+PadStr *
+Pad_EscapeText(PadStr *dst, const char *s, const char *ignore);
 
 /**
  * If path is ".." or "." then return true

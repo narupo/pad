@@ -371,31 +371,6 @@ Pad_PushFrontArgv(int argc, char *argv[], const char *front) {
     return PadMem_Move(arr);
 }
 
-char *
-Pad_Escape(char *dst, int32_t dstsz, const char *src, const char *target) {
-    if (!dst || !dstsz || !src || !target) {
-        return NULL;
-    }
-
-    char *dp = dst;
-    char *dpend = dst + dstsz - 1;
-    const char *p = src;
-
-    for (; dp < dpend && *p; ++dp, ++p) {
-        if (strchr(target, *p)) {
-            *dp++ = '\\';
-            if (dp < dpend) {
-                *dp = *p;
-            }
-        } else {
-            *dp = *p;
-        }
-    }
-
-    *dp = '\0';
-    return dst;
-}
-
 bool
 Pad_IsDotFile(const char *path) {
     return strcmp(path, "..") == 0 || strcmp(path, ".") == 0;
@@ -417,6 +392,130 @@ Pad_PopTailSlash(char *path) {
         return PadPath_PopTailSlash(path);
     }
 #endif
+}
+
+PadStr *
+Pad_Escape(PadStr *dst, const char **p, const char *ignore) {
+    if (!dst || !p) {
+        return NULL;
+    }
+
+    switch (**p) {
+    default:
+        PadStr_PushBack(dst, **p);
+        break;
+    case '\a':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 'a');            
+        }
+        break;
+    case '\b':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 'b');
+        }
+        break;
+    case '\n':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 'n');
+        }
+        break;
+    case '\r':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 'r');
+        }
+        break;
+    case '\f':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 'f');
+        }
+        break;
+    case '\t':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 't');
+        }
+        break;
+    case '\v':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, 'v');
+        }
+        break;
+    case '\\':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, '\\');
+        }
+        break;
+    case '\?':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, '?');
+        }
+        break;
+    case '\0':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, '0');
+        }
+        break;    
+    case '\'':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, '\'');
+        }
+        break;
+    case '\"':
+        if (strchr(ignore, **p)) {
+            PadStr_PushBack(dst, **p);
+        } else {
+            PadStr_PushBack(dst, '\\');
+            PadStr_PushBack(dst, '"');
+        }
+        break;
+    }
+
+    return dst;
+}
+
+PadStr *
+Pad_EscapeText(PadStr *dst, const char *s, const char *ignore) {
+    if (!dst || !s) {
+        return NULL;
+    }
+
+    for (const char *p = s; *p; p += 1) {
+        Pad_Escape(dst, &p, ignore);
+    }
+
+    return dst;
 }
 
 void

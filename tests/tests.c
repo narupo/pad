@@ -3591,10 +3591,13 @@ test_util_Pad_ArgsByOptind(void) {
 }
 
 static void
-test_util_Pad_Escape(void) {
-    char dst[1024];
-    assert(Pad_Escape(dst, sizeof dst, "abca", "a"));
-    assert(!strcmp(dst, "\\abc\\a"));
+test_util_Pad_EscapeText(void) {
+    PadStr *s = PadStr_New();
+
+    assert(Pad_EscapeText(s, "\n\t\r", "\r"));
+    assert(!strcmp(PadStr_Getc(s), "\\n\\t\r"));
+
+    PadStr_Del(s);
 }
 
 static void
@@ -3708,7 +3711,7 @@ util_tests[] = {
     {"Pad_RandRange", test_util_Pad_RandRange},
     {"Pad_SafeSystem", test_util_Pad_SafeSystem},
     {"Pad_ArgsByOptind", test_util_Pad_ArgsByOptind},
-    {"Pad_Escape", test_util_Pad_Escape},
+    {"Pad_EscapeText", test_util_Pad_EscapeText},
     {"Pad_CompileArgv", test_util_Pad_CompileArgv},
     {"Pad_PopTailSlash", test_util_Pad_PopTailSlash},
     {"Pad_TrimFirstLine", test_util_Pad_TrimFirstLine},
