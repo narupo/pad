@@ -10196,6 +10196,55 @@ trv_float(PadAST *ast, PadTrvArgs *targs) {
     return_trav(obj);
 }
 
+static PadUni *
+read_doller(const PadUniType **p) {
+    if (**p != PAD_UNI__CH('$')) {
+        return NULL;
+    }
+
+    *p += 1;
+    PadUni *u = PadUni_New();
+
+    for (; **p; *p += 1) {
+        if (PadU_IsSpace(**p)) {
+            *p -= 1;
+            break;
+        } else {
+            PadUni_PushBack(u, **p);
+        }
+    }
+
+    if (!PadUni_Len(u)) {
+        PadUni_Del(u);
+        return NULL;
+    }
+    
+    return u;
+}
+
+static void
+apply_doller(PadAST *ast, PadTrvArgs *targs, PadUni *dst, PadUni *doller) {
+    if (!PadUni_Len(doller)) {
+        return;
+    }
+
+    const char *idn = PadUni_GetcMB(doller);
+    const PadObjDict *d = PadCtx_GetVarmap(ast->ref_context);
+    const PadObjDictItem *i = PadObjDict_Getc(d, idn);
+    if (i == NULL) {
+        PadUni_PushBack(dst, PAD_UNI__CH('$'));
+        PadUni_AppOther(dst, doller);
+        return;
+    }
+
+    PadObj *obj = i->value;
+    PadStr *s = Pad_ObjToString(ast->error_stack, targs->ref_node, obj);
+    PadUni *u = PadUni_New();
+    PadUni_SetMB(u, PadStr_Getc(s));
+
+    PadUni_AppOther(dst, u);
+}
+
 static PadObj *
 trv_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
@@ -10206,6 +10255,28 @@ trv_string(PadAST *ast, PadTrvArgs *targs) {
 
     // convert C string to unicode object
     PadObj *obj = PadObj_NewUnicodeCStr(ast->ref_gc, string->string);
+
+    PadUni *src = PadObj_GetUnicode(obj);
+    PadUni *dst = PadUni_New();
+    const PadUniType *s = PadUni_Getc(src);
+
+    for (const PadUniType *p = s; *p; p += 1) {
+        if (*p == PAD_UNI__CH('$') &&
+            *(p + 1) != PAD_UNI__CH('$')) {
+            PadUni *doller = read_doller(&p);
+            if (doller == NULL) {
+                PadUni_PushBack(dst, *p);
+                continue;
+            }
+            apply_doller(ast, targs, dst, doller);
+            PadUni_Del(doller);
+        } else {
+            PadUni_PushBack(dst, *p);
+        }
+    }
+
+    PadObj_Del(obj);
+    obj = PadObj_NewUnicode(ast->ref_gc, PadMem_Move(dst));
 
     return_trav(obj);
 }

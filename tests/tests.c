@@ -28931,28 +28931,17 @@ test_trv_digit(void) {
 
 static void
 test_trv_string(void) {
-    PadConfig *config = PadConfig_New();
-    PadTkrOpt *opt = PadTkrOpt_New();
-    PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
-    PadAST *ast = PadAST_New(config);
-    PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    trv_ready;
 
-    PadTkr_Parse(tkr, "{: \"abc\" :}");
-    {
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "abc"));
-    }
+    check_ok("{: \"abc\" :}", "abc");
+    check_ok("{@ aaa = 1 @}{: \"aaa $aaa bbb\" :}", "aaa 1 bbb");
+    check_ok("{@ aaa = 1 @}{: \"aaa $aaabbb\" :}", "aaa $aaabbb");
+    check_ok("{@ aaa = \"AAA\" @}{: \"$aaa aaa bbb\" :}", "AAA aaa bbb");
+    check_ok("{: \"aaa $$ bbb\" :}", "aaa $$ bbb");
+    check_ok("{@ aaa = 1 @}{: \"aaa $$aaa bbb\" :}", "aaa $1 bbb");
+    check_ok("{@ a = 1 b = 2 @}{: \"aaa $a bbb $b\" :}", "aaa 1 bbb 2");
 
-    PadCtx_Del(ctx);
-    PadGC_Del(gc);
-    PadAST_Del(ast);
-    PadTkr_Del(tkr);
-    PadConfig_Del(config);
+    trv_cleanup;
 }
 
 static void
