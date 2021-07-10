@@ -293,6 +293,15 @@ PadKit_GetRefGC(PadKit *self) {
     return self->gc;
 }
 
+PadCtx *
+PadKit_GetRefCtx(PadKit *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->ctx;
+}
+
 PadKit *
 PadKit_MoveBltMod(PadKit *self, PadObj *move_mod) {
     if (!self || !move_mod) {
