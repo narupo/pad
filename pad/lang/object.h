@@ -29,7 +29,7 @@ typedef enum {
 
     // A float object
     // 浮動小数点数オブジェクト
-    // 値の範囲は lang/types.h@PadIntObj を参照
+    // 値の範囲は lang/types.h@PadFloatObj を参照
     PAD_OBJ_TYPE__FLOAT,
 
     // A boolean object
