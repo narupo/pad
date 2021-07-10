@@ -31525,12 +31525,45 @@ stdlib_stream_tests[] = {
     {0},
 };
 
+static void
+test_void_dict_default(void) {
+    PadVoidDict *d = PadVoidDict_New();
+    assert(d);
+
+    assert(PadVoidDict_Move(d, "aaa", (void *)111));
+    assert(PadVoidDict_Move(d, "bbb", (void *)222));
+    assert(PadVoidDict_Move(d, "ccc", (void *)333));
+    assert(PadVoidDict_Move(d, "ddd", (void *)444));
+    assert(PadVoidDict_Move(d, "eee", (void *)555));
+    assert(PadVoidDict_Move(d, "fff", (void *)666));
+    assert(PadVoidDict_Move(d, "ggg", (void *)777));
+    assert(PadVoidDict_Move(d, "hhh", (void *)888));
+    assert(PadVoidDict_Move(d, "iii", (void *)999));
+    assert(PadVoidDict_Move(d, "jjj", (void *)1000));
+
+    const PadVoidDictItem *i;
+    i = PadVoidDict_Getc(d, "aaa");
+    assert(PadCStr_Eq(i->key, "aaa"));
+    assert(i->value == (void *)111);
+    i = PadVoidDict_Getc(d, "ggg");
+    assert(PadCStr_Eq(i->key, "ggg"));
+    assert(i->value == (void *)777);
+    assert(PadVoidDict_Getc(d, "???") == NULL);
+
+    PadVoidDict_Del(d);
+}
+
+static const struct testcase
+void_dict_tests[] = {
+    {"default", test_void_dict_default},
+};
+
 /*******
 * main *
 *******/
 
 static const struct testmodule
-testmodules[] = {
+test_modules[] = {
     // lib
     {"cstring_array", cstrarr_tests},
     {"cstring", cstring_tests},
@@ -31542,7 +31575,8 @@ testmodules[] = {
     {"error", error_tests},
     {"util", util_tests},
     {"path", path_tests},
-    // {"opts", lang_PadOptsests},
+    {"void_dict", void_dict_tests},
+
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},
@@ -31605,7 +31639,7 @@ modtest(const char *modname) {
     int32_t ntest = 0;
     const struct testmodule *fndmod = NULL;
 
-    for (const struct testmodule *m = testmodules; m->name; ++m) {
+    for (const struct testmodule *m = test_modules; m->name; ++m) {
         if (strcmp(modname, m->name) == 0) {
             fndmod = m;
         }
@@ -31629,7 +31663,7 @@ static int32_t
 methtest(const char *modname, const char *methname) {
     const struct testmodule *fndmod = NULL;
 
-    for (const struct testmodule *m = testmodules; m->name; ++m) {
+    for (const struct testmodule *m = test_modules; m->name; ++m) {
         if (strcmp(modname, m->name) == 0) {
             fndmod = m;
         }
@@ -31661,7 +31695,7 @@ static int32_t
 fulltests(void) {
     int32_t ntest = 0;
 
-    for (const struct testmodule *m = testmodules; m->name; ++m) {
+    for (const struct testmodule *m = test_modules; m->name; ++m) {
         printf("\n* module '%s'\n", m->name);
         for (const struct testcase *t = m->tests; t->name; ++t) {
             printf("- testing '%s'\n", t->name);

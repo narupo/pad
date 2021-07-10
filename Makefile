@@ -73,6 +73,7 @@ SRCS := build/lib/error.c \
 	build/lib/cl.c \
 	build/lib/format.c \
 	build/lib/dict.c \
+	build/lib/void_dict.c \
 	build/lib/cmdline.c \
 	build/lib/pipe.c \
 	build/lib/term.c \
@@ -113,8 +114,6 @@ SRCS := build/lib/error.c \
 	build/lang/builtin/modules/unicode.c \
 	build/lang/builtin/modules/array.c \
 	build/lang/builtin/modules/dict.c \
-	# build/lang/builtin/modules/opts.c \
-	# build/lang/builtin/modules/alias.c \
 
 OBJS := $(SRCS:.c=.o)
 
@@ -154,6 +153,8 @@ build/lib/cl.o: pad/lib/cl.c pad/lib/cl.h
 build/lib/format.o: pad/lib/format.c pad/lib/format.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/dict.o: pad/lib/dict.c pad/lib/dict.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lib/void_dict.o: pad/lib/void_dict.c pad/lib/void_dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/cmdline.o: pad/lib/cmdline.c pad/lib/cmdline.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -235,7 +236,3 @@ build/lang/builtin/modules/array.o: pad/lang/builtin/modules/array.c pad/lang/bu
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/modules/dict.o: pad/lang/builtin/modules/dict.c pad/lang/builtin/modules/dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
-# build/lang/builtin/modules/opts.o: pad/lang/builtin/modules/opts.c pad/lang/builtin/modules/opts.h
-#	$(CC) $(CFLAGS) -c $< -o $@
-# build/lang/builtin/modules/alias.o: pad/lang/builtin/modules/alias.c pad/lang/builtin/modules/alias.h
-#	$(CC) $(CFLAGS) -c $< -o $@
