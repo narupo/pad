@@ -97,19 +97,20 @@ PadDict_Set(PadDict *self, const char *key, const char *value) {
     }
 
     for (int i = 0; i < self->len; ++i) {
-        if (!strcmp(self->map[i].key, key)) {
-            printf("lhs[%s] rhs[%s]\n", self->map[i].key, key);
+        if (PadCStr_Eq(self->map[i].key, key)) {
             PadCStr_Copy(self->map[i].value, PAD_DICT_ITEM__VALUE_SIZE, value);
             return self;
         }
     }
     
     if (self->len >= self->capa) {
-        if (!PadDict_Resize(self, self->capa*2)) {
+        if (!PadDict_Resize(self, self->capa * 2)) {
             return NULL;
         }
+        printf("dict resized\n");
     }
 
+    printf("len[%ld] capa[%ld]\n", self->len, self->capa);
     PadDictItem *el = &self->map[self->len++]; 
     PadCStr_Copy(el->key, PAD_DICT_ITEM__KEY_SIZE, key);
     PadCStr_Copy(el->value, PAD_DICT_ITEM__VALUE_SIZE, value);
