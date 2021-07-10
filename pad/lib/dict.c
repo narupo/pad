@@ -98,6 +98,7 @@ PadDict_Set(PadDict *self, const char *key, const char *value) {
 
     for (int i = 0; i < self->len; ++i) {
         if (!strcmp(self->map[i].key, key)) {
+            printf("lhs[%s] rhs[%s]\n", self->map[i].key, key);
             PadCStr_Copy(self->map[i].value, PAD_DICT_ITEM__VALUE_SIZE, value);
             return self;
         }
