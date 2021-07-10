@@ -1,11 +1,13 @@
 #pragma once
 
-// TODO: test (since 2021/07/10)
-
 #include <pad/lib/memory.h>
 
+enum {
+    PAD_VOID_DICT_ITEM__KEY_SIZE = 100,
+};
+
 typedef struct {
-    char key[100];
+    char key[PAD_VOID_DICT_ITEM__KEY_SIZE];
     void *value;
 } PadVoidDictItem;
 
