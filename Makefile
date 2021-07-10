@@ -76,7 +76,6 @@ SRCS := build/lib/error.c \
 	build/lib/pipe.c \
 	build/lib/term.c \
 	build/lib/path.c \
-	build/lib/socket.c \
 	build/core/config.c \
 	build/core/util.c \
 	build/core/alias_info.c \
@@ -161,8 +160,6 @@ build/lib/pipe.o: pad/lib/pipe.c pad/lib/pipe.h
 build/lib/term.o: pad/lib/term.c pad/lib/term.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/path.o: pad/lib/path.c pad/lib/path.h
-	$(CC) $(CFLAGS) -c $< -o $@
-build/lib/socket.o: pad/lib/socket.c pad/lib/socket.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/config.o: pad/core/config.c pad/core/config.h
 	$(CC) $(CFLAGS) -c $< -o $@
