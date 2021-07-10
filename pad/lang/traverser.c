@@ -1339,6 +1339,14 @@ again:
         pushb_error("invalid right operand (%d)", rhs->type);
         return_trav(NULL);
         break;
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(rhs);
+        rhs = Pad_PullRef(rhs);
+        if (rhs == NULL) {
+            pushb_error("\"%s\" is not defined", idn);
+        }
+        goto again;
+    } break;
     case PAD_OBJ_TYPE__CHAIN: {
         rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadAST_HasErrs(ast)) {

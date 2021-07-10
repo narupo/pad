@@ -14050,6 +14050,15 @@ test_trv_multi_assign(void) {
 }
 
 static void
+test_trv_multi_assign_2(void) {
+    trv_ready;
+
+    check_ok("{@ a = [1, 2] \n b, c = a @}{: b :},{: c :}", "1,2");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_and_test(void) {
     PadConfig *config = PadConfig_New();
     PadTkrOpt *opt = PadTkrOpt_New();
@@ -30411,6 +30420,7 @@ traverser_tests[] = {
     {"assign_list_fail_0", test_trv_assign_list_fail_0},
     {"multi_assign_0", test_trv_multi_assign_0},
     {"multi_assign_1", test_trv_multi_assign_1},
+    {"multi_assign_2", test_trv_multi_assign_2},
     {"multi_assign_fail_0", test_trv_multi_assign_fail_0},
     {"or_test_0", test_trv_or_test_0},
     {"or_test_fail_0", test_trv_or_test_fail_0},
