@@ -31556,6 +31556,7 @@ test_void_dict_default(void) {
 static const struct testcase
 void_dict_tests[] = {
     {"default", test_void_dict_default},
+    {0},
 };
 
 /*******
