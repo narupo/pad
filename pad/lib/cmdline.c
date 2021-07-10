@@ -47,6 +47,20 @@ PadCmdlineObj_Parse(PadCmdlineObj *self, const char *line) {
     return self;
 }
 
+void
+PadCmdlineObj_Show(const PadCmdlineObj *self, FILE *fout) {
+    if (!self || !fout) {
+        return;
+    }
+
+    switch (self->type) {
+    default: break;
+    case PAD_CMDLINE_OBJ_TYPE__CMD:
+        printf("%s\n", PadStr_Getc(self->command));
+        break;
+    }
+}
+
 /**********
 * cmdline *
 **********/
@@ -197,6 +211,7 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
             if (*p == '\\') {
                 ++p;
                 if (*p != '\0') {
+                    PadStr_PushBack(buf, '\\');
                     PadStr_PushBack(buf, *p);
                 } else {
                     --p;
@@ -328,6 +343,7 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
             if (*p == '\\') {
                 ++p;
                 if (*p != '\0') {
+                    PadStr_PushBack(buf, '\\');
                     PadStr_PushBack(buf, *p);
                 } else {
                     --p;
@@ -370,4 +386,12 @@ PadCmdline_Parse(PadCmdline *self, const char *line) {
 
     PadStr_Del(buf);
     return self;
+}
+
+void
+PadCmdline_Show(PadCmdline *self, FILE *fout) {
+    for (int32_t i = 0; i < self->len; i += 1) {
+        PadCmdlineObj *o = self->objs[i];
+        PadCmdlineObj_Show(o, fout);
+    }
 }

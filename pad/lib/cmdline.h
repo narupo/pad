@@ -86,6 +86,9 @@ PadCmdlineObj_New(PadCmdlineObjType type);
 PadCmdlineObj *
 PadCmdlineObj_Parse(PadCmdlineObj *self, const char *line);
 
+void
+PadCmdlineObj_Show(const PadCmdlineObj *self, FILE *fout);
+
 /**********
 * cmdline *
 **********/
@@ -182,3 +185,6 @@ PadCmdline_Parse(PadCmdline *self, const char *line);
  */
 void 
 PadCmdline_Clear(PadCmdline *self);
+
+void
+PadCmdline_Show(PadCmdline *self, FILE *fout);
