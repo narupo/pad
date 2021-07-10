@@ -22,9 +22,7 @@ ifeq ($(OS), Windows_NT)
 		-Wno-unused-function \
 		-Wno-unused-result \
 		-D_DEBUG \
-		-I$(INCLUDE) \
-		-LD:\\lib \
-		-lws2_32
+		-I$(INCLUDE)
 	OUTLIB := libpad.dll
 else
 	CFLAGS := -Wall \
