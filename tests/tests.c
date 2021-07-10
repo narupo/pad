@@ -3769,201 +3769,6 @@ path_tests[] = {
     {0},
 };
 
-#if 0
-/************
-* lang/opts *
-************/
-
-static void
-test_lang_PadOpts_New(void) {
-    PadOpts *opts = PadOpts_New();
-    assert(opts);
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_Parse(void) {
-    PadOpts *opts = PadOpts_New();
-    assert(opts);
-
-    int argc = 7;
-    char *argv[] = {
-        "make",
-        "arg1",
-        "arg2",
-        "-a",
-        "aaa",
-        "--bbb",
-        "bbb",
-        NULL,
-    };
-    assert(PadOpts_Parse(opts, argc, argv));
-
-    assert(PadOpts_ArgsLen(opts) == 3);
-    assert(PadOpts_GetcArgs(opts, -1) == NULL);
-    assert(PadOpts_GetcArgs(opts, 0));
-    assert(PadOpts_GetcArgs(opts, 1));
-    assert(PadOpts_GetcArgs(opts, 2));
-    assert(PadOpts_GetcArgs(opts, 3) == NULL);
-    assert(!strcmp(PadOpts_GetcArgs(opts, 0), "make"));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 1), "arg1"));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 2), "arg2"));
-    assert(PadOpts_Getc(opts, "a"));
-    assert(!strcmp(PadOpts_Getc(opts, "a"), "aaa"));
-    assert(PadOpts_Getc(opts, "bbb"));
-    assert(!strcmp(PadOpts_Getc(opts, "bbb"), "bbb"));
-    assert(PadOpts_Has(opts, "a"));
-    assert(PadOpts_Has(opts, "bbb"));
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_Parse_0(void) {
-    PadOpts *opts = PadOpts_New();
-    assert(opts);
-
-    int argc = 1;
-    char *argv[] = {
-        "make",
-        NULL,
-    };
-    assert(PadOpts_Parse(opts, argc, argv));
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_GetcArgs_0(void) {
-    PadOpts *opts = PadOpts_New();
-    assert(opts);
-
-    int argc = 3;
-    char *argv[] = {
-        "cmd",
-        "arg1",
-        "arg2",
-        NULL,
-    };
-
-    assert(PadOpts_Parse(opts, argc, argv));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 0), "cmd"));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 1), "arg1"));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 2), "arg2"));
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_GetcArgs_1(void) {
-    PadOpts *opts = PadOpts_New();
-    assert(opts);
-
-    int argc = 7;
-    char *argv[] = {
-        "cmd",
-        "-a",
-        "optarg1",
-        "-b",
-        "optarg2",
-        "arg1",
-        "arg2",
-        NULL,
-    };
-
-    assert(PadOpts_Parse(opts, argc, argv));
-    assert(!strcmp(PadOpts_Getc(opts, "a"), "optarg1"));
-    assert(!strcmp(PadOpts_Getc(opts, "b"), "optarg2"));
-    assert(PadOpts_GetcArgs(opts, 0));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 0), "cmd"));
-    assert(PadOpts_GetcArgs(opts, 1));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 1), "arg1"));
-    assert(PadOpts_GetcArgs(opts, 2));
-    assert(!strcmp(PadOpts_GetcArgs(opts, 2), "arg2"));
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_Clear(void) {
-    int argc = 1;
-    char *argv[] = {"abc", NULL};
-
-    PadOpts *opts = PadOpts_New();
-
-    assert(PadOpts_Parse(opts, argc, argv));
-    assert(PadOpts_ArgsLen(opts) == 1);
-    PadOpts_Clear(opts);
-    assert(PadOpts_ArgsLen(opts) == 0);
-
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_Getc(void) {
-    int argc = 5;
-    char *argv[] = {
-        "cmd",
-        "-a",
-        "aaa",
-        "-b",
-        "bbb",
-        NULL,
-    };
-    PadOpts *opts = PadOpts_New();
-
-    assert(PadOpts_Parse(opts, argc, argv));
-    assert(!strcmp(PadOpts_Getc(opts, "a"), "aaa"));
-    assert(!strcmp(PadOpts_Getc(opts, "b"), "bbb"));
-
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_Has(void) {
-    int argc = 3;
-    char *argv[] = {
-        "cmd",
-        "-a",
-        "aaa",
-        NULL,
-    };
-    PadOpts *opts = PadOpts_New();
-
-    assert(PadOpts_Parse(opts, argc, argv));
-    assert(PadOpts_Has(opts, "a"));
-
-    PadOpts_Del(opts);
-}
-
-static void
-test_lang_PadOpts_ArgsLen(void) {
-    int argc = 3;
-    char *argv[] = {
-        "cmd",
-        "arg1",
-        "arg2",
-        NULL,
-    };
-    PadOpts *opts = PadOpts_New();
-
-    assert(PadOpts_Parse(opts, argc, argv));
-    assert(PadOpts_ArgsLen(opts) == 3);
-
-    PadOpts_Del(opts);
-}
-
-static const struct testcase
-lang_PadOptsests[] = {
-    {"PadOpts_New", test_lang_PadOpts_New},
-    {"PadOpts_Parse", test_lang_PadOpts_Parse},
-    {"PadOpts_Parse_0", test_lang_PadOpts_Parse_0},
-    {"PadOpts_GetcArgs_0", test_lang_PadOpts_GetcArgs_0},
-    {"PadOpts_GetcArgs_1", test_lang_PadOpts_GetcArgs_1},
-    {"PadOpts_Clear", test_lang_PadOpts_Clear},
-    {"PadOpts_Getc", test_lang_PadOpts_Getc},
-    {"PadOpts_Has", test_lang_PadOpts_Has},
-    {"PadOpts_ArgsLen", test_lang_PadOpts_ArgsLen},
-    {0},
-};
-#endif
-
 /*****************
 * lang/tokenizer *
 *****************/
@@ -15701,47 +15506,7 @@ test_trv_assign_list(void) {
         assert(!PadAST_HasErrs(ast));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1,2"));
     }
-/*
-    PadTkr_Parse(tkr, "{@ a = alias.set(\"\", \"\") @}{: a :}");
-    {
-        PadAST_Clear(ast);
-        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
-        PadCtx_Clear(ctx);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "nil"));
-    }
 
-    PadTkr_Parse(tkr, "{@ a = alias.set(\"\", \"\")\n b = alias.set(\"\", \"\") @}{: a :},{: b :}");
-    {
-        PadAST_Clear(ast);
-        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
-        PadCtx_Clear(ctx);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "nil,nil"));
-    }
-
-    PadTkr_Parse(tkr, "{@ a = opts.get(\"abc\") @}{: a :}");
-    {
-        char *argv[] = {
-            "make",
-            "-abc",
-            "def",
-            NULL,
-        };
-        PadOpts *opts = PadOpts_New();
-        assert(PadOpts_Parse(opts, 3, argv));
-        PadAST_Clear(ast);
-        (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
-        PadCtx_Clear(ctx);
-        PadAST_MoveOpts(ast, opts);
-        (PadTrv_Trav(ast, ctx));
-        PadAST_MoveOpts(ast, NULL);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "def"));
-    }
-*/
     PadCtx_Del(ctx);
     PadGC_Del(gc);
     PadAST_Del(ast);
@@ -16416,99 +16181,7 @@ test_trv_builtin_functions(void) {
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
     PadCtx *ctx = PadCtx_New(gc);
-
-    /********
-    * alias *
-    ********/
-/*
-    PadTkr_Parse(tkr, "{@ alias.set(\"abc\", \"def\") @}");
-    {
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        (PadTrv_Trav(ast, ctx));
-        assert(!PadAST_HasErrs(ast));
-        const PadAliasInfo *alinfo = PadCtx_GetcAliasInfo(ctx);
-        const char *value = PadAliasInfo_GetcValue(alinfo, "abc");
-        assert(value);
-        assert(!strcmp(value, "def"));
-    }
-
-    PadTkr_Parse(tkr, "{@ alias.set(\"abc\", \"def\", \"ghi\") @}");
-    {
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        const PadAliasInfo *alinfo = PadCtx_GetcAliasInfo(ctx);
-        const char *value = PadAliasInfo_GetcValue(alinfo, "abc");
-        assert(value);
-        assert(!strcmp(value, "def"));
-        const char *desc = PadAliasInfo_GetcDesc(alinfo, "abc");
-        assert(desc);
-        assert(!strcmp(desc, "ghi"));
-    }
-*/
-    /*******
-    * opts *
-    *******/
-/*
-    PadTkr_Parse(tkr, "{: opts.get(\"abc\") :}");
-    {
-        PadOpts *opts = PadOpts_New();
-        char *argv[] = {
-            "make",
-            "--abc",
-            "def",
-            NULL,
-        };
-        PadOpts_Parse(opts, 3, argv);
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        PadAST_MoveOpts(ast, opts);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "def"));
-    }
-
-    PadTkr_Parse(tkr, "{: opts.has(\"abc\") :}");
-    {
-        PadOpts *opts = PadOpts_New();
-        char *argv[] = {
-            "make",
-            "--abc",
-            NULL,
-        };
-        PadOpts_Parse(opts, 2, argv);
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        PadAST_MoveOpts(ast, opts);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "true"));
-    }
-
-    PadTkr_Parse(tkr, "{: opts.has(\"def\") :}");
-    {
-        PadOpts *opts = PadOpts_New();
-        char *argv[] = {
-            "make",
-            "--abc",
-            NULL,
-        };
-        PadOpts_Parse(opts, 2, argv);
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        PadAST_MoveOpts(ast, opts);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "false"));
-    }
-*/
+    
     /*******
     * puts *
     *******/
@@ -31526,6 +31199,40 @@ stdlib_stream_tests[] = {
 };
 
 static void
+test_dict_default(void) {
+    PadDict *d = PadDict_New(2);
+    assert(d);
+
+    assert(PadDict_Set(d, "aaa", "111"));
+    assert(PadDict_Set(d, "bbb", "222"));
+    assert(PadDict_Set(d, "ccc", "333"));
+    assert(PadDict_Set(d, "ddd", "444"));
+    assert(PadDict_Set(d, "eee", "555"));
+
+    const PadDictItem *i;
+    i = PadDict_Getc(d, "bbb");
+    assert(i);
+    assert(strcmp(i->key, "bbb") == 0);
+    assert(strcmp(i->value, "222") == 0);
+
+    i = PadDict_Getc(d, "ddd");
+    assert(i);
+    assert(strcmp(i->key, "ddd") == 0);
+    assert(strcmp(i->value, "444") == 0);
+
+    i = PadDict_Getc(d, "???");
+    assert(i == NULL);
+    
+    PadDict_Del(d);
+}
+
+static const struct testcase
+dict_tests[] = {
+    {"default", test_dict_default},
+    {0},
+};
+
+static void
 test_void_dict_default(void) {
     PadVoidDict *d = PadVoidDict_New();
     assert(d);
@@ -31576,6 +31283,7 @@ test_modules[] = {
     {"error", error_tests},
     {"util", util_tests},
     {"path", path_tests},
+    {"dict", dict_tests},
     {"void_dict", void_dict_tests},
 
     {"tokenizer", tokenizer_tests},
