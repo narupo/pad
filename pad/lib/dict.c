@@ -78,10 +78,10 @@ PadDict_Resize(PadDict *self, size_t newcapa) {
         return NULL;
     }
 
-    int32_t byte = sizeof(PadDict);
+    int32_t byte = sizeof(PadDictItem);
     int32_t size = newcapa * byte + byte;
     PadDictItem *tmp = PadMem_Realloc(self->map, size);
-    if (!tmp) {
+    if (tmp == NULL) {
         return NULL;
     }
 
