@@ -270,16 +270,16 @@ PadCtx_ClearStderrBuf(PadCtx *self) {
 
 PadStr *
 PadCtx_SwapStdoutBuf(PadCtx *self, PadStr *stdout_buf) {
-    PadStr *Pad_Escape = self->stdout_buf;
+    PadStr *esc = self->stdout_buf;
     self->stdout_buf = stdout_buf;
-    return Pad_Escape;
+    return esc;
 }
 
 PadStr *
 PadCtx_SwapStderrBuf(PadCtx *self, PadStr *stderr_buf) {
-    PadStr *Pad_Escape = self->stderr_buf;
+    PadStr *esc = self->stderr_buf;
     self->stderr_buf = stderr_buf;
-    return Pad_Escape;
+    return esc;
 }
 
 void

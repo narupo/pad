@@ -385,7 +385,7 @@ tkr_read_identifier(PadTkr *self) {
 }
 
 static PadStr *
-tkr_read_Pad_Escape(PadTkr *self) {
+tkr_read_escape(PadTkr *self) {
     if (*self->ptr != '\\') {
         pushb_error("not found \\ in read Pad_Escape");
         return NULL;
@@ -436,7 +436,7 @@ tkr_read_dq_string(PadTkr *self) {
         case 10:
             if (c == '\\') {
                 tkr_prev(self);
-                PadStr *esc = tkr_read_Pad_Escape(self);
+                PadStr *esc = tkr_read_escape(self);
                 if (!esc) {
                     goto fail;
                 }

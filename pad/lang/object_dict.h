@@ -35,7 +35,7 @@ void
 PadObjDict_Del(PadObjDict *self);
 
 /**
- * destruct PadObjDict_t with Pad_Escape array of PadObjDictItem dynamic allocated
+ * destruct PadObjDict_t with escape array of PadObjDictItem dynamic allocated
  *
  * @param[in] *self pointer to PadObjDict
  *

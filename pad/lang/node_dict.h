@@ -42,7 +42,7 @@ void
 PadNodeDict_DelWithoutNodes(PadNodeDict *self);
 
 /**
- * destruct PadNodeDict_t with Pad_Escape array of PadNodeDictItem dynamic allocated
+ * destruct PadNodeDict_t with escape array of PadNodeDictItem dynamic allocated
  *
  * @param[in] *self pointer to PadNodeDict
  *

@@ -160,7 +160,7 @@ PadCStrAry *
 Pad_PushFrontArgv(int argc, char *argv[], const char *front);
 
 /**
- * copy string of src with Pad_Escape character by target
+ * copy string of src with escape character by target
  *
  * @param[in] *dst    destination buffer
  * @param[in] dstsz   destination buffer size

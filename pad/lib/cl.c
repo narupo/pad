@@ -359,7 +359,7 @@ validatepush(PadCL *cl, cl_PadStr *src, int32_t opts) {
 }
 
 static int32_t
-conv_Pad_Escape_char(int32_t ch) {
+conv_escape_char(int32_t ch) {
     switch (ch) {
     case 'r': return '\r'; break;
     case 'n': return '\n'; break;
@@ -399,7 +399,7 @@ PadCL_ParseStrOpts(PadCL *self, const char *drtsrc, int32_t opts) {
             } else if (c == '\\') {
                 ++p;
                 if (*p) {
-                    clstr_push(tmp, conv_Pad_Escape_char(*p));
+                    clstr_push(tmp, conv_escape_char(*p));
                 }
             } else if (c == '"') {
                 m = 10;
@@ -416,7 +416,7 @@ PadCL_ParseStrOpts(PadCL *self, const char *drtsrc, int32_t opts) {
             if (c == '\\') {
                 ++p;
                 if (*p) {
-                    clstr_push(tmp, conv_Pad_Escape_char(*p));
+                    clstr_push(tmp, conv_escape_char(*p));
                 }
             } else if (c == '"') {
                 m = 0;
@@ -429,7 +429,7 @@ PadCL_ParseStrOpts(PadCL *self, const char *drtsrc, int32_t opts) {
             if (c == '\\') {
                 ++p;
                 if (*p) {
-                    clstr_push(tmp, conv_Pad_Escape_char(*p));
+                    clstr_push(tmp, conv_escape_char(*p));
                 }
             } else if (c == '\'') {
                 m = 0;

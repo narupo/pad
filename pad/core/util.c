@@ -122,7 +122,7 @@ Pad_SafeSystem(const char *cmdline, int option) {
     int argc = PadCL_Len(cl);
     char **argv = PadCL_EscDel(cl);
     if (!argv) {
-        PadErr_Err("failed to Pad_Escape and delete of clk");
+        PadErr_Err("failed to escape and delete of clk");
         return -1;
     }
 

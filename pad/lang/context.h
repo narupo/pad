@@ -25,7 +25,7 @@ void
 PadCtx_Del(PadCtx *self);
 
 /**
- * destruct PadObj and Pad_Escape global variable map from context
+ * destruct PadObj and escape global variable map from context
  *
  * @param[in] *self
  *
