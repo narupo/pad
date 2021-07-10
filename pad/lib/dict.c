@@ -107,10 +107,8 @@ PadDict_Set(PadDict *self, const char *key, const char *value) {
         if (!PadDict_Resize(self, self->capa * 2)) {
             return NULL;
         }
-        printf("dict resized\n");
     }
 
-    printf("len[%ld] capa[%ld]\n", self->len, self->capa);
     PadDictItem *el = &self->map[self->len++]; 
     PadCStr_Copy(el->key, PAD_DICT_ITEM__KEY_SIZE, key);
     PadCStr_Copy(el->value, PAD_DICT_ITEM__VALUE_SIZE, value);
