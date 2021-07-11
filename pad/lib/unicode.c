@@ -285,10 +285,10 @@ PadUni_Resize(PadUni *self, int32_t newcapa) {
 
     if (newcapa < self->length) {
         self->length = newcapa;
-        self->buffer[self->length] = NIL;
     }
 
     self->capacity = newcapa;
+    self->buffer[self->length] = NIL;
 
     return self;
 }
@@ -497,7 +497,7 @@ PadUni_DeepCopy(const PadUni *other) {
 
     int32_t byte = sizeof(PadUniType);
     self->capacity = other->capacity;
-    self->buffer = calloc(self->capacity + 1, byte);
+    self->buffer = PadMem_Calloc(self->capacity + 1, byte);
     if (!self->buffer) {
         free(self);
         return NULL;

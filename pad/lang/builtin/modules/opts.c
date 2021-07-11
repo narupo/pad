@@ -104,6 +104,9 @@ Pad_NewBltOptsMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadCtx *ctx = PadCtx_New(ref_gc);
     ast->ref_context = ctx;
 
+    PadBltFuncInfoAry *info_ary = PadBltFuncInfoAry_New();
+    PadBltFuncInfoAry_ExtendBackAry(info_ary, builtin_func_infos);
+
     return PadObj_NewModBy(
         ref_gc,
         "opts",
@@ -112,6 +115,6 @@ Pad_NewBltOptsMod(const PadConfig *ref_config, PadGC *ref_gc) {
         PadMem_Move(tkr),
         PadMem_Move(ast),
         PadMem_Move(ctx),
-        builtin_func_infos
+        PadMem_Move(info_ary)
     );
 }

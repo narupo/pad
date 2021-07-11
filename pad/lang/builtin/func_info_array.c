@@ -46,6 +46,7 @@ resize(PadBltFuncInfoAry *self, int32_t newcapa) {
 
     self->infos = tmp;
     self->infos[self->len].name = NULL;
+    self->infos[self->len].func = NULL;
     self->capa = newcapa;
 
     return self;

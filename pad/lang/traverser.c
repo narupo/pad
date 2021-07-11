@@ -10259,8 +10259,9 @@ trv_string(PadAST *ast, PadTrvArgs *targs) {
     PadUni *src = PadObj_GetUnicode(obj);
     PadUni *dst = PadUni_New();
     const PadUniType *s = PadUni_Getc(src);
+    const PadUniType *end = s + PadUni_Len(src);
 
-    for (const PadUniType *p = s; *p; p += 1) {
+    for (const PadUniType *p = s; p < end; p += 1) {
         if (*p == PAD_UNI__CH('$') &&
             *(p + 1) != PAD_UNI__CH('$')) {
             PadUni *doller = read_doller(&p);
@@ -11002,6 +11003,7 @@ PadTrv_ImportBltMods(PadAST *ast) {
 
     // builtin functions module (__builtin__)
     mod = Pad_NewBltFuncsMod(ast->ref_config, ast->ref_gc, ast->blt_func_infos);
+    PadObj_IncRef(mod);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // set builtin functions to varmap
@@ -11016,23 +11018,23 @@ PadTrv_ImportBltMods(PadAST *ast) {
 
     // builtin unicode module (__unicode__)
     mod = Pad_NewBltUnicodeMod(ast->ref_config, ast->ref_gc);
+    PadObj_IncRef(mod);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // builtin array module (__array__)
     mod = Pad_NewBltAryMod(ast->ref_config, ast->ref_gc);
+    PadObj_IncRef(mod);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     // builtin dict module (__dict__)
     mod = Pad_NewBltDictMod(ast->ref_config, ast->ref_gc);
+    PadObj_IncRef(mod);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
-    // builtin alias module
-    // mod = Pad_NewBltAliasMod(ast->ref_config, ast->ref_gc);
-    // PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
-
     // builtin opts module
-    // mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
-    // PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
+    mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
+    PadObj_IncRef(mod);
+    PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 
     return ast;
 }
