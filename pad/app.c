@@ -10,7 +10,7 @@
 /**
  * program option
  */
-struct Opts {
+struct PadAppOpts {
     bool is_help;
     bool is_version;
     bool is_debug;
@@ -25,12 +25,12 @@ typedef struct {
     int cmd_argc;
     char **cmd_argv;
     PadConfig *config;
-    struct Opts opts;
+    struct PadAppOpts opts;
     PadErrStack *errstack;
-} App;
+} PadApp;
 
 static int
-app_run(App *self, int argc, char *argv[]);
+PadApp_Run(PadApp *self, int argc, char *argv[]);
 
 /**
  * parse options
@@ -40,7 +40,7 @@ app_run(App *self, int argc, char *argv[]);
  * @return failed to false
  */
 static bool
-app_parse_opts(App *self) {
+PadApp_ParseOpts(PadApp *self) {
     static struct option longopts[] = {
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'},
@@ -49,7 +49,7 @@ app_parse_opts(App *self) {
     };
 
     // init status
-    self->opts = (struct Opts){0};
+    self->opts = (struct PadAppOpts){0};
     optind = 0;
     opterr = 0;
 
@@ -85,7 +85,7 @@ app_parse_opts(App *self) {
  * @param[in] self
  */
 static void
-app_del(App *self) {
+PadApp_Del(PadApp *self) {
     if (self) {
         PadConfig_Del(self->config);
         PadErrStack_Del(self->errstack);
@@ -101,7 +101,7 @@ app_del(App *self) {
  * @return failed to false
  */
 static bool
-app_deploy_env(const App *self) {
+_deploy_env(const PadApp *self) {
     char userhome[PAD_FILE__NPATH];
     if (!PadFile_GetUserHome(userhome, sizeof userhome)) {
         Pad_PushErr("failed to get user's home directory. what is your file system?");
@@ -131,25 +131,25 @@ app_deploy_env(const App *self) {
  * @param[in] argc
  * @param[in] argv
  *
- * @return success to pointer to dynamic allocate memory to App
+ * @return success to pointer to dynamic allocate memory to PadApp
  * @return failed to NULL
  */
-static App *
-app_new(void) {
-    App *self = PadMem_Calloc(1, sizeof(*self));
+static PadApp *
+PadApp_New(void) {
+    PadApp *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
     self->errstack = PadErrStack_New();
     if (!self->errstack) {
-        app_del(self);
+        PadApp_Del(self);
         return NULL;
     }
 
     self->config = PadConfig_New();
     if (!self->config) {
-        app_del(self);
+        PadApp_Del(self);
         return NULL;
     }
 
@@ -162,7 +162,7 @@ app_new(void) {
  * @param[in] app
  */
 static void
-app_usage(App *app) {
+PadApp_Usage(PadApp *app) {
     static const char usage[] =
         "Pad is programming language.\n"
         "\n"
@@ -188,7 +188,7 @@ app_usage(App *app) {
  * @param[in] self
  */
 static void
-app_version(App *self) {
+PadApp_Version(PadApp *self) {
     fflush(stdout);
     fflush(stderr);
     printf("%s\n", PAD__VERSION);
@@ -196,7 +196,7 @@ app_version(App *self) {
 }
 
 static bool
-app_parse_args(App *self, int argc, char *argv[]) {
+PadApp_ParseArgs(PadApp *self, int argc, char *argv[]) {
     PadDistriArgs dargs = {0};
     PadDistriArgs_Distribute(&dargs, argc, argv);
     self->argc = dargs.argc;
@@ -207,23 +207,23 @@ app_parse_args(App *self, int argc, char *argv[]) {
 }
 
 static bool
-app_init(App *self, int argc, char *argv[]) {
+PadApp_Init(PadApp *self, int argc, char *argv[]) {
     if (!PadConfig_Init(self->config)) {
         Pad_PushErr("failed to configuration");
         return false;
     }
 
-    if (!app_parse_args(self, argc, argv)) {
+    if (!PadApp_ParseArgs(self, argc, argv)) {
         Pad_PushErr("failed to parse arguments");
         return false;
     }
 
-    if (!app_parse_opts(self)) {
+    if (!PadApp_ParseOpts(self)) {
         Pad_PushErr("failed to parse options");
         return false;
     }
 
-    if (!app_deploy_env(self)) {
+    if (!_deploy_env(self)) {
         Pad_PushErr("failed to deploy environment at file system");
         return false;
     }
@@ -232,7 +232,7 @@ app_init(App *self, int argc, char *argv[]) {
 }
 
 static void
-trace_kit(const App *self, const PadKit *kit, FILE *fout) {
+PadApp_TraceKit(const PadApp *self, const PadKit *kit, FILE *fout) {
     if (self->opts.is_debug) {
         PadKit_TraceErrDebug(kit, fout);
     } else {
@@ -241,7 +241,7 @@ trace_kit(const App *self, const PadKit *kit, FILE *fout) {
 }
 
 static int
-_app_run(App *self) {
+_PadApp_Run(PadApp *self) {
     char *content = PadFile_ReadCopy(stdin);
     if (!content) {
         Pad_PushErr("failed to read from stdin");
@@ -253,7 +253,7 @@ _app_run(App *self) {
     PadCtx_SetUseBuf(ctx, false);  // no use stdout/stderr buffer
 
     if (!PadKit_CompileFromStr(kit, content)) {
-        trace_kit(self, kit, stderr);
+        PadApp_TraceKit(self, kit, stderr);
         Pad_PushErr("failed to compile from stdin");
         return 1;
     }
@@ -267,7 +267,7 @@ _app_run(App *self) {
 }
 
 static int
-app_run_args(App *self) {
+PadApp_RunArgs(PadApp *self) {
     int argc = self->cmd_argc;
     char **argv = self->cmd_argv;
     if (!argc) {
@@ -285,7 +285,7 @@ app_run_args(App *self) {
     PadKit_SetUseBuf(kit, false);  // no use stdout/stderr buffer
     
     if (!PadKit_CompileFromPathArgs(kit, path, argc, argv)) {
-        trace_kit(self, kit, stderr);
+        PadApp_TraceKit(self, kit, stderr);
         Pad_PushErr("failed to compile \"%s\"", path);
         return 1;
     }
@@ -306,26 +306,26 @@ app_run_args(App *self) {
  * @return failed to not 0
  */
 static int
-app_run(App *self, int argc, char *argv[]) {
-    if (!app_init(self, argc, argv)) {
+PadApp_Run(PadApp *self, int argc, char *argv[]) {
+    if (!PadApp_Init(self, argc, argv)) {
         return 1;
     }
 
     if (self->opts.is_help) {
-        app_usage(self);
+        PadApp_Usage(self);
         return 0;
     }
 
     if (self->opts.is_version) {
-        app_version(self);
+        PadApp_Version(self);
         return 0;
     }
 
     if (self->cmd_argc >= 1) {
-        return app_run_args(self);
+        return PadApp_RunArgs(self);
     }
 
-    return _app_run(self);
+    return _PadApp_Run(self);
 }
 
 /**
@@ -334,7 +334,7 @@ app_run(App *self, int argc, char *argv[]) {
  * @param[in] *self
  */
 static void
-app_trace(const App *self) {
+PadApp_Trace(const PadApp *self) {
     if (PadErrStack_Len(self->errstack)) {
         fflush(stdout);
         PadErrStack_TraceSimple(self->errstack, stderr);
@@ -356,17 +356,17 @@ main(int argc, char *argv[]) {
     // set locale for unicode object (char32_t, char16_t)
     setlocale(LC_CTYPE, "");
 
-    App *app = app_new();
+    PadApp *app = PadApp_New();
     if (!app) {
         PadErr_Die("failed to start application");
     }
 
-    int result = app_run(app, argc, argv);
+    int result = PadApp_Run(app, argc, argv);
     if (result != 0) {
-        app_trace(app);
+        PadApp_Trace(app);
     }
 
-    app_del(app);
+    PadApp_Del(app);
 
     fflush(stdout);
     return result;
