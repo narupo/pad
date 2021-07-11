@@ -1601,7 +1601,7 @@ Pad_ReferChainThreeObjs(
 }
 
 PadObj *
-Pad_ReferAndSetRef_chain_three_objs(
+Pad_ReferAndSetRefChainThreeObjs(
     PadAST *ref_ast,
     PadErrStack *err,
     const PadNode *ref_node,
@@ -1742,7 +1742,7 @@ Pad_ReferAndSetRef(
     if (PadChainObjs_Len(cos)) {
         PadChainObj *co = PadChainObjs_GetLast(cos);
         assert(co);
-        Pad_ReferAndSetRef_chain_three_objs(
+        Pad_ReferAndSetRefChainThreeObjs(
             ref_ast, err, ref_node, ref_gc, ref_context,
             owns, co, ref
         );
@@ -1755,10 +1755,6 @@ fail:
     PadObjAry_Del(owns);
     return NULL;
 }
-
-// const char *idn = PadStr_Getc(lastown->identifier.name);
-// PadObjDict *varmap = PadCtx_GetVarmap(lastown->identifier.ref_context);
-// Pad_SetRef(varmap, idn, ref);
 
 PadObj *
 Pad_ExtractCopyOfObj(
