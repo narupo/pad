@@ -101,7 +101,7 @@ PadApp_Del(PadApp *self) {
  * @return failed to false
  */
 static bool
-_deploy_env(const PadApp *self) {
+PadApp_DeployEnv(const PadApp *self) {
     char userhome[PAD_FILE__NPATH];
     if (!PadFile_GetUserHome(userhome, sizeof userhome)) {
         Pad_PushErr("failed to get user's home directory. what is your file system?");
@@ -223,7 +223,7 @@ PadApp_Init(PadApp *self, int argc, char *argv[]) {
         return false;
     }
 
-    if (!_deploy_env(self)) {
+    if (!PadApp_DeployEnv(self)) {
         Pad_PushErr("failed to deploy environment at file system");
         return false;
     }
