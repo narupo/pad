@@ -71,7 +71,7 @@ typedef enum {
     // チェインオブジェクト
     // '.' | '[]' | '()' でアクセス可能なオブジェクト
     // 添字は配列で持っていて、参照時にこの添字を順に適用して実体を求める
-    PAD_OBJ_TYPE__CHAIN,
+    PAD_OBJ_TYPE__RING,
 
     // A module object
     // モジュールオブジェクト
@@ -189,7 +189,7 @@ struct PadObj {
     PadDefStructObj def_struct;  // structure of pad's structure (type == PAD_OBJ_TYPE__DEF_STRUCT)
     PadObjObj object;  // structure of object (type == PAD_OBJ_TYPE__INSTANCE)
     PadModObj module;  // structure of module (type == PAD_OBJ_TYPE__MODULE)
-    PadRingObj chain;  // structure of chain (type == PAD_OBJ_TYPE__CHAIN)
+    PadRingObj chain;  // structure of chain (type == PAD_OBJ_TYPE__RING)
     PadOwnsMethodObj owners_method;  // structure of owners_method (type == PAD_OBJ_TYPE__OWNERS_METHOD)
     PadTypeObj type_obj;  // structure of type (type == PAD_OBJ_TYPE__TYPE)
     PadBltFuncObj builtin_func;  // structure of builtin func (type == PAD_OBJ_TYPE__BUILTIN_FUNC)
@@ -622,7 +622,7 @@ PadCtx *
 PadObj_GetIdentRefCtx(const PadObj *self);
 
 /**
- * get chain objects in chain object (type == PAD_OBJ_TYPE__CHAIN)
+ * get chain objects in chain object (type == PAD_OBJ_TYPE__RING)
  *
  * @param[in] *self
  *
@@ -632,7 +632,7 @@ PadChainObjs *
 PadObj_GetChainObjs(PadObj *self);
 
 /**
- * get chain objects in chain object read-only (type == PAD_OBJ_TYPE__CHAIN)
+ * get chain objects in chain object read-only (type == PAD_OBJ_TYPE__RING)
  *
  * @param[in] *self
  *

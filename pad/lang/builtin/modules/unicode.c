@@ -32,7 +32,7 @@ again:
         }
         goto again;
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         owner = Pad_ReferRingObjWithRef(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
         if (!owner) {
             PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to refer index");

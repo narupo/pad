@@ -282,7 +282,7 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     assert(tmp);
 
     PadObj *result = tmp;
-    if (tmp->type == PAD_OBJ_TYPE__CHAIN) {
+    if (tmp->type == PAD_OBJ_TYPE__RING) {
         result = _Pad_ExtractRefOfObjAll(tmp);
         if (PadAST_HasErrs(ast)) {
             return_trav(NULL);
@@ -1050,7 +1050,7 @@ again:
         pushb_error("invalid return type (%d)", result->type);
         return NULL;
         break;
-    case PAD_OBJ_TYPE__CHAIN:
+    case PAD_OBJ_TYPE__RING:
         result = _Pad_ReferRingObjWithRef(result);
         goto again;
         break;
@@ -1347,7 +1347,7 @@ again:
         }
         goto again;
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
@@ -1585,7 +1585,7 @@ bob:
 marley:
     switch (rhs->type) {
     default: break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to refer chain object");
@@ -1712,7 +1712,7 @@ trv_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
     PadObj *rhs = targs->rhs_obj;
     PadDepth depth = targs->depth;
     assert(lhs && rhs);
-    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__RING);
 
     PadObj *operand = PadObj_GetChainOperand(lhs);
     assert(operand);
@@ -1763,7 +1763,7 @@ trv_calc_assign_to_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__RING);
 
     PadDepth depth = targs->depth;
 
@@ -1802,7 +1802,7 @@ trv_calc_assign(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_calc_assign_to_array(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         targs->depth = depth + 1;
         PadObj *obj = trv_calc_assign_to_chain(ast, targs);
         return_trav(obj);
@@ -2145,7 +2145,7 @@ trv_call_args(PadAST *ast, PadTrvArgs *targs) {
             PadObj_IncRef(ref);
             PadObjAry_PushBack(arr, ref);
         } break;
-        case PAD_OBJ_TYPE__CHAIN:
+        case PAD_OBJ_TYPE__RING:
         case PAD_OBJ_TYPE__DICT:
             // set reference at array
             PadObj_IncRef(ref);
@@ -2344,7 +2344,7 @@ trv_compare_or_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or int. index object value is null");
@@ -2478,7 +2478,7 @@ trv_compare_or_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_compare_or(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or bool. index object value is null");
@@ -2608,7 +2608,7 @@ trv_compare_or_string(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or string. index object value is null");
@@ -2739,7 +2739,7 @@ trv_compare_or_array(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or array. index object value is null");
@@ -2870,7 +2870,7 @@ trv_compare_or_dict(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or dict. index object value is null");
@@ -2916,7 +2916,7 @@ trv_compare_or_nil(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = PadObj_DeepCopy(rhs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or nil. index object value is null");
@@ -3044,7 +3044,7 @@ trv_compare_or_func(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or func. index object value is null");
@@ -3172,7 +3172,7 @@ trv_compare_or_module(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare or func. index object value is null");
@@ -3258,7 +3258,7 @@ trv_compare_or(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_compare_or_module(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't compare or. index object value is null");
@@ -3437,7 +3437,7 @@ trv_compare_and_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and int. index object value is null");
@@ -3566,7 +3566,7 @@ trv_compare_and_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and bool. index object value is null");
@@ -3696,7 +3696,7 @@ trv_compare_and_string(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and string. index object value is null");
@@ -3817,7 +3817,7 @@ trv_compare_and_array(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and array. index object value is null");
@@ -3938,7 +3938,7 @@ trv_compare_and_dict(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and dict. index object value is null");
@@ -3980,7 +3980,7 @@ trv_compare_and_nil(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and nil. index object value is null");
@@ -4100,7 +4100,7 @@ trv_compare_and_func(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and func. index object value is null");
@@ -4218,7 +4218,7 @@ trv_compare_and_module(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't compare and func. index object value is null");
@@ -4296,7 +4296,7 @@ trv_compare_and(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_compare_and_module(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't compare and. index object value is null");
@@ -4412,7 +4412,7 @@ trv_compare_not(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = PadObj_NewBool(ast->ref_gc, !PadObjDict_Len(operand->objdict));
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *val = _Pad_ExtractRefOfObjAll(operand);
         if (!val) {
             pushb_error("can't compare not. index object value is null");
@@ -4505,7 +4505,7 @@ trv_compare_comparison_eq_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq int. index object value is null");
@@ -4561,7 +4561,7 @@ trv_compare_comparison_eq_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq int. index object value is null");
@@ -4616,7 +4616,7 @@ trv_compare_comparison_eq_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq bool. index object value is null");
@@ -4667,7 +4667,7 @@ trv_compare_comparison_eq_string(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = PadObj_NewBool(ast->ref_gc, b);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq unicode. index object value is null");
@@ -4711,7 +4711,7 @@ trv_compare_comparison_eq_array(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq array. index object value is null");
@@ -4754,7 +4754,7 @@ trv_compare_comparison_eq_dict(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq dict. index object value is null");
@@ -4791,7 +4791,7 @@ trv_compare_comparison_eq_nil(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = PadObj_NewBool(ast->ref_gc, true);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq nil. index object value is null");
@@ -4839,7 +4839,7 @@ trv_compare_comparison_eq_func(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
@@ -4882,7 +4882,7 @@ trv_compare_comparison_eq_object(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
@@ -4925,7 +4925,7 @@ trv_compare_comparison_eq_def_struct(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq struct. index object value is null");
@@ -4969,7 +4969,7 @@ trv_compare_comparison_eq_module(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison eq func. index object value is null");
@@ -4992,7 +4992,7 @@ trv_compare_comparison_eq_chain(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
-    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__RING);
 
     PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
     if (!lval) {
@@ -5117,7 +5117,7 @@ trv_compare_comparison_eq(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_compare_comparison_eq_module(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         check("call trv_compare_comparison_eq_chain");
         PadObj *obj = trv_compare_comparison_eq_chain(ast, targs);
         return_trav(obj);
@@ -5170,7 +5170,7 @@ trv_compare_comparison_not_eq_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq int. index object value is null");
@@ -5224,7 +5224,7 @@ trv_compare_comparison_not_eq_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq int. index object value is null");
@@ -5274,7 +5274,7 @@ trv_compare_comparison_not_eq_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq bool. index object value is null");
@@ -5320,7 +5320,7 @@ trv_compare_comparison_not_eq_unicode(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = PadObj_NewBool(ast->ref_gc, b);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq string. index object value is null");
@@ -5361,7 +5361,7 @@ trv_compare_comparison_not_eq_array(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq array. index object value is null");
@@ -5402,7 +5402,7 @@ trv_compare_comparison_not_eq_dict(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq dict. index object value is null");
@@ -5444,7 +5444,7 @@ trv_compare_comparison_not_eq_nil(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq nil. index object value is null");
@@ -5486,7 +5486,7 @@ trv_compare_comparison_not_eq_func(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
@@ -5528,7 +5528,7 @@ trv_compare_comparison_not_eq_module(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
@@ -5570,7 +5570,7 @@ trv_compare_comparison_not_eq_object(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq func. index object value is null");
@@ -5612,7 +5612,7 @@ trv_compare_comparison_not_eq_def_struct(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison not eq struct. index object value is null");
@@ -5734,7 +5734,7 @@ trv_compare_comparison_not_eq(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_compare_comparison_not_eq_def_struct(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison not eq. index object value is null");
@@ -5789,7 +5789,7 @@ trv_compare_comparison_lte_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lte int. index object value is null");
@@ -5839,7 +5839,7 @@ trv_compare_comparison_lte_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lte int. index object value is null");
@@ -5889,7 +5889,7 @@ trv_compare_comparison_lte_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lte bool. index object value is null");
@@ -5941,7 +5941,7 @@ trv_compare_comparison_lte(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison lte. index object value is null");
@@ -5991,7 +5991,7 @@ trv_compare_comparison_gte_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gte int. index object value is null");
@@ -6041,7 +6041,7 @@ trv_compare_comparison_gte_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gte int. index object value is null");
@@ -6091,7 +6091,7 @@ trv_compare_comparison_gte_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gte bool. index object value is null");
@@ -6142,7 +6142,7 @@ trv_compare_comparison_gte(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison gte. index object value is null");
@@ -6192,7 +6192,7 @@ trv_compare_comparison_lt_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lt int. index object value is null");
@@ -6242,7 +6242,7 @@ trv_compare_comparison_lt_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lt int. index object value is null");
@@ -6292,7 +6292,7 @@ trv_compare_comparison_lt_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison lt bool. index object value is null");
@@ -6343,7 +6343,7 @@ trv_compare_comparison_lt(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison lt. index object value is null");
@@ -6393,7 +6393,7 @@ trv_compare_comparison_gt_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gt int. index object value is null");
@@ -6443,7 +6443,7 @@ trv_compare_comparison_gt_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gt int. index object value is null");
@@ -6493,7 +6493,7 @@ trv_compare_comparison_gt_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't comparison gt bool. index object value is null");
@@ -6544,7 +6544,7 @@ trv_compare_comparison_gt(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't comparison gt. index object value is null");
@@ -6710,7 +6710,7 @@ trv_calc_expr_add_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with int. index object value is null");
@@ -6760,7 +6760,7 @@ trv_calc_expr_add_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with int. index object value is null");
@@ -6810,7 +6810,7 @@ trv_calc_expr_add_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with bool. index object value is null");
@@ -6855,7 +6855,7 @@ trv_calc_expr_add_string(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = PadObj_NewUnicode(ast->ref_gc, u);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't add with string. index object value is null");
@@ -6954,7 +6954,7 @@ trv_calc_expr_add(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't add with string. index object value is null");
@@ -7009,7 +7009,7 @@ trv_calc_expr_sub_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't sub with int. index object value is null");
@@ -7059,7 +7059,7 @@ trv_calc_expr_sub_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't sub with int. index object value is null");
@@ -7109,7 +7109,7 @@ trv_calc_expr_sub_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't sub with bool. index object value is null");
@@ -7161,7 +7161,7 @@ trv_calc_expr_sub(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't sub. index object value is null");
@@ -7316,7 +7316,7 @@ trv_calc_term_mul_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = mul_unicode_object(ast, targs, rhs->unicode, lhs->lvalue);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with int. index object value is null");
@@ -7366,7 +7366,7 @@ trv_calc_term_mul_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with int. index object value is null");
@@ -7416,7 +7416,7 @@ trv_calc_term_mul_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with bool. index object value is null");
@@ -7461,7 +7461,7 @@ trv_calc_term_mul_string(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__UNICODE:
         PadErr_Die("TODO: mul string 2");
         break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't mul with string. index object value is null");
@@ -7517,7 +7517,7 @@ trv_calc_term_mul(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_calc_term_mul_string(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
         if (!lval) {
             pushb_error("can't mul. index object value is null");
@@ -7579,7 +7579,7 @@ trv_calc_term_div_int(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't division with int. index object value is null");
@@ -7641,7 +7641,7 @@ trv_calc_term_div_float(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't division with int. index object value is null");
@@ -7697,7 +7697,7 @@ trv_calc_term_div_bool(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_rhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *rval = _Pad_ExtractRefOfObjAll(rhs);
         if (!rval) {
             pushb_error("can't division with bool. index object value is null");
@@ -7748,7 +7748,7 @@ trv_calc_term_div(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_roll_identifier_lhs(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *lval = Pad_ExtractCopyOfObj(ast, ast->error_stack, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
         if (PadAST_HasErrs(ast)) {
             pushb_error("can't division. index object value is null");
@@ -8182,7 +8182,7 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
         );
         return_trav(rhs);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         // TODO: fix me!
         PadObj *val = _Pad_ExtractRefOfObjAll(rhs);
         Pad_SetRefAtCurVarmap(
@@ -8425,7 +8425,7 @@ again:
         Pad_SetRef(varmap, idnname, lhs);
         return_trav(lhs);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         rhs = _Pad_ExtractRefOfObjAll(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
             pushb_error("failed to extract chain object");
@@ -8504,7 +8504,7 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     PadObj *chainobj = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
-    assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
+    assert(chainobj->type == PAD_OBJ_TYPE__RING);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAST_HasErrs(ast)) {
@@ -8637,7 +8637,7 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     PadObj *chainobj = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
-    assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
+    assert(chainobj->type == PAD_OBJ_TYPE__RING);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAST_HasErrs(ast)) {
@@ -8744,7 +8744,7 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     PadObj *chainobj = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(chainobj && rhs);
-    assert(chainobj->type == PAD_OBJ_TYPE__CHAIN);
+    assert(chainobj->type == PAD_OBJ_TYPE__RING);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAST_HasErrs(ast)) {
@@ -8866,7 +8866,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__RING);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
     if (PadAST_HasErrs(ast)) {
@@ -8991,7 +8991,7 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, PadTrvArgs *targs) {
     PadObj *lhs = targs->lhs_obj;
     PadObj *rhs = targs->rhs_obj;
     assert(lhs && rhs);
-    assert(lhs->type == PAD_OBJ_TYPE__CHAIN);
+    assert(lhs->type == PAD_OBJ_TYPE__RING);
 
     PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
     if (PadAST_HasErrs(ast)) {
@@ -9081,7 +9081,7 @@ again:
         }
         goto again;
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         obj = _Pad_ReferRingObjWithRef(obj);
         if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer chain object");
@@ -9111,7 +9111,7 @@ trv_calc_asscalc_add_ass(PadAST *ast, PadTrvArgs *targs) {
         PadObj *result = trv_calc_asscalc_add_ass_identifier(ast, targs);
         return_trav(result);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         check("call trv_calc_asscalc_add_ass_chain");
         PadObj *result = trv_calc_asscalc_add_ass_chain(ast, targs);
         return_trav(result);
@@ -9321,7 +9321,7 @@ trv_calc_asscalc_sub_ass(PadAST *ast, PadTrvArgs *targs) {
         PadObj *obj = trv_calc_asscalc_sub_ass_idn(ast, targs);
         return_trav(obj);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         check("call trv_calc_asscalc_sub_ass_chain");
         PadObj *result = trv_calc_asscalc_sub_ass_chain(ast, targs);
         return_trav(result);
@@ -9533,7 +9533,7 @@ trv_calc_asscalc_mul_ass(PadAST *ast, PadTrvArgs *targs) {
     PadObj *lhs = targs->lhs_obj;
     assert(lhs);
 
-    if (lhs->type == PAD_OBJ_TYPE__CHAIN) {
+    if (lhs->type == PAD_OBJ_TYPE__RING) {
         check("call trv_calc_asscalc_mul_ass_chain");
         PadObj *result = trv_calc_asscalc_mul_ass_chain(ast, targs);
         return_trav(result);
@@ -9752,7 +9752,7 @@ trv_calc_asscalc_div_ass(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs);
     tready();
 
-    if (lhs->type == PAD_OBJ_TYPE__CHAIN) {
+    if (lhs->type == PAD_OBJ_TYPE__RING) {
         check("call trv_calc_asscalc_div_ass_chain");
         PadObj *result = trv_calc_asscalc_div_ass_chain(ast, targs);
         return_trav(result);
@@ -9893,7 +9893,7 @@ trv_calc_asscalc_mod_ass(PadAST *ast, PadTrvArgs *targs) {
     assert(lhs);
     tready();
 
-    if (lhs->type == PAD_OBJ_TYPE__CHAIN) {
+    if (lhs->type == PAD_OBJ_TYPE__RING) {
         check("call trv_calc_asscalc_mod_ass_chain");
         PadObj *result = trv_calc_asscalc_mod_ass_chain(ast, targs);
         return_trav(result);

@@ -93,7 +93,7 @@ again:
     case PAD_OBJ_TYPE__FUNC: {
         return PadObj_NewType(ref_ast->ref_gc, PAD_OBJ_TYPE__FUNC);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         obj = obj->chain.operand;
         goto again;
     } break;

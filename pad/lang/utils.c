@@ -585,7 +585,7 @@ copy_func_args(
             // copy
             savearg = PadObj_DeepCopy(arg);
             break;
-        case PAD_OBJ_TYPE__CHAIN:
+        case PAD_OBJ_TYPE__RING:
             arg = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, arg);
             if (PadErrStack_Len(err)) {
                 push_err("failed to refer chain object");
@@ -647,7 +647,7 @@ copy_array_args(
             // reference
             savearg = arg;
             break;
-        case PAD_OBJ_TYPE__CHAIN:
+        case PAD_OBJ_TYPE__RING:
             arg = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, arg);
             if (PadErrStack_Len(err)) {
                 push_err("failed to refer chain object");
@@ -914,7 +914,7 @@ invoke_builtin_modules(
             }
             goto again;
         } break;
-        case PAD_OBJ_TYPE__CHAIN: {
+        case PAD_OBJ_TYPE__RING: {
             ownpar = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, ownpar);
             if (!ownpar) {
                 push_err("failed to refer index");
@@ -1783,7 +1783,7 @@ Pad_ExtractCopyOfObj(
         }
         return PadObj_DeepCopy(ref);
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *ref = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (!ref) {
             push_err("failed to refer index");
@@ -1852,7 +1852,7 @@ _Pad_ExtractRefOfObj(
         }
         return ref;
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *ref = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (!ref) {
             push_err("failed to refer chain object");
@@ -1965,7 +1965,7 @@ Pad_ParseBool(
     case PAD_OBJ_TYPE__UNICODE: return PadUni_Len(obj->unicode); break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
     case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *ref = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (PadErrStack_Len(err)) {
             push_err("failed to refer chain object");
@@ -2023,7 +2023,7 @@ Pad_ParseInt(
     } break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
     case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *ref = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (PadErrStack_Len(err)) {
             push_err("failed to refer chain object");
@@ -2081,7 +2081,7 @@ Pad_ParseFloat(
     } break;
     case PAD_OBJ_TYPE__ARRAY: return PadObjAry_Len(obj->objarr); break;
     case PAD_OBJ_TYPE__DICT: return PadObjDict_Len(obj->objdict); break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadObj *ref = Pad_ReferRingObjWithRef(ref_ast, err, ref_gc, ref_context, ref_node, obj);
         if (PadErrStack_Len(err)) {
             push_err("failed to refer chain object");

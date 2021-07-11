@@ -84,7 +84,7 @@ PadObj_Del(PadObj *self) {
         PadObj_Del(self->func.extends_func);
         self->func.extends_func = NULL;
         break;
-    case PAD_OBJ_TYPE__CHAIN:
+    case PAD_OBJ_TYPE__RING:
         PadObj_DecRef(self->chain.operand);
         PadObj_Del(self->chain.operand);
         PadChainObjs_Del(self->chain.chain_objs);
@@ -269,7 +269,7 @@ PadObj_DeepCopy(const PadObj *other) {
         PadObj_IncRef(self->owners_method.owner);
         self->owners_method.method_name = PadStr_DeepCopy(other->owners_method.method_name);
         break;
-    case PAD_OBJ_TYPE__CHAIN:
+    case PAD_OBJ_TYPE__RING:
         self->chain.operand = PadObj_DeepCopy(other->chain.operand);
         self->chain.chain_objs = PadChainObjs_DeepCopy(other->chain.chain_objs);
         break;
@@ -385,7 +385,7 @@ PadObj_ShallowCopy(const PadObj *other) {
         PadObj_IncRef(self->owners_method.owner);
         self->owners_method.method_name = PadStr_ShallowCopy(other->owners_method.method_name);
         break;
-    case PAD_OBJ_TYPE__CHAIN:
+    case PAD_OBJ_TYPE__RING:
         self->chain.operand = PadObj_ShallowCopy(other->chain.operand);
         self->chain.chain_objs = PadChainObjs_ShallowCopy(other->chain.chain_objs);
         break;
@@ -656,7 +656,7 @@ PadObj_NewRing(PadGC *ref_gc, PadObj *move_operand, PadChainObjs *move_chain_obj
         return NULL;
     }
 
-    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__CHAIN);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__RING);
     if (!self) {
         return NULL;
     }
@@ -912,7 +912,7 @@ PadObj_ToStr(const PadObj *self) {
         PadStr_Set(str, "(function)");
         return str;
     } break;
-    case PAD_OBJ_TYPE__CHAIN: {
+    case PAD_OBJ_TYPE__RING: {
         PadStr *str = PadStr_New();
         if (!str) {
             return NULL;
@@ -1078,7 +1078,7 @@ PadObj_Dump(const PadObj *self, FILE *fout) {
     case PAD_OBJ_TYPE__ARRAY:
         PadObjAry_Dump(self->objarr, fout);
         break;
-    case PAD_OBJ_TYPE__CHAIN:
+    case PAD_OBJ_TYPE__RING:
         fprintf(fout, "object.chain.operand[%p]\n", self->chain.operand);
         PadObj_Dump(self->chain.operand, fout);
         fprintf(fout, "object.chain.chain_objs[%p]\n", self->chain.chain_objs);
@@ -1136,7 +1136,7 @@ PadObj_TypeToStr(const PadObj *self) {
     case PAD_OBJ_TYPE__FUNC:
         PadStr_AppFmt(s, tmp, sizeof tmp, "<%d: func>", self->type);
         break;
-    case PAD_OBJ_TYPE__CHAIN:
+    case PAD_OBJ_TYPE__RING:
         PadStr_AppFmt(s, tmp, sizeof tmp, "<%d: chain>", self->type);
         break;
     case PAD_OBJ_TYPE__MODULE:
