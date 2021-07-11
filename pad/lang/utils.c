@@ -2011,7 +2011,7 @@ Pad_ParseInt(
         const char *idn = PadObj_GetcIdentName(obj);
         PadObj *obj = PadCtx_FindVarRefAll(ref_context, idn);
         if (!obj) {
-            push_err("\"%s\" is not defined in if statement", idn);
+            push_err("\"%s\" is not defined in if-statement", idn);
             return -1;
         }
 
