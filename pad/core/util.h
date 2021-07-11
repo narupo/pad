@@ -36,6 +36,8 @@
 * macros *
 *********/
 
+// @deprecated
+// use PadMem_SafeFree instead
 #undef Pad_SafeFree
 #define Pad_SafeFree(ptr) \
     { \

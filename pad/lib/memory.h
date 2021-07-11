@@ -12,6 +12,13 @@
 #undef PadMem_Move
 #define PadMem_Move(val) val
 
+#undef PadMem_SafeFree
+#define PadMem_SafeFree(ptr) \
+    { \
+        free(ptr); \
+        ptr = NULL; \
+    } \
+
 /*************
 * prototypes *
 *************/
