@@ -38,8 +38,10 @@
 
 #undef Pad_SafeFree
 #define Pad_SafeFree(ptr) \
-    free(ptr); \
-    ptr = NULL;
+    { \
+        free(ptr); \
+        ptr = NULL; \
+    } \
 
 /**********
 * numbers *
