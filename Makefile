@@ -128,6 +128,13 @@ test: build/pad build/pad_tests
 	valgrind build/pad_tests
 	valgrind build/pad tests/tests.pad
 
+.PHONY: full
+full:
+	make clean
+	make init
+	make -j4
+	make test
+
 build/app.o: pad/app.c pad/app.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/tests.o: tests/tests.c tests/tests.h

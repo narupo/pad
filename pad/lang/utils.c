@@ -1339,7 +1339,7 @@ again:
 }
 
 static PadObj *
-Pad_ReferAndSetRef_array_index(
+Pad_ReferAndSetRefAryIndex(
     PadErrStack *err,
     const PadNode *ref_node,
     PadObj *owner,
@@ -1375,6 +1375,7 @@ again:
         return NULL;
     }
 
+    PadObj_IncRef(ref);
     if (!PadObjAry_Move(objarr, index, ref)) {
         push_err("failed to move element at array");
         return NULL;
@@ -1426,7 +1427,7 @@ again:
 }
 
 static PadObj *
-Pad_ReferAndSetRef_dict_index(
+Pad_ReferAndSetRefDictIndex(
     PadErrStack *err, 
     const PadNode *ref_node,
     PadObj *owner,
@@ -1514,7 +1515,7 @@ again:
 }
 
 static PadObj *
-Pad_ReferAndSetRef_chain_index(
+Pad_ReferAndSetRefChainIndex(
     PadErrStack *err,
     PadGC *ref_gc,
     const PadNode *ref_node,
@@ -1546,12 +1547,12 @@ again:
         goto again;
     } break;
     case PAD_OBJ_TYPE__ARRAY:
-        return Pad_ReferAndSetRef_array_index(
+        return Pad_ReferAndSetRefAryIndex(
             err, ref_node, owner, indexobj, ref
         );
         break;
     case PAD_OBJ_TYPE__DICT:
-        return Pad_ReferAndSetRef_dict_index(
+        return Pad_ReferAndSetRefDictIndex(
             err, ref_node, owner, indexobj, ref
         );
         break;
@@ -1629,7 +1630,7 @@ Pad_ReferAndSetRefChainThreeObjs(
         return NULL;
     } break;
     case PAD_CHAIN_PAD_OBJ_TYPE___INDEX: {
-        operand = Pad_ReferAndSetRef_chain_index(
+        operand = Pad_ReferAndSetRefChainIndex(
             err, ref_gc, ref_node,
             owns, co, ref
         );
