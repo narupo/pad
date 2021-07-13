@@ -2072,7 +2072,7 @@ cc_ring(PadAST *ast, PadCCArgs *cargs) {
             }
             assert(factor);
 
-            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_PAD_NODE_TYPE___DOT, PadMem_Move(factor));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE___DOT, PadMem_Move(factor));
             PadChainNodes_MoveBack(cur->chain_nodes, PadMem_Move(nchain));
             m = 0;
         } break;
@@ -2093,7 +2093,7 @@ cc_ring(PadAST *ast, PadCCArgs *cargs) {
                 return_cleanup("not found expression");
             }
 
-            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_PAD_NODE_TYPE___INDEX, PadMem_Move(simple_assign));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE___INDEX, PadMem_Move(simple_assign));
             PadChainNodes_MoveBack(cur->chain_nodes, PadMem_Move(nchain));
 
             if (is_end(ast)) {
@@ -2122,7 +2122,7 @@ cc_ring(PadAST *ast, PadCCArgs *cargs) {
             }
             assert(call_args);
 
-            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_PAD_NODE_TYPE___CALL, PadMem_Move(call_args));
+            PadChainNode *nchain = PadChainNode_New(PAD_CHAIN_NODE_TYPE___CALL, PadMem_Move(call_args));
             PadChainNodes_MoveBack(cur->chain_nodes, PadMem_Move(nchain));
 
             if (is_end(ast)) {

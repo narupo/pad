@@ -8065,17 +8065,17 @@ again:
 }
 
 static PadObj *
-trv_chain(PadAST *ast, PadTrvArgs *targs) {
+trv_ring(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadNode *node = targs->ref_node;
     assert(node);
-    PadRingNode *chain = node->real;
-    assert(chain);
+    PadRingNode *ring = node->real;
+    assert(ring);
 
     PadDepth depth = targs->depth;
 
     // get operand
-    PadNode *factor = chain->factor;
+    PadNode *factor = ring->factor;
     assert(factor);
 
     targs->ref_node = factor;
@@ -8088,13 +8088,13 @@ trv_chain(PadAST *ast, PadTrvArgs *targs) {
     assert(operand);
 
     // get objects
-    PadChainNodes *cns = chain->chain_nodes;
+    PadChainNodes *cns = ring->chain_nodes;
     assert(cns);
     if (!PadChainNodes_Len(cns)) {
         return_trav(operand);
     }
 
-    // convert chain-nodes to chain-objects
+    // convert ring-nodes to ring-objects
     PadChainObjs *chobjs = PadChainObjs_New();
 
     for (int32_t i = 0; i < PadChainNodes_Len(cns); ++i) {
@@ -8113,11 +8113,11 @@ trv_chain(PadAST *ast, PadTrvArgs *targs) {
 
         PadChainObjType type;
         switch (PadChainNode_GetcType(cn)) {
-        case PAD_CHAIN_PAD_NODE_TYPE___DOT:   type = PAD_CHAIN_PAD_OBJ_TYPE___DOT;   break;
-        case PAD_CHAIN_PAD_NODE_TYPE___INDEX: type = PAD_CHAIN_PAD_OBJ_TYPE___INDEX; break;
-        case PAD_CHAIN_PAD_NODE_TYPE___CALL:  type = PAD_CHAIN_PAD_OBJ_TYPE___CALL;  break;
+        case PAD_CHAIN_NODE_TYPE___DOT:   type = PAD_CHAIN_PAD_OBJ_TYPE___DOT;   break;
+        case PAD_CHAIN_NODE_TYPE___INDEX: type = PAD_CHAIN_PAD_OBJ_TYPE___INDEX; break;
+        case PAD_CHAIN_NODE_TYPE___CALL:  type = PAD_CHAIN_PAD_OBJ_TYPE___CALL;  break;
         default:
-            pushb_error("invalid chain node type (%d)", PadChainNode_GetcType(cn));
+            pushb_error("invalid ring node type (%d)", PadChainNode_GetcType(cn));
             goto fail;
             break;
         }
@@ -8138,13 +8138,13 @@ trv_chain(PadAST *ast, PadTrvArgs *targs) {
     operand = NULL;
     chobjs = NULL;
 
-    // do refer chain objects ?
+    // do refer ring objects ?
     if (targs->do_not_refer_chain) {
         return_trav(obj_chain);
     } else {
         PadObj *result = _Pad_ReferRingObjWithRef(obj_chain);
         if (PadAST_HasErrs(ast)) {
-            pushb_error("failed to refer chain object");
+            pushb_error("failed to refer ring object");
             goto fail;
         }
 
@@ -10916,8 +10916,8 @@ _PadTrv_Trav(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__RING: {
-        check("call trv_chain");
-        PadObj *obj = trv_chain(ast, targs);
+        check("call trv_ring");
+        PadObj *obj = trv_ring(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__ASSCALC: {

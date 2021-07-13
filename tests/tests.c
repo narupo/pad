@@ -24573,6 +24573,42 @@ test_trv_struct_47(void) {
     trv_cleanup;
 }
 
+
+static void
+test_trv_struct_48(void) {
+    trv_ready;
+
+    check_ok_trace(
+"{@\n"
+"struct S:\n"
+"   func = puts\n"
+"end\n"
+"puts(S.puts)\n"
+"@}", "(builtin-function)\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_49(void) {
+    trv_ready;
+
+    return;
+    
+    check_ok_trace(
+"{@\n"
+"struct S:\n"
+"   func = puts\n"
+"end\n"
+"puts(S.puts)\n"
+"S.puts(1)\n"
+"s = S()\n"
+"s.puts(2)\n"
+"@}", "(builtin-function)\n1\n2\n");
+
+    trv_cleanup;
+}
+
 static void
 test_trv_struct_fail_0(void) {
     trv_ready;
@@ -30396,6 +30432,8 @@ traverser_tests[] = {
     {"struct_45", test_trv_struct_45},
     {"struct_46", test_trv_struct_46},
     {"struct_47", test_trv_struct_47},
+    {"struct_48", test_trv_struct_48},
+    {"struct_49", test_trv_struct_49},
     {"struct_fail_0", test_trv_struct_fail_0},
     {"type_0", test_trv_type_0},
     {"type_1", test_trv_type_1},

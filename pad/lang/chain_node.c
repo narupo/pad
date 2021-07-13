@@ -19,9 +19,9 @@ struct PadChainNode {
     PadChainNodeType type;
 
     // node
-    // if type == PAD_CHAIN_PAD_NODE_TYPE___DOT then node is factor
-    // if type == PAD_CHAIN_PAD_NODE_TYPE___CALL then node is call_args
-    // if type == PAD_CHAIN_PAD_NODE_TYPE___INDEX then node is simple_assign
+    // if type == PAD_CHAIN_NODE_TYPE___DOT then node is factor
+    // if type == PAD_CHAIN_NODE_TYPE___CALL then node is call_args
+    // if type == PAD_CHAIN_NODE_TYPE___INDEX then node is simple_assign
     PadNode *node;
 };
 
