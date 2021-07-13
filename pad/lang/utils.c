@@ -575,7 +575,7 @@ copy_func_args(
         case PAD_OBJ_TYPE__OBJECT:
         case PAD_OBJ_TYPE__MODULE:
         case PAD_OBJ_TYPE__TYPE:
-        case PAD_OBJ_TYPE__BUILTIN_FUNC:
+        case PAD_OBJ_TYPE__BLTIN_FUNC:
             // reference
             savearg = arg;
             break;
@@ -643,7 +643,7 @@ copy_array_args(
         case PAD_OBJ_TYPE__TYPE:
         case PAD_OBJ_TYPE__INT:
         case PAD_OBJ_TYPE__FLOAT:
-        case PAD_OBJ_TYPE__BUILTIN_FUNC:
+        case PAD_OBJ_TYPE__BLTIN_FUNC:
             // reference
             savearg = arg;
             break;
@@ -922,7 +922,7 @@ invoke_builtin_modules(
             }
             goto again;
         } break;
-        case PAD_OBJ_TYPE__BUILTIN_FUNC: {
+        case PAD_OBJ_TYPE__BLTIN_FUNC: {
             bltin_mod_name = "__builtin__";
         } break;
         }

@@ -109,7 +109,7 @@ again:
     case PAD_OBJ_TYPE__TYPE: {
         return PadObj_NewType(ref_ast->ref_gc, PAD_OBJ_TYPE__TYPE);
     } break;
-    case PAD_OBJ_TYPE__BUILTIN_FUNC: {
+    case PAD_OBJ_TYPE__BLTIN_FUNC: {
         return obj;
     } break;
     } // switch

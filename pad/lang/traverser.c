@@ -349,7 +349,7 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__TYPE: {
         PadCtx_PushBackStdoutBuf(context, "(type)");
     } break;
-    case PAD_OBJ_TYPE__BUILTIN_FUNC: {
+    case PAD_OBJ_TYPE__BLTIN_FUNC: {
         PadCtx_PushBackStdoutBuf(context, "(builtin-function)");
     } break;
     } // switch

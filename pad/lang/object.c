@@ -128,7 +128,7 @@ PadObj_Del(PadObj *self) {
     case PAD_OBJ_TYPE__TYPE:
         self->type_obj.name = NULL;
         break;
-    case PAD_OBJ_TYPE__BUILTIN_FUNC:
+    case PAD_OBJ_TYPE__BLTIN_FUNC:
         self->builtin_func.funcname = NULL;
         break;
     }
@@ -815,7 +815,7 @@ PadObj_NewBltFunc(PadGC *ref_gc, const char *funcname) {
         return NULL;
     }
 
-    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__BUILTIN_FUNC);
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__BLTIN_FUNC);
     if (!self) {
         return NULL;
     }
@@ -960,7 +960,7 @@ PadObj_ToStr(const PadObj *self) {
         PadStr_Set(str, "(type)");
         return str;
     } break;
-    case PAD_OBJ_TYPE__BUILTIN_FUNC: {
+    case PAD_OBJ_TYPE__BLTIN_FUNC: {
         PadStr *str = PadStr_New();
         if (!str) {
             return NULL;
@@ -1154,7 +1154,7 @@ PadObj_TypeToStr(const PadObj *self) {
     case PAD_OBJ_TYPE__TYPE:
         PadStr_AppFmt(s, tmp, sizeof tmp, "<%d: type>", self->type);
         break;
-    case PAD_OBJ_TYPE__BUILTIN_FUNC:
+    case PAD_OBJ_TYPE__BLTIN_FUNC:
         PadStr_AppFmt(s, tmp, sizeof tmp, "<%d: builtin-function>", self->type);
         break;
     }

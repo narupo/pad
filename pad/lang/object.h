@@ -88,7 +88,7 @@ typedef enum {
     PAD_OBJ_TYPE__TYPE,
 
     // A builtin function
-    PAD_OBJ_TYPE__BUILTIN_FUNC,
+    PAD_OBJ_TYPE__BLTIN_FUNC,
 } PadObjType;
 
 /**
@@ -192,7 +192,7 @@ struct PadObj {
     PadRingObj chain;  // structure of chain (type == PAD_OBJ_TYPE__RING)
     PadOwnsMethodObj owners_method;  // structure of owners_method (type == PAD_OBJ_TYPE__OWNERS_METHOD)
     PadTypeObj type_obj;  // structure of type (type == PAD_OBJ_TYPE__TYPE)
-    PadBltFuncObj builtin_func;  // structure of builtin func (type == PAD_OBJ_TYPE__BUILTIN_FUNC)
+    PadBltFuncObj builtin_func;  // structure of builtin func (type == PAD_OBJ_TYPE__BLTIN_FUNC)
 };
 
 /**

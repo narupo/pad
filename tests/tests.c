@@ -24578,7 +24578,7 @@ static void
 test_trv_struct_48(void) {
     trv_ready;
 
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct S:\n"
 "   func = puts\n"
