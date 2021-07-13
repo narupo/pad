@@ -1,28 +1,28 @@
 {@
-	struct Resource:
-		map = {}
+    struct Resource:
+        map = {}
 
-		met add(self, key, val):
-			self.map[key] = val
-		end
+        met add(self, key, val):
+            self.map[key] = val
+        end
 
-		met get(self, key):
-			return self.map[key]
-		end
+        met get(self, key):
+            return self.map[key]
+        end
 
-		met pop(self, key):
-			puts("need pop method of dict")
-			return nil
-		end
+        met pop(self, key):
+            puts("need pop method of dict")
+            return nil
+        end
 
-		met load(self, fname):
-			puts("need file I/O")
-			return true
-		end
+        met load(self, fname):
+            puts("need file I/O")
+            return true
+        end
 
-		met save(self, fname):
-			puts("need file I/O")
-			return true
-		end
-	end
+        met save(self, fname):
+            puts("need file I/O")
+            return true
+        end
+    end
 @}
