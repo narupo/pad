@@ -28940,6 +28940,7 @@ test_trv_string(void) {
     check_ok("{: \"aaa $$ bbb\" :}", "aaa $$ bbb");
     check_ok("{@ aaa = 1 @}{: \"aaa $$aaa bbb\" :}", "aaa $1 bbb");
     check_ok("{@ a = 1 b = 2 @}{: \"aaa $a bbb $b\" :}", "aaa 1 bbb 2");
+    check_ok("{@ aaa = 1 @}{: \"aaa/$aaa/bbb\" :}", "aaa/1/bbb");
 
     trv_cleanup;
 }

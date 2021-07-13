@@ -10196,6 +10196,11 @@ trv_float(PadAST *ast, PadTrvArgs *targs) {
     return_trav(obj);
 }
 
+static bool
+is_idn_char(PadUniType c) {
+    return PadU_IsAlpha(c) || PadU_IsDigit(c) || c == PAD_UNI__CH('_');
+}
+
 static PadUni *
 read_doller(const PadUniType **p) {
     if (**p != PAD_UNI__CH('$')) {
@@ -10206,7 +10211,7 @@ read_doller(const PadUniType **p) {
     PadUni *u = PadUni_New();
 
     for (; **p; *p += 1) {
-        if (PadU_IsSpace(**p)) {
+        if (!is_idn_char(**p)) {
             *p -= 1;
             break;
         } else {
@@ -10265,7 +10270,7 @@ trv_string(PadAST *ast, PadTrvArgs *targs) {
         if (*p == PAD_UNI__CH('$') &&
             *(p + 1) != PAD_UNI__CH('$')) {
             PadUni *doller = read_doller(&p);
-            if (doller == NULL) {
+            if (!doller) {
                 PadUni_PushBack(dst, *p);
                 continue;
             }

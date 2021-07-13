@@ -348,7 +348,7 @@ PadFile_ReadLine(char *dst, uint32_t dstsz, const char *path);
  * @param[in] line string of line
  * @param[in] *path string of file path
  *
- * @return success to pointer to destination buffer
+ * @return success to pointer to line
  * @return failed to NULL
  */
 const char *
