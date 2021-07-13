@@ -2,31 +2,31 @@
 from "lib/resource.pad" import Resource
 
 def case1():
-	puts("Test lib/resource case1")
+    puts("Test lib/resource case1")
 
-	rc = Resource()
-	rc.add("aaa", "bbb")
-	rc.add("ccc", "ddd")
+    rc = Resource()
+    rc.add("aaa", "bbb")
+    rc.add("ccc", "ddd")
 
-	assert(rc.get("aaa") == "bbb")
-	assert(rc.get("ccc") == "ddd")
+    assert(rc.get("aaa") == "bbb")
+    assert(rc.get("ccc") == "ddd")
 end
 
 def allTest():
-	puts("Test lib/resource all")
+    puts("Test lib/resource all")
 
-	case1()
+    case1()
 end
 
 def main(name):
-	puts("Test lib/resource")
+    puts("Test lib/resource")
 
-	if name == "all":
-		allTest()
-	elif name == "case1":
-		case1()
-	end
+    if name == "all":
+        allTest()
+    elif name == "case1":
+        case1()
+    end
 
-	puts("Done lib/resource")
+    puts("Done lib/resource")
 end
 @}
