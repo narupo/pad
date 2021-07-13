@@ -110,10 +110,6 @@ builtin_dict_get(PadBltFuncArgs *fargs) {
 
 static PadObj *
 builtin_dict_pop(PadBltFuncArgs *fargs) {
-    PadAST *ref_ast = fargs->ref_ast;
-    assert(ref_ast);
-    PadGC * ref_gc = PadAST_GetRefGc(ref_ast);
-    assert(ref_gc);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == PAD_OBJ_TYPE__ARRAY);
