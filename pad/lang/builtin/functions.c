@@ -696,10 +696,7 @@ builtin_ord(PadBltFuncArgs *fargs) {
 
 #undef return_fail
 #define return_fail(s) \
-        PadObjAry *ret = PadObjAry_New(); \
-        PadObjAry_MoveBack(ret, PadObj_NewNil(ref_gc)); \
-        PadObjAry_MoveBack(ret, PadObj_NewUnicodeCStr(ref_gc, s)); \
-        return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
+        return PadObj_NewNil(ref_gc); \
 
     if (PadObjAry_Len(args) < 1) {
         return_fail("need one argument");
@@ -715,11 +712,7 @@ builtin_ord(PadBltFuncArgs *fargs) {
 
     const PadUniType c = PadUni_Getc(u->unicode)[0];
     PadObj *i = PadObj_NewInt(ref_gc, (PadIntObj) c);
-    PadObj *nil = PadObj_NewNil(ref_gc);
-    PadObjAry *ret = PadObjAry_New();
-    PadObjAry_MoveBack(ret, PadMem_Move(i));
-    PadObjAry_MoveBack(ret, PadMem_Move(nil));
-    return PadObj_NewAry(ref_gc, PadMem_Move(ret));
+    return i;
 }
 
 static PadObj *
@@ -733,10 +726,7 @@ builtin_chr(PadBltFuncArgs *fargs) {
     assert(args);
 
 #define return_fail(s) \
-        PadObjAry *ret = PadObjAry_New(); \
-        PadObjAry_MoveBack(ret, PadObj_NewNil(ref_gc)); \
-        PadObjAry_MoveBack(ret, PadObj_NewUnicodeCStr(ref_gc, s)); \
-        return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
+        return PadObj_NewNil(ref_gc); \
 
     if (PadObjAry_Len(args) < 1) {
         return_fail("need one argument");
@@ -750,11 +740,7 @@ builtin_chr(PadBltFuncArgs *fargs) {
     PadUni *u = PadUni_New();
     PadUni_PushBack(u, i->lvalue);
     PadObj *uni = PadObj_NewUnicode(ref_gc, PadMem_Move(u));
-    PadObj *nil = PadObj_NewNil(ref_gc);
-    PadObjAry *ret = PadObjAry_New();
-    PadObjAry_MoveBack(ret, PadMem_Move(uni));
-    PadObjAry_MoveBack(ret, PadMem_Move(nil));
-    return PadObj_NewAry(ref_gc, PadMem_Move(ret));
+    return uni;
 }
 
 static PadBltFuncInfo

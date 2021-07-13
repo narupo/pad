@@ -12996,7 +12996,7 @@ test_trv_comparison(void) {
 
     check_ok("{@ def f(n): return n end @}{: 1 <= f(2) :}", "true")
 
-    check_ok("{@ def f(n): return n end @}{: 1 <= ord(\"a\")[0] :}", "true")
+    check_ok("{@ def f(n): return n end @}{: 1 <= ord(\"a\") :}", "true")
 
     // check_fail("", ""); TODO [] {} def etc
 
@@ -16845,10 +16845,10 @@ static void
 test_trv_builtin_functions_ord_0(void) {
     trv_ready;
 
-    check_ok("{: ord(\"a\")[0] :}", "97");
-    check_ok("{: ord()[1] :}", "need one argument");
-    check_ok("{: ord(\"\")[1] :}", "empty strings");
-    check_ok("{: ord(nil)[1] :}", "invalid type");
+    check_ok("{: ord(\"a\") :}", "97");
+    check_ok("{: ord() :}", "nil");
+    check_ok("{: ord(\"\") :}", "nil");
+    check_ok("{: ord(nil) :}", "nil");
 
     trv_cleanup;    
 }
@@ -16857,9 +16857,9 @@ static void
 test_trv_builtin_functions_chr_0(void) {
     trv_ready;
 
-    check_ok("{: chr(97)[0] :}", "a");
-    check_ok("{: chr()[1] :}", "need one argument");
-    check_ok("{: chr(\"a\")[1] :}", "invalid type");
+    check_ok("{: chr(97) :}", "a");
+    check_ok("{: chr() :}", "nil");
+    check_ok("{: chr(\"a\") :}", "nil");
 
     trv_cleanup;    
 }
