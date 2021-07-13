@@ -912,8 +912,6 @@ invoke_builtin_modules(
         assert(ownpar);
 
     again:
-        PadObj_Dump(ownpar, stdout);
-        puts("----");
         switch (ownpar->type) {
         default:
             // not error
