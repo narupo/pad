@@ -9,19 +9,22 @@ from "tests/builtin/functions.pad" import main as functionsMain
 // from "tests/io/file.pad" import main as fileMain  // Needs implement
 from "tests/lib/list.pad" import main as listMain
 from "tests/lib/html.pad" import main as htmlMain
+from "tests/lib/resource.pad" import main as resourceMain
 from "tests/data/dict.pad" import main as dictMain
 
 def allTest():
-    forStmtMain("all")
-    ifStmtMain("all")
-    funcMain("all")
-    structMain("all")
-    typesMain("all")
-    miMain("all")
-    functionsMain("all")
-    listMain("all")
-    htmlMain("all")
-    dictMain("all")
+    case = "all"
+    forStmtMain(case)
+    ifStmtMain(case)
+    funcMain(case)
+    structMain(case)
+    typesMain(case)
+    miMain(case)
+    functionsMain(case)
+    listMain(case)
+    htmlMain(case)
+    resourceMain(case)
+    dictMain(case)
 end
 
 def main():
@@ -40,6 +43,8 @@ def main():
         listMain(case)
     elif name == "lib/html":
         htmlMain(case)
+    elif name == "lib/resource":
+        resourceMain(case)
     elif name == "mutable-and-immutable/mi":
         miMain(case)
     elif name == "data/dict":
