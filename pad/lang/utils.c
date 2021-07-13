@@ -862,6 +862,25 @@ extract_idn_name(const PadObj *obj) {
     }
 }
 
+static const char *
+extract_func_or_idn_name(const PadObj *obj) {
+    if (!obj) {
+        return NULL;
+    }
+
+    switch (obj->type) {
+    default:
+        return NULL;
+        break;
+    case PAD_OBJ_TYPE__IDENT:
+        return PadObj_GetcIdentName(obj);
+        break;
+    case PAD_OBJ_TYPE__BLTIN_FUNC:
+        return PadObj_GetcBltFuncName(obj);
+        break;
+    }
+}
+
 static PadObj *
 invoke_builtin_modules(
     PadAST *ref_ast,
@@ -875,7 +894,8 @@ invoke_builtin_modules(
     assert(args);
 
     PadObj *own = PadObjAry_GetLast(owns);
-    const char *funcname = extract_idn_name(own);
+    assert(own);
+    const char *funcname = extract_func_or_idn_name(own);
     if (!funcname) {
         return NULL;
     }
@@ -883,13 +903,17 @@ invoke_builtin_modules(
     const char *bltin_mod_name = NULL;
     PadObj *module = NULL;
 
-    if (owns && PadObjAry_Len(owns) == 1) {
+    if (own->type == PAD_OBJ_TYPE__BLTIN_FUNC) {
+        bltin_mod_name = "__builtin__";
+    } else if (owns && PadObjAry_Len(owns) == 1) {
         bltin_mod_name = "__builtin__";
     } else {
         PadObj *ownpar = PadObjAry_GetLast2(owns);
         assert(ownpar);
 
     again:
+        PadObj_Dump(ownpar, stdout);
+        puts("----");
         switch (ownpar->type) {
         default:
             // not error
@@ -1248,6 +1272,7 @@ Pad_ReferChainCall(
         idn = extract_own_meth_name(own);
     }
 
+    PadObj_Dump(own, stdout);
     push_err("can't call \"%s\"", idn);
     return NULL;
 }

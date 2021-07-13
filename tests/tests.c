@@ -24593,18 +24593,15 @@ static void
 test_trv_struct_49(void) {
     trv_ready;
 
-    return;
-    
-    check_ok_trace(
+    check_ok(
 "{@\n"
 "struct S:\n"
 "   func = puts\n"
 "end\n"
-"puts(S.puts)\n"
 "S.puts(1)\n"
 "s = S()\n"
 "s.puts(2)\n"
-"@}", "(builtin-function)\n1\n2\n");
+"@}", "1\n2\n");
 
     trv_cleanup;
 }

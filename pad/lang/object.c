@@ -276,6 +276,9 @@ PadObj_DeepCopy(const PadObj *other) {
     case PAD_OBJ_TYPE__TYPE:
         self->type_obj.type = other->type_obj.type;
         break;
+    case PAD_OBJ_TYPE__BLTIN_FUNC:
+        self->builtin_func.funcname = other->builtin_func.funcname;
+        break;
     }
 
     return self;
@@ -1091,6 +1094,9 @@ PadObj_Dump(const PadObj *self, FILE *fout) {
         fprintf(fout, "def-struct.context\n");
         PadCtx_Dump(self->def_struct.context, fout);
         break;
+    case PAD_OBJ_TYPE__BLTIN_FUNC:
+        fprintf(fout, "builtin_func.funcname[%s]\n", self->builtin_func.funcname);
+        break;
     }
 }
 
@@ -1165,6 +1171,11 @@ PadObj_TypeToStr(const PadObj *self) {
 const char *
 PadObj_GetcIdentName(const PadObj *self) {
     return PadStr_Getc(self->identifier.name);
+}
+
+const char *
+PadObj_GetcBltFuncName(const PadObj *self) {
+    return self->builtin_func.funcname;
 }
 
 const char *

@@ -609,6 +609,16 @@ const char *
 PadObj_GetcIdentName(const PadObj *self);
 
 /**
+ * get built-in function name
+ * 
+ * @param[in] *self
+ * 
+ * @return 
+ */
+const char *
+PadObj_GetcBltFuncName(const PadObj *self);
+
+/**
  * get def-struct identifier value
  *
  * @param[in] *self
