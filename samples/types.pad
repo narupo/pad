@@ -1,0 +1,25 @@
+{@
+    ary = Array()
+    assert(len(ary) == 0)
+    puts("Array", ary)
+    
+    dict = Dict()
+    assert(len(dict) == 0)
+    puts("Dict", dict)
+
+    str = String()
+    assert(len(str) == 0)
+    puts("String", str)
+
+    b = Bool()
+    assert(b == false)
+    puts("Bool", b)
+
+    i = Int()
+    assert(i == 0)
+    puts("Int", i)
+
+    f = Float()
+    assert(f == 0.0)
+    puts("Float", f)
+@}
