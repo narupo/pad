@@ -30698,11 +30698,16 @@ test_PadErrStack_Trace(void) {
     char buf[BUFSIZ] = {0};
     setbuf(stderr, buf);
 
+    fseek(stderr, 0, SEEK_SET);
     PadErrStack_Trace(stack, stderr);
-    assert(strcmp(buf, "Error:\n    file1: 1: func1: This is message1.\n    file2: 2: func2: This is message2."));
-
     fseek(stderr, 0, SEEK_SET);
     setbuf(stderr, NULL);
+
+    printf("buf[%s]\n", buf);
+    assert(!strcmp(buf, "Stack trace:\n"
+        "    (unknown module): 0: This is message2.\n"
+        "    (unknown module): 0: This is message1.\n\n"));
+
     PadErrStack_Del(stack);
 }
 

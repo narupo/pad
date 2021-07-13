@@ -9,7 +9,7 @@ enum {
 **********/
 
 void
-PadErrElem_Show_debug(const PadErrElem *self, FILE *fout) {
+PadErrElem_ShowDebug(const PadErrElem *self, FILE *fout) {
     char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
     PadErr_FixTxt(msg, sizeof msg, self->message);
 
@@ -36,7 +36,7 @@ PadErrElem_Show(const PadErrElem *self, FILE *fout) {
 }
 
 void
-PadErrElem_Show_msg(const PadErrElem *self, FILE *fout) {
+PadErrElem_ShowMsg(const PadErrElem *self, FILE *fout) {
     char msg[PAD_ERRELEM_MESSAGE_SIZE] = {0};
     PadErr_FixTxt(msg, sizeof msg, self->message);
     fprintf(fout, "%s\n", msg);
@@ -113,7 +113,7 @@ PadErrStack_ShallowCopy(const PadErrStack *other) {
 }
 
 static PadErrStack *
-errstack_resize(PadErrStack *self, int32_t newcapa) {
+_resize(PadErrStack *self, int32_t newcapa) {
     int32_t byte = sizeof(PadErrElem);
 
     PadErrElem *tmp = PadMem_Realloc(self->stack, newcapa*byte);
@@ -141,7 +141,7 @@ _PadErrStack_PushBack(
     ...
 ) {
     if (self->len >= self->capa) {
-        if (!errstack_resize(self, self->capa*2)) {
+        if (!_resize(self, self->capa*2)) {
             return NULL;
         }
     }
@@ -257,7 +257,7 @@ _PadErrStack_Trace(const PadErrStack *self, FILE *fout, bool debug) {
         const PadErrElem *elem = &self->stack[i];
         fprintf(fout, "    ");
         if (debug) {
-            PadErrElem_Show_debug(elem, fout);
+            PadErrElem_ShowDebug(elem, fout);
         } else {
             PadErrElem_Show(elem, fout);
         }
@@ -267,6 +267,7 @@ _PadErrStack_Trace(const PadErrStack *self, FILE *fout, bool debug) {
 
     const PadErrElem *first = &self->stack[0];
     show_trim_around(first, fout);
+    fflush(fout);
 }
 
 void
@@ -287,7 +288,7 @@ PadErrStack_TraceSimple(const PadErrStack *self, FILE *fout) {
 
     for (int32_t i = self->len - 1; i >= 0; --i) {
         const PadErrElem *elem = &self->stack[i];
-        PadErrElem_Show_msg(elem, fout);
+        PadErrElem_ShowMsg(elem, fout);
     }
 }
 
@@ -352,7 +353,7 @@ PadErrStack_ExtendFrontOther(PadErrStack *self, const PadErrStack *_other) {
     // resize
     int32_t need_capa = self->len + other->len + 1;
     if (self->capa < need_capa) {
-        if (!errstack_resize(self, need_capa)) {
+        if (!_resize(self, need_capa)) {
             return NULL;
         }
     }
