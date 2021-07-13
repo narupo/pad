@@ -29156,6 +29156,17 @@ test_trv_dict_3(void) {
 }
 
 static void
+test_trv_dict_4(void) {
+    trv_ready;
+
+    check_ok("{@ d = {\"a\": 1} @}{: d.pop(\"a\") :}", "1");
+    check_fail("{@ d = {\"a\": 1} @}{: d.pop(\"b\") :}", "invalid key");
+    check_ok("{@ d = {\"a\": 1} @}{: d.pop(\"b\", 2) :}", "2");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_dict_fail_0(void) {
     trv_ready;    
 
@@ -29282,7 +29293,7 @@ test_trv_builtin_dict_0(void) {
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(PadAST_HasErrs(ast));
-        assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "invalid index type (1) of dict"));
+        assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "key is not found"));
     }
 
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(\"a\") :}");
@@ -29305,6 +29316,8 @@ test_trv_builtin_dict_0(void) {
         assert(!PadAST_HasErrs(ast));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "nil"));
     }
+
+    check_ok("{@ d = {\"a\": 1} @}{: d.get(\"b\", 2) :}", "2");
 
     PadCtx_Del(ctx);
     PadGC_Del(gc);
@@ -30534,6 +30547,7 @@ traverser_tests[] = {
     {"dict_1", test_trv_dict_1},
     {"dict_2", test_trv_dict_2},
     {"dict_3", test_trv_dict_3},
+    {"dict_4", test_trv_dict_4},
     {"dict_fail_0", test_trv_dict_fail_0},
     {"identifier", test_trv_identifier},
     {"traverse", test_PadTrv_Trav},
