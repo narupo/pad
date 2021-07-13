@@ -284,6 +284,15 @@ PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos) {
     self->blt_func_infos = infos;
 }
 
+PadAST *
+PadKit_GetRefAST(PadKit *self) {
+    if (!self) {
+        return NULL;
+    }
+
+    return self->ast;
+}
+
 PadGC *
 PadKit_GetRefGC(PadKit *self) {
     if (!self) {

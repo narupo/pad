@@ -71,6 +71,9 @@ PadKit_SetUseBuf(PadKit *self, bool use_buf);
 void
 PadKit_SetBltFuncInfos(PadKit *self, PadBltFuncInfo *infos);
 
+PadAST *
+PadKit_GetRefAST(PadKit *self);
+
 PadGC *
 PadKit_GetRefGC(PadKit *self);
 
