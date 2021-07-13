@@ -153,6 +153,7 @@ builtin_dict_pop(PadBltFuncArgs *fargs) {
             return def_val_obj;
         }
         push_err("invalid key");
+        return NULL;
     }
 
     return popped;
