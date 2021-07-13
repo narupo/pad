@@ -102,7 +102,7 @@ PadOpts_Clear(PadOpts *self) {
 
 PadOpts *
 PadOpts_Parse(PadOpts *self, int argc, char *argv[]) {
-    if (!self || !argv) {
+    if (!self) {
         return NULL;
     }
     if (argc <= 0) {
