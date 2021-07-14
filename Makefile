@@ -125,7 +125,26 @@ lib: $(OBJS)
 	$(CC) $(CFLAGS) -shared -o build/$(OUTLIB) $^
 
 test: build/pad build/pad_tests
-	valgrind build/pad_tests
+	valgrind build/pad_tests cstring_array && \
+	valgrind build/pad_tests cstring && \
+	valgrind build/pad_tests string && \
+	valgrind build/pad_tests unicode && \
+	valgrind build/pad_tests file && \
+	valgrind build/pad_tests cl && \
+	valgrind build/pad_tests cmdline && \
+	valgrind build/pad_tests error && \
+	valgrind build/pad_tests util && \
+	valgrind build/pad_tests path && \
+	valgrind build/pad_tests dict && \
+	valgrind build/pad_tests void_dict && \
+	valgrind build/pad_tests tokenizer && \
+	valgrind build/pad_tests compiler && \
+	valgrind build/pad_tests traverser && \
+	valgrind build/pad_tests lilist && \
+	valgrind build/pad_tests listream && \
+	valgrind build/pad_tests error_stack && \
+	valgrind build/pad_tests gc && \
+	valgrind build/pad_tests objdict && \
 	valgrind build/pad tests/tests.pad
 
 .PHONY: full
