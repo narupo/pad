@@ -1,0 +1,10 @@
+{@
+    from "lib/stream.pad" import Stream
+
+    s = Stream.new("abcdefg")
+
+    for not s.eof():
+        puts(s.cur(0))
+        s.get()
+    end
+@}
