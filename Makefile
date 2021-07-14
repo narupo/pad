@@ -139,7 +139,8 @@ test: build/pad build/pad_tests
 	valgrind build/pad_tests void_dict && \
 	valgrind build/pad_tests tokenizer && \
 	valgrind build/pad_tests compiler && \
-	valgrind build/pad_tests traverser && \
+	valgrind build/pad_tests traverser_1 && \
+	valgrind build/pad_tests traverser_2 && \
 	valgrind build/pad_tests lilist && \
 	valgrind build/pad_tests listream && \
 	valgrind build/pad_tests error_stack && \
