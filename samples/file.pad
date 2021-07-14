@@ -1,0 +1,6 @@
+{@
+    file = open("tests/open/file1.txt", "r")
+    text = file.read()
+    puts(text)
+    file.close()
+@}
