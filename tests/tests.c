@@ -31114,12 +31114,12 @@ objdict_tests[] = {
     {0},
 };
 
-/**************
-* stdlib/list *
-**************/
+/***********
+* lib/list *
+***********/
 
 static void
-test_lang_stdlib_list_dump(void) {
+test_lang_lib_list_dump(void) {
     trv_ready;
 
     check_ok("{@\n"
@@ -31135,12 +31135,12 @@ test_lang_stdlib_list_dump(void) {
 }
 
 static void
-test_lang_stdlib_list_push(void) {
+test_lang_lib_list_push(void) {
     // @see list_dump
 }
 
 static void
-test_lang_stdlib_list_pop(void) {
+test_lang_lib_list_pop(void) {
     trv_ready;
 /*
     check_ok("{@\n"
@@ -31155,19 +31155,19 @@ test_lang_stdlib_list_pop(void) {
 }
 
 static const struct testcase
-stdlib_list_tests[] = {
-    {"dump", test_lang_stdlib_list_dump},
-    {"push", test_lang_stdlib_list_push},
-    {"pop", test_lang_stdlib_list_pop},
+lib_list_tests[] = {
+    {"dump", test_lang_lib_list_dump},
+    {"push", test_lang_lib_list_push},
+    {"pop", test_lang_lib_list_pop},
     {0},
 };
 
 /****************
-* stdlib/stream *
+* lib/stream *
 ****************/
 
 static void
-test_lang_stdlib_stream_new(void) {
+test_lang_lib_stream_new(void) {
     trv_ready;
 
     check_ok("{@\n"
@@ -31179,7 +31179,7 @@ test_lang_stdlib_stream_new(void) {
 }
 
 static void
-test_lang_stdlib_stream_get(void) {
+test_lang_lib_stream_get(void) {
     trv_ready;
 
     check_ok("{@\n"
@@ -31197,7 +31197,7 @@ test_lang_stdlib_stream_get(void) {
 }
 
 static void
-test_lang_stdlib_stream_next(void) {
+test_lang_lib_stream_next(void) {
     trv_ready;
 
     check_ok("{@\n"
@@ -31218,7 +31218,7 @@ test_lang_stdlib_stream_next(void) {
 }
 
 static void
-test_lang_stdlib_stream_prev(void) {
+test_lang_lib_stream_prev(void) {
     trv_ready;
 
     check_ok("{@\n"
@@ -31241,7 +31241,7 @@ test_lang_stdlib_stream_prev(void) {
 }
 
 static void
-test_lang_stdlib_stream_cur(void) {
+test_lang_lib_stream_cur(void) {
     trv_ready;
 
     check_ok("{@\n"
@@ -31254,12 +31254,12 @@ test_lang_stdlib_stream_cur(void) {
 }
 
 static const struct testcase
-stdlib_stream_tests[] = {
-    {"new", test_lang_stdlib_stream_new},
-    {"get", test_lang_stdlib_stream_get},
-    {"next", test_lang_stdlib_stream_next},
-    {"prev", test_lang_stdlib_stream_prev},
-    {"cur", test_lang_stdlib_stream_cur},
+lib_stream_tests[] = {
+    {"new", test_lang_lib_stream_new},
+    {"get", test_lang_lib_stream_get},
+    {"next", test_lang_lib_stream_next},
+    {"prev", test_lang_lib_stream_prev},
+    {"cur", test_lang_lib_stream_cur},
     {0},
 };
 
@@ -31354,8 +31354,8 @@ test_modules[] = {
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},
     {"traverser", traverser_tests},
-    {"stdlib.list", stdlib_list_tests},
-    {"stdlib.stream", stdlib_stream_tests},
+    {"lib.list", lib_list_tests},
+    {"lib.stream", lib_stream_tests},
     {"error_stack", error_stack_tests},
     {"gc", gc_tests},
     {"objdict", objdict_tests},

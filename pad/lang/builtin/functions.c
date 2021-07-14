@@ -6,7 +6,7 @@
 
 #undef push_error
 #define push_error(fmt, ...) \
-    Pad_PushBackErrNode(ref_ast->error_stack, ref_node, fmt, ##__VA_ARGS__)
+    Pad_PushBackErrNode(fargs->ref_ast->error_stack, fargs->ref_node, fmt, ##__VA_ARGS__)
 
 /************
 * functions *
@@ -15,7 +15,6 @@
 static PadObj *
 builtin_id(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -44,7 +43,6 @@ builtin_id(PadBltFuncArgs *fargs) {
 static PadObj *
 builtin_type(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -169,7 +167,6 @@ done:
 static PadObj *
 builtin_puts(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -227,7 +224,6 @@ done:
 static PadObj *
 builtin_len(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -290,7 +286,6 @@ builtin_die(PadBltFuncArgs *fargs) {
 static PadObj *
 builtin_exit(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -323,7 +318,6 @@ builtin_exit(PadBltFuncArgs *fargs) {
 static PadObj *
 builtin_copy(PadBltFuncArgs *fargs, bool deep) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -358,7 +352,6 @@ builtin_shallowcopy(PadBltFuncArgs *fargs) {
 static PadObj *
 builtin_assert(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -408,8 +401,8 @@ extract_context(PadCtx *dst, PadCtx *src) {
 }
 
 static bool
-extract_arg(PadAST *ref_ast, const PadNode *ref_node, const PadObj *arg) {
-    if (!ref_ast || !arg) {
+extract_arg(PadBltFuncArgs *fargs, const PadObj *arg) {
+    if (!fargs->ref_ast || !arg) {
         return false;
     }
 
@@ -419,10 +412,10 @@ extract_arg(PadAST *ref_ast, const PadNode *ref_node, const PadObj *arg) {
         return false;
         break;
     case PAD_OBJ_TYPE__OBJECT: {
-        return extract_context(ref_ast->ref_context, arg->object.struct_context);
+        return extract_context(fargs->ref_ast->ref_context, arg->object.struct_context);
     } break;
     case PAD_OBJ_TYPE__DEF_STRUCT: {
-        return extract_context(ref_ast->ref_context, arg->def_struct.context);
+        return extract_context(fargs->ref_ast->ref_context, arg->def_struct.context);
     } break;
     }
 
@@ -433,7 +426,6 @@ extract_arg(PadAST *ref_ast, const PadNode *ref_node, const PadObj *arg) {
 static PadObj *
 builtin_extract(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
@@ -448,7 +440,7 @@ builtin_extract(PadBltFuncArgs *fargs) {
     for (int32_t i = 0; i < PadObjAry_Len(args); i++) {
         const PadObj *arg = PadObjAry_Getc(args, i);
         assert(arg);
-        if (!extract_arg(ref_ast, ref_node, arg)) {
+        if (!extract_arg(fargs, arg)) {
             push_error("failed to extract argument");
             return NULL;
         }
@@ -480,7 +472,6 @@ again:
 static PadObj *
 builtin_setattr(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     PadErrStack *errstack = ref_ast->error_stack;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
@@ -533,7 +524,6 @@ builtin_setattr(PadBltFuncArgs *fargs) {
 static PadObj *
 builtin_getattr(PadBltFuncArgs *fargs) {
     PadAST *ref_ast = fargs->ref_ast;
-    const PadNode *ref_node = fargs->ref_node;
     assert(ref_ast);
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
