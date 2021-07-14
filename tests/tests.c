@@ -16835,7 +16835,7 @@ test_trv_builtin_functions_dance_0(void) {
     trv_ready;
 
     check_ok("{@ out, err = dance(\"{@ puts(1) @}\") @}{: out :},{: err :}", "1\n,nil");
-    check_ok("{@ out, err = dance(\"{@ a = b @}\") @}{: out :},{: err :}", "nil,\"b\" is not defined in asscalc ass idn");
+    check_fail("{@ out, err = dance(\"{@ a = b @}\") @}{: out :},{: err :}", "\"b\" is not defined in asscalc ass idn");
     check_ok("{@ out, err = dance(\"{@ a = b @}{: a :}\", {\"b\": 1}) @}{: out :},{: err :}", "1,nil");
 
     trv_cleanup;    
@@ -16846,9 +16846,9 @@ test_trv_builtin_functions_ord_0(void) {
     trv_ready;
 
     check_ok("{: ord(\"a\") :}", "97");
-    check_ok("{: ord() :}", "nil");
-    check_ok("{: ord(\"\") :}", "nil");
-    check_ok("{: ord(nil) :}", "nil");
+    check_fail("{: ord() :}", "need one argument");
+    check_fail("{: ord(\"\") :}", "empty strings");
+    check_fail("{: ord(nil) :}", "invalid type");
 
     trv_cleanup;    
 }
@@ -16858,8 +16858,8 @@ test_trv_builtin_functions_chr_0(void) {
     trv_ready;
 
     check_ok("{: chr(97) :}", "a");
-    check_ok("{: chr() :}", "nil");
-    check_ok("{: chr(\"a\") :}", "nil");
+    check_fail("{: chr() :}", "need one argument");
+    check_fail("{: chr(\"a\") :}", "invalid type");
 
     trv_cleanup;    
 }

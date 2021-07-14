@@ -4,8 +4,8 @@
 * macros *
 *********/
 
-#undef push_error
-#define push_error(fmt, ...) \
+#undef push_err
+#define push_err(fmt, ...) \
     Pad_PushBackErrNode(fargs->ref_ast->error_stack, fargs->ref_node, fmt, ##__VA_ARGS__)
 
 /************
@@ -21,7 +21,7 @@ builtin_id(PadBltFuncArgs *fargs) {
     assert(actual_args->type == PAD_OBJ_TYPE__ARRAY);
     PadObjAry *args = actual_args->objarr;
     if (PadObjAry_Len(args) != 1) {
-        push_error( "invalid arguments length");
+        push_err( "invalid arguments length");
         return NULL;
     }
 
@@ -33,7 +33,7 @@ builtin_id(PadBltFuncArgs *fargs) {
         return NULL;
     }
     if (!obj) {
-        push_error( "failed to extract reference");
+        push_err( "failed to extract reference");
         return NULL;
     }
 
@@ -49,7 +49,7 @@ builtin_type(PadBltFuncArgs *fargs) {
     assert(actual_args->type == PAD_OBJ_TYPE__ARRAY);
     PadObjAry *args = actual_args->objarr;
     if (PadObjAry_Len(args) != 1) {
-        push_error("invalid arguments length");
+        push_err("invalid arguments length");
         return NULL;
     }
 
@@ -59,7 +59,7 @@ builtin_type(PadBltFuncArgs *fargs) {
 again:
     switch (obj->type) {
     default:
-        push_error("not supported type \"%d\"", obj->type);
+        push_err("not supported type \"%d\"", obj->type);
         return NULL;
     case PAD_OBJ_TYPE__NIL: {
         return PadObj_NewType(ref_ast->ref_gc, PAD_OBJ_TYPE__NIL);
@@ -83,7 +83,7 @@ again:
         const char *idn = PadObj_GetcIdentName(obj);
         obj = Pad_PullRef(obj);
         if (!obj) {
-            push_error("not defined \"%s\" in type()", idn);
+            push_err("not defined \"%s\" in type()", idn);
             return NULL;
         }
         goto again;
@@ -189,7 +189,7 @@ builtin_puts(PadBltFuncArgs *fargs) {
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (PadAST_HasErrs(ref_ast)) {
-            push_error("failed to get argument");
+            push_err("failed to get argument");
             return NULL;
         }
         PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
@@ -205,7 +205,7 @@ builtin_puts(PadBltFuncArgs *fargs) {
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (PadAST_HasErrs(ref_ast)) {
-            push_error("failed to get argument");
+            push_err("failed to get argument");
             return NULL;
         }
         PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
@@ -231,7 +231,7 @@ builtin_len(PadBltFuncArgs *fargs) {
 
     PadObjAry *args = actual_args->objarr;
     if (PadObjAry_Len(args) != 1) {
-        push_error("len function need one argument");
+        push_err("len function need one argument");
         return NULL;
     }
 
@@ -241,13 +241,13 @@ builtin_len(PadBltFuncArgs *fargs) {
 again:
     switch (arg->type) {
     default:
-        push_error("not supported object (%d) for len", arg->type);
+        push_err("not supported object (%d) for len", arg->type);
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
         PadObj *obj = Pad_PullRef(arg);
         if (!obj) {
-            push_error("not found object for len");
+            push_err("not found object for len");
             return NULL;
         }
         arg = obj;
@@ -293,13 +293,13 @@ builtin_exit(PadBltFuncArgs *fargs) {
     PadObjAry *args = actual_args->objarr;
 
     if (PadObjAry_Len(args) != 1) {
-        push_error("invalid arguments length for exit");
+        push_err("invalid arguments length for exit");
         return NULL;
     }
 
     const PadObj *codeobj = PadObjAry_Getc(args, 0);
     if (codeobj->type != PAD_OBJ_TYPE__INT) {
-        push_error("invalid exit code type for exit");
+        push_err("invalid exit code type for exit");
         return NULL;
     }
 
@@ -325,7 +325,7 @@ builtin_copy(PadBltFuncArgs *fargs, bool deep) {
     assert(args);
 
     if (PadObjAry_Len(args) != 1) {
-        push_error("invalid arguments length for copy");
+        push_err("invalid arguments length for copy");
         return NULL;
     }
 
@@ -359,7 +359,7 @@ builtin_assert(PadBltFuncArgs *fargs) {
 
     PadObjAry *args = actual_args->objarr;
     if (PadObjAry_Len(args) != 1) {
-        push_error("len function need one argument");
+        push_err("len function need one argument");
         return NULL;
     }
 
@@ -368,7 +368,7 @@ builtin_assert(PadBltFuncArgs *fargs) {
 
     bool ok = Pad_ParseBool(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, arg);
     if (!ok) {
-        push_error("assertion error");
+        push_err("assertion error");
         return NULL;
     }
 
@@ -408,7 +408,7 @@ extract_arg(PadBltFuncArgs *fargs, const PadObj *arg) {
 
     switch (arg->type) {
     default:
-        push_error("unsupported object");
+        push_err("unsupported object");
         return false;
         break;
     case PAD_OBJ_TYPE__OBJECT: {
@@ -433,7 +433,7 @@ builtin_extract(PadBltFuncArgs *fargs) {
     assert(args);
 
     if (PadObjAry_Len(args) <= 0) {
-        push_error("invalid arguments length for extract");
+        push_err("invalid arguments length for extract");
         return NULL;
     }    
 
@@ -441,7 +441,7 @@ builtin_extract(PadBltFuncArgs *fargs) {
         const PadObj *arg = PadObjAry_Getc(args, i);
         assert(arg);
         if (!extract_arg(fargs, arg)) {
-            push_error("failed to extract argument");
+            push_err("failed to extract argument");
             return NULL;
         }
     }
@@ -480,7 +480,7 @@ builtin_setattr(PadBltFuncArgs *fargs) {
     assert(args);
 
     if (PadObjAry_Len(args) != 3) {
-        push_error("invalid arguments length for setattr");
+        push_err("invalid arguments length for setattr");
         return NULL;
     }    
 
@@ -492,7 +492,7 @@ builtin_setattr(PadBltFuncArgs *fargs) {
 
     switch (dst->type) {
     default: {
-        push_error("unsupported object type");
+        push_err("unsupported object type");
         return NULL;
     } break;
     case PAD_OBJ_TYPE__DEF_STRUCT: {
@@ -508,13 +508,13 @@ builtin_setattr(PadBltFuncArgs *fargs) {
 
     const char *key = extract_unicode_mb(key_);
     if (!key) {
-        push_error("invalid key");
+        push_err("invalid key");
         return NULL;
     }
 
     Pad_SetRefAtCurVarmap(errstack, fargs->ref_node, ref_context, NULL, key, obj);
     if (PadErrStack_Len(errstack)) {
-        push_error("failed to set reference at varmap");
+        push_err("failed to set reference at varmap");
         return NULL;
     }
 
@@ -531,7 +531,7 @@ builtin_getattr(PadBltFuncArgs *fargs) {
     assert(args);
 
     if (PadObjAry_Len(args) != 2) {
-        push_error("invalid arguments length for getattr");
+        push_err("invalid arguments length for getattr");
         return NULL;
     }    
 
@@ -542,7 +542,7 @@ builtin_getattr(PadBltFuncArgs *fargs) {
 
     switch (dst->type) {
     default: {
-        push_error("unsupported object type");
+        push_err("unsupported object type");
         return NULL;
     } break;
     case PAD_OBJ_TYPE__DEF_STRUCT: {
@@ -558,7 +558,7 @@ builtin_getattr(PadBltFuncArgs *fargs) {
 
     const char *key = extract_unicode_mb(key_);
     if (!key) {
-        push_error("invalid key");
+        push_err("invalid key");
         return NULL;
     }
 
@@ -582,20 +582,19 @@ builtin_dance(PadBltFuncArgs *fargs) {
 
 #undef return_fail
 #define return_fail(s) { \
+        push_err(s); \
         PadObjAry *ret = PadObjAry_New(); \
-        PadObj *err = PadObj_NewUnicodeCStr(ref_gc, s); \
         PadObjAry_MoveBack(ret, PadMem_Move(PadObj_NewNil(ref_gc))); \
-        PadObjAry_MoveBack(ret, PadMem_Move(err)); \
+        PadObjAry_MoveBack(ret, PadMem_Move(PadObj_NewNil(ref_gc))); \
         return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
     } \
 
 #undef return_fail_es
 #define return_fail_es(es) { \
+        PadErrStack_ExtendBackOther(fargs->ref_ast->error_stack, es); \
         PadObjAry *ret = PadObjAry_New(); \
-        const PadErrElem *elem = PadErrStack_Getc(es, PadErrStack_Len(es) - 1); \
-        PadObj *err = PadObj_NewUnicodeCStr(ref_gc, elem->message); \
         PadObjAry_MoveBack(ret, PadMem_Move(PadObj_NewNil(ref_gc))); \
-        PadObjAry_MoveBack(ret, PadMem_Move(err)); \
+        PadObjAry_MoveBack(ret, PadMem_Move(PadObj_NewNil(ref_gc))); \
         return PadObj_NewAry(ref_gc, PadMem_Move(ret)); \
     } \
 
@@ -686,6 +685,7 @@ builtin_ord(PadBltFuncArgs *fargs) {
 
 #undef return_fail
 #define return_fail(s) \
+        push_err(s); \
         return PadObj_NewNil(ref_gc); \
 
     if (PadObjAry_Len(args) < 1) {
@@ -716,6 +716,7 @@ builtin_chr(PadBltFuncArgs *fargs) {
     assert(args);
 
 #define return_fail(s) \
+        push_err(s); \
         return PadObj_NewNil(ref_gc); \
 
     if (PadObjAry_Len(args) < 1) {
@@ -744,19 +745,19 @@ builtin_open(PadBltFuncArgs *fargs) {
     assert(args);
 
     if (PadObjAry_Len(args) < 2) {
-        push_error("need file name and mode");
+        push_err("need file name and mode");
         return NULL;
     }    
     
     PadObj *fname = PadObjAry_Get(args, 0);
     if (fname->type != PAD_OBJ_TYPE__UNICODE) {
-        push_error("invalid file name type");
+        push_err("invalid file name type");
         return NULL;
     }
 
     PadObj *mode = PadObjAry_Get(args, 1);
     if (mode->type != PAD_OBJ_TYPE__UNICODE) {
-        push_error("invalid mode type");
+        push_err("invalid mode type");
         return NULL;
     }
 
@@ -768,7 +769,7 @@ builtin_open(PadBltFuncArgs *fargs) {
     char path[PAD_FILE__NPATH];
     if (ref_ast->open_fix_path) {
         if (!ref_ast->open_fix_path(fargs, path, sizeof path, sfname)) {
-            push_error("failed to fix path");
+            push_err("failed to fix path");
             return NULL;
         }
     } else {
@@ -776,13 +777,13 @@ builtin_open(PadBltFuncArgs *fargs) {
     }
 
     if (!PadFile_IsExists(path)) {
-        push_error("\"%s\" is not found", path);
+        push_err("\"%s\" is not found", path);
         return NULL;
     }
 
     FILE *fp = fopen(path, smode);
     if (!fp) {
-        push_error("failed to open file");
+        push_err("failed to open file");
         return NULL;
     }
 
