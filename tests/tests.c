@@ -29168,6 +29168,8 @@ test_trv_dict_5(void) {
     check_ok("{@ d = { aaa: 1 } d.aaa = 2 @}{: d.aaa :}", "2");
     check_ok("{@ d = { aaa: 1 } @}{: d.aaa + d.aaa :}", "2");
 
+    check_ok("{@ aaa = \"bbb\" d = { aaa: 1 } @}{: d.bbb :}", "1");
+
     trv_cleanup;
 }
 
