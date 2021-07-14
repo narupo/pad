@@ -69,6 +69,9 @@ struct PadAST {
 
     PadImporterFixPathFunc importer_fix_path;
 
+    // callback of open's fix-path process
+    PadOpenFixPathFunc open_fix_path;
+    
     PadBltFuncInfo *blt_func_infos;
 };
 

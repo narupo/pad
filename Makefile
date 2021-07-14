@@ -112,6 +112,7 @@ SRCS := build/lib/error.c \
 	build/lang/builtin/modules/array.c \
 	build/lang/builtin/modules/dict.c \
 	build/lang/builtin/modules/opts.c \
+	build/lang/builtin/modules/file.c \
 
 OBJS := $(SRCS:.c=.o)
 
@@ -260,4 +261,6 @@ build/lang/builtin/modules/array.o: pad/lang/builtin/modules/array.c pad/lang/bu
 build/lang/builtin/modules/dict.o: pad/lang/builtin/modules/dict.c pad/lang/builtin/modules/dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lang/builtin/modules/opts.o: pad/lang/builtin/modules/opts.c pad/lang/builtin/modules/opts.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lang/builtin/modules/file.o: pad/lang/builtin/modules/file.c pad/lang/builtin/modules/file.h
 	$(CC) $(CFLAGS) -c $< -o $@

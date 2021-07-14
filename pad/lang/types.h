@@ -40,6 +40,9 @@ typedef struct PadTypeObj PadTypeObj;
 struct PadBltFuncObj;
 typedef struct PadBltFuncObj PadBltFuncObj;
 
+struct PadFileObj;
+typedef struct PadFileObj PadFileObj;
+
 struct PadNodeAry;
 typedef struct PadNodeAry PadNodeAry;
 
@@ -109,4 +112,6 @@ struct PadImporter;
 typedef struct PadImporter PadImporter;
 
 typedef char *(* PadImporterFixPathFunc)(PadImporter *, char *, int32_t, const char *);
+
+typedef char *(* PadOpenFixPathFunc)(PadBltFuncArgs *, char *, int32_t, const char *);
 

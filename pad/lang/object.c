@@ -131,6 +131,12 @@ PadObj_Del(PadObj *self) {
     case PAD_OBJ_TYPE__BLTIN_FUNC:
         self->builtin_func.funcname = NULL;
         break;
+    case PAD_OBJ_TYPE__FILE:
+        if (self->file.fp) {
+            fclose(self->file.fp);
+            self->file.fp = NULL;
+        }
+        break;
     }
 
     PadGC_Free(self->ref_gc, &self->gc_item);
@@ -828,6 +834,22 @@ PadObj_NewBltFunc(PadGC *ref_gc, const char *funcname) {
     return self;
 }
 
+PadObj *
+PadObj_NewFile(PadGC *ref_gc, FILE *move_fp) {
+    if (!ref_gc) {
+        return NULL;
+    }
+
+    PadObj *self = PadObj_New(ref_gc, PAD_OBJ_TYPE__FILE);
+    if (!self) {
+        return NULL;
+    }
+
+    self->file.fp = PadMem_Move(move_fp);
+
+    return self;
+}
+
 PadStr *
 PadObj_ToStr(const PadObj *self) {
     if (!self) {
@@ -969,6 +991,14 @@ PadObj_ToStr(const PadObj *self) {
             return NULL;
         }
         PadStr_Set(str, "(builtin-function)");
+        return str;
+    } break;
+    case PAD_OBJ_TYPE__FILE: {
+        PadStr *str = PadStr_New();
+        if (!str) {
+            return NULL;
+        }
+        PadStr_Set(str, "(file)");
         return str;
     } break;
     } // switch
@@ -1162,6 +1192,9 @@ PadObj_TypeToStr(const PadObj *self) {
         break;
     case PAD_OBJ_TYPE__BLTIN_FUNC:
         PadStr_AppFmt(s, tmp, sizeof tmp, "<%d: builtin-function>", self->type);
+        break;
+    case PAD_OBJ_TYPE__FILE:
+        PadStr_AppFmt(s, tmp, sizeof tmp, "<%d: file>", self->type);
         break;
     }
 

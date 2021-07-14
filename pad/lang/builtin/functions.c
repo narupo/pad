@@ -733,6 +733,62 @@ builtin_chr(PadBltFuncArgs *fargs) {
     return uni;
 }
 
+static PadObj *
+builtin_open(PadBltFuncArgs *fargs) {
+    PadAST *ref_ast = fargs->ref_ast;
+    PadGC *ref_gc = ref_ast->ref_gc;
+    assert(ref_ast);
+    PadObj *actual_args = fargs->ref_args;
+    assert(actual_args);
+    PadObjAry *args = actual_args->objarr;
+    assert(args);
+
+    if (PadObjAry_Len(args) < 2) {
+        push_error("need file name and mode");
+        return NULL;
+    }    
+    
+    PadObj *fname = PadObjAry_Get(args, 0);
+    if (fname->type != PAD_OBJ_TYPE__UNICODE) {
+        push_error("invalid file name type");
+        return NULL;
+    }
+
+    PadObj *mode = PadObjAry_Get(args, 1);
+    if (mode->type != PAD_OBJ_TYPE__UNICODE) {
+        push_error("invalid mode type");
+        return NULL;
+    }
+
+    PadUni *ufname = PadObj_GetUnicode(fname);
+    PadUni *umode = PadObj_GetUnicode(mode);
+    const char *sfname = PadUni_GetcMB(ufname);
+    const char *smode = PadUni_GetcMB(umode);
+
+    char path[PAD_FILE__NPATH];
+    if (ref_ast->open_fix_path) {
+        if (!ref_ast->open_fix_path(fargs, path, sizeof path, sfname)) {
+            push_error("failed to fix path");
+            return NULL;
+        }
+    } else {
+        PadCStr_Copy(path, sizeof path, sfname);
+    }
+
+    if (!PadFile_IsExists(path)) {
+        push_error("\"%s\" is not found", path);
+        return NULL;
+    }
+
+    FILE *fp = fopen(path, smode);
+    if (!fp) {
+        push_error("failed to open file");
+        return NULL;
+    }
+
+    return PadObj_NewFile(ref_gc, PadMem_Move(fp));
+}
+
 static PadBltFuncInfo
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -751,6 +807,7 @@ builtin_func_infos[] = {
     {"dance", builtin_dance},
     {"ord", builtin_ord},
     {"chr", builtin_chr},
+    {"open", builtin_open},
     {0},
 };
 

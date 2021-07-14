@@ -16,6 +16,7 @@
 #include <pad/lang/builtin/modules/dict.h>
 #include <pad/lang/builtin/modules/alias.h>
 #include <pad/lang/builtin/modules/opts.h>
+#include <pad/lang/builtin/modules/file.h>
 
 void
 PadTrv_Trav(PadAST *ast, PadCtx *context);

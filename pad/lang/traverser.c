@@ -352,6 +352,9 @@ trv_ref_block(PadAST *ast, PadTrvArgs *targs) {
     case PAD_OBJ_TYPE__BLTIN_FUNC: {
         PadCtx_PushBackStdoutBuf(context, "(builtin-function)");
     } break;
+    case PAD_OBJ_TYPE__FILE: {
+        PadCtx_PushBackStdoutBuf(context, "(file)");
+    } break;
     } // switch
 
     return_trav(NULL);
@@ -11064,6 +11067,11 @@ PadTrv_ImportBltMods(PadAST *ast) {
 
     // builtin opts module
     mod = Pad_NewBltOptsMod(ast->ref_config, ast->ref_gc);
+    PadObj_IncRef(mod);
+    PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
+
+    // builtin file module
+    mod = Pad_NewBltFileMod(ast->ref_config, ast->ref_gc);
     PadObj_IncRef(mod);
     PadObjDict_Move(varmap, mod->module.name, PadMem_Move(mod));
 

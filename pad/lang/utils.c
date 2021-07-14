@@ -267,6 +267,7 @@ again1:
             break;
         }
     } // fallthrough
+    case PAD_OBJ_TYPE__FILE:
     case PAD_OBJ_TYPE__UNICODE:
     case PAD_OBJ_TYPE__ARRAY: {
         // create builtin module function object
@@ -516,9 +517,12 @@ invoke_owner_func_obj(
     case PAD_OBJ_TYPE__DICT:
         mod = PadCtx_FindVarRefAll(ref_context, "__dict__");
         break;
-    case PAD_OBJ_TYPE__MODULE: {
+    case PAD_OBJ_TYPE__MODULE:
         mod = own;
-    } break;
+        break;
+    case PAD_OBJ_TYPE__FILE:
+        mod = PadCtx_FindVarRefAll(ref_context, "__file__");
+        break;
     }
 
     if (!mod) {
@@ -599,6 +603,7 @@ copy_func_args(
         case PAD_OBJ_TYPE__MODULE:
         case PAD_OBJ_TYPE__TYPE:
         case PAD_OBJ_TYPE__BLTIN_FUNC:
+        case PAD_OBJ_TYPE__FILE:
             // reference
             savearg = arg;
             break;
@@ -667,6 +672,7 @@ copy_array_args(
         case PAD_OBJ_TYPE__INT:
         case PAD_OBJ_TYPE__FLOAT:
         case PAD_OBJ_TYPE__BLTIN_FUNC:
+        case PAD_OBJ_TYPE__FILE:
             // reference
             savearg = arg;
             break;
@@ -1293,7 +1299,6 @@ Pad_ReferChainCall(
         idn = extract_own_meth_name(own);
     }
 
-    PadObj_Dump(own, stdout);
     push_err("can't call \"%s\"", idn);
     return NULL;
 }

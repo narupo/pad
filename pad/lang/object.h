@@ -89,6 +89,9 @@ typedef enum {
 
     // A builtin function
     PAD_OBJ_TYPE__BLTIN_FUNC,
+
+    // A file object
+    PAD_OBJ_TYPE__FILE,
 } PadObjType;
 
 /**
@@ -171,6 +174,10 @@ struct PadBltFuncObj {
     const char *funcname;
 };
 
+struct PadFileObj {
+    FILE *fp;
+};
+
 /**
  * A abstract object
  */
@@ -193,6 +200,7 @@ struct PadObj {
     PadOwnsMethodObj owners_method;  // structure of owners_method (type == PAD_OBJ_TYPE__OWNERS_METHOD)
     PadTypeObj type_obj;  // structure of type (type == PAD_OBJ_TYPE__TYPE)
     PadBltFuncObj builtin_func;  // structure of builtin func (type == PAD_OBJ_TYPE__BLTIN_FUNC)
+    PadFileObj file;  // structure of file object (type == PAD_OBJ_TYPE__FILE)
 };
 
 /**
@@ -529,6 +537,9 @@ PadObj_NewType(PadGC *ref_gc, PadObjType type);
 
 PadObj *
 PadObj_NewBltFunc(PadGC *ref_gc, const char *funcname);
+
+PadObj *
+PadObj_NewFile(PadGC *ref_gc, FILE *move_fp);
 
 /**
  * object to PadStr

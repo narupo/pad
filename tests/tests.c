@@ -30459,6 +30459,16 @@ traverser_1_tests[] = {
 * traverser_2 *
 **************/
 
+static void
+test_trv_builtin_open_0(void) {
+    trv_ready;
+
+    check_ok("{@ file = open(\"tests/open/file1.txt\", \"r\") @}{: file :}{@ file.close() @}", "(file)");
+    check_ok("{@ file = open(\"tests/open/file1.txt\", \"r\") @}{: file.read() :}{@ file.close() @}", "aaa\nbbb\nccc\n");
+
+    trv_cleanup;
+}
+
 static const struct testcase
 traverser_2_tests[] = {
     {"if_stmt_0", test_trv_if_stmt_0},
@@ -30660,6 +30670,7 @@ traverser_2_tests[] = {
     {"builtin_unicode_isspace", test_trv_builtin_unicode_isspace},
     {"builtin_array_0", test_trv_builtin_array_0},
     {"builtin_dict_0", test_trv_builtin_dict_0},
+    {"builtin_open_0", test_trv_builtin_open_0},
     {0},
 };
 
