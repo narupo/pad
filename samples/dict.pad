@@ -5,7 +5,15 @@
         "dog": "I'm dog",
     }
 
-    puts(d["bird"])
-    puts(d["cat"])
-    puts(d["dog"])
+    puts(d["bird"])  // I'm bird
+    puts(d["cat"])  // I'm cat
+    puts(d["dog"])  // I'm dog
+
+    d = {
+        pig: "I'm pig",
+        horse: "I'm horse",
+    }
+
+    puts(d.pig)  // I'm pig
+    puts(d.horse)  // I'm horse
 @}
