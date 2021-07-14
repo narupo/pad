@@ -267,22 +267,6 @@ again1:
             break;
         }
     } // fallthrough
-    case PAD_OBJ_TYPE__DICT:
-        if (rhs_obj->type != PAD_OBJ_TYPE__IDENT) {
-            push_err("invalid attribute name type (%d)", rhs_obj->type);
-            return NULL;
-        }
-
-        const char *idn = PadObj_GetcIdentName(rhs_obj);
-        PadObjDict *dict = PadObj_GetDict(own);
-        PadObjDictItem *item = PadObjDict_Get(dict, idn);
-        if (!item) {
-            push_err("invalid attribute \"%s\"", idn);
-            return NULL;
-        }
-
-        return item->value;
-        break;
     case PAD_OBJ_TYPE__UNICODE:
     case PAD_OBJ_TYPE__ARRAY: {
         // create builtin module function object
@@ -292,17 +276,41 @@ again1:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs_obj);
-        PadStr *methname = PadStr_New();
-        PadStr_Set(methname, idn);
+        PadStr *method_name = PadStr_New();
+        PadStr_Set(method_name, idn);
 
         PadObj_IncRef(own);
         PadObj *owners_method = PadObj_NewOwnsMethod(
             ref_gc,
             own,
-            PadMem_Move(methname)
+            PadMem_Move(method_name)
         );
         return owners_method;
     } break;
+    case PAD_OBJ_TYPE__DICT:
+        if (rhs_obj->type != PAD_OBJ_TYPE__IDENT) {
+            push_err("invalid attribute name type (%d)", rhs_obj->type);
+            return NULL;
+        }
+
+        const char *idn = PadObj_GetcIdentName(rhs_obj);
+        PadObjDict *dict = PadObj_GetDict(own);
+        PadObjDictItem *item = PadObjDict_Get(dict, idn);
+        if (item) {
+            return item->value;
+        }
+
+        PadStr *method_name = PadStr_New();
+        PadStr_Set(method_name, idn);
+
+        PadObj_IncRef(own);
+        PadObj *owners_method = PadObj_NewOwnsMethod(
+            ref_gc,
+            own,
+            PadMem_Move(method_name)
+        );
+        return owners_method;
+        break;
     case PAD_OBJ_TYPE__DEF_STRUCT: {
         if (rhs_obj->type != PAD_OBJ_TYPE__IDENT) {
             push_err("invalid identitifer type (%d)", rhs_obj->type);

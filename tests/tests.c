@@ -29151,7 +29151,7 @@ static void
 test_trv_dict_4(void) {
     trv_ready;
 
-    check_ok("{@ d = {\"a\": 1} @}{: d.pop(\"a\") :}", "1");
+    check_ok_trace("{@ d = {\"a\": 1} @}{: d.pop(\"a\") :}", "1");
     check_fail("{@ d = {\"a\": 1} @}{: d.pop(\"b\") :}", "invalid key");
     check_ok("{@ d = {\"a\": 1} @}{: d.pop(\"b\", 2) :}", "2");
 
