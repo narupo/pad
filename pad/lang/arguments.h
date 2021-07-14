@@ -92,7 +92,7 @@ struct PadTrvArgs {
 
     // if do not refer chain object on context then store true else store false
     // this flag refer in trv_chain function
-    bool do_not_refer_chain;
+    bool do_not_refer_ring;
 
     // if current context is in function block then store pointer
     // of function object to this func_obj variable

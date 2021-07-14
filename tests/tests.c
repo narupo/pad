@@ -29068,15 +29068,7 @@ test_trv_dict_3(void) {
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "index isn't string"));
     }
 
-    PadTkr_Parse(tkr, "{@ k = 1 \n a = { k: 1 } @}");
-    {
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        (PadTrv_Trav(ast, ctx));
-        assert(PadAST_HasErrs(ast));
-        assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "invalid key type in variable of dict"));
-    }
+    check_fail("{@ k = 1 \n a = { k: 1 } @}", "not found key");
 
     // success
 
@@ -29162,6 +29154,19 @@ test_trv_dict_4(void) {
     check_ok("{@ d = {\"a\": 1} @}{: d.pop(\"a\") :}", "1");
     check_fail("{@ d = {\"a\": 1} @}{: d.pop(\"b\") :}", "invalid key");
     check_ok("{@ d = {\"a\": 1} @}{: d.pop(\"b\", 2) :}", "2");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_dict_5(void) {
+    trv_ready;
+
+    check_ok("{@ d = { aaa: 1 } @}{: d.aaa :}", "1");
+    check_ok("{@ d = { aaa: 1, \"bbb\": 2 } @}{: d.aaa :},{: d[\"bbb\"] :}", "1,2");
+    check_ok("{@ d = { aaa: 1 } puts(d.aaa) @}", "1\n");
+    check_ok("{@ d = { aaa: 1 } d.aaa = 2 @}{: d.aaa :}", "2");
+    check_ok("{@ d = { aaa: 1 } @}{: d.aaa + d.aaa :}", "2");
 
     trv_cleanup;
 }
@@ -30548,6 +30553,7 @@ traverser_tests[] = {
     {"dict_2", test_trv_dict_2},
     {"dict_3", test_trv_dict_3},
     {"dict_4", test_trv_dict_4},
+    {"dict_5", test_trv_dict_5},
     {"dict_fail_0", test_trv_dict_fail_0},
     {"identifier", test_trv_identifier},
     {"traverse", test_PadTrv_Trav},

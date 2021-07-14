@@ -1451,6 +1451,23 @@ again2:
     case PAD_OBJ_TYPE__OBJECT: {
         ref_context = ref_owner->object.struct_context;
     } break;
+    case PAD_OBJ_TYPE__DICT: {
+        if (child->type != PAD_OBJ_TYPE__IDENT) {
+            pushb_error("invalid attribute type");
+            return NULL;
+        }
+
+        const char *attr = PadObj_GetcIdentName(child);
+        if (!attr) {
+            pushb_error("can't refer attribute");
+            return NULL;
+        }
+        
+        PadObjDict *dict = PadObj_GetDict(ref_owner);
+        PadObj_IncRef(rhs);
+        PadObjDict_Move(dict, attr, rhs);
+        return rhs;
+    } break;
     case PAD_OBJ_TYPE__MODULE: {
         ref_context = ref_owner->module.ast->ref_context;
     } break;
@@ -1890,10 +1907,10 @@ trv_assign(PadAST *ast, PadTrvArgs *targs) {
     }
 
     PadDepth depth = targs->depth;
-    bool do_not_refer_chain = targs->do_not_refer_chain;
+    bool do_not_refer_ring = targs->do_not_refer_ring;
 
 #define _return(result) \
-        targs->do_not_refer_chain = do_not_refer_chain; \
+        targs->do_not_refer_ring = do_not_refer_ring; \
         return_trav(result); \
 
     int32_t arrlen = PadNodeAry_Len(assign_list->nodearr);
@@ -1920,7 +1937,7 @@ trv_assign(PadAST *ast, PadTrvArgs *targs) {
 
         // left hand side operand don't refer chain object
         // this flag store true to don't refer chain object
-        targs->do_not_refer_chain = true;
+        targs->do_not_refer_ring = true;
 
         PadObj *lhs = _PadTrv_Trav(ast, targs);
         if (PadAST_HasErrs(ast)) {
@@ -8113,9 +8130,15 @@ trv_ring(PadAST *ast, PadTrvArgs *targs) {
 
         PadChainObjType type;
         switch (PadChainNode_GetcType(cn)) {
-        case PAD_CHAIN_NODE_TYPE___DOT:   type = PAD_CHAIN_PAD_OBJ_TYPE___DOT;   break;
-        case PAD_CHAIN_NODE_TYPE___INDEX: type = PAD_CHAIN_PAD_OBJ_TYPE___INDEX; break;
-        case PAD_CHAIN_NODE_TYPE___CALL:  type = PAD_CHAIN_PAD_OBJ_TYPE___CALL;  break;
+        case PAD_CHAIN_NODE_TYPE___DOT:
+            type = PAD_CHAIN_PAD_OBJ_TYPE___DOT;
+            break;
+        case PAD_CHAIN_NODE_TYPE___INDEX:
+            type = PAD_CHAIN_PAD_OBJ_TYPE___INDEX;
+            break;
+        case PAD_CHAIN_NODE_TYPE___CALL:
+            type = PAD_CHAIN_PAD_OBJ_TYPE___CALL;
+            break;
         default:
             pushb_error("invalid ring node type (%d)", PadChainNode_GetcType(cn));
             goto fail;
@@ -8130,7 +8153,7 @@ trv_ring(PadAST *ast, PadTrvArgs *targs) {
 
     // done
     PadObj_IncRef(operand);
-    PadObj *obj_chain = PadObj_NewRing(
+    PadObj *obj_ring = PadObj_NewRing(
         ast->ref_gc,
         PadMem_Move(operand),
         PadMem_Move(chobjs)
@@ -8139,16 +8162,16 @@ trv_ring(PadAST *ast, PadTrvArgs *targs) {
     chobjs = NULL;
 
     // do refer ring objects ?
-    if (targs->do_not_refer_chain) {
-        return_trav(obj_chain);
+    if (targs->do_not_refer_ring) {
+        return_trav(obj_ring);
     } else {
-        PadObj *result = _Pad_ReferRingObjWithRef(obj_chain);
+        PadObj *result = _Pad_ReferRingObjWithRef(obj_ring);
         if (PadAST_HasErrs(ast)) {
             pushb_error("failed to refer ring object");
             goto fail;
         }
 
-        PadObj_Del(obj_chain);
+        PadObj_Del(obj_ring);
         return_trav(result);
     }
 
@@ -9985,10 +10008,10 @@ trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
     assert(asscalc);
 
     PadDepth depth = targs->depth;
-    bool do_not_refer_chain = targs->do_not_refer_chain;
+    bool do_not_refer_ring = targs->do_not_refer_ring;
 
 #define _return(result) \
-    targs->do_not_refer_chain = do_not_refer_chain; \
+    targs->do_not_refer_ring = do_not_refer_ring; \
     return_trav(result); \
 
     if (PadNodeAry_Len(asscalc->nodearr) == 1) {
@@ -10006,7 +10029,7 @@ trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
         check("call _PadTrv_Trav");
         targs->ref_node = rnode;
         targs->depth = depth + 1;
-        targs->do_not_refer_chain = true;
+        targs->do_not_refer_ring = true;
         PadObj *rhs = _PadTrv_Trav(ast, targs);
         if (PadAST_HasErrs(ast)) {
             _return(NULL);
@@ -10025,7 +10048,7 @@ trv_asscalc(PadAST *ast, PadTrvArgs *targs) {
             check("call _PadTrv_Trav");
             targs->ref_node = lnode;
             targs->depth = depth + 1;
-            targs->do_not_refer_chain = true;
+            targs->do_not_refer_ring = true;
             PadObj *lhs = _PadTrv_Trav(ast, targs);
             if (PadAST_HasErrs(ast)) {
                 _return(NULL);
@@ -10403,6 +10426,27 @@ trv_dict_elem(PadAST *ast, PadTrvArgs *targs) {
     return_trav(obj);
 }
 
+static const char *
+pull_dict_elem_key(const PadObj *obj) {
+again:
+    switch (obj->type) {
+    default:
+        return NULL;
+        break;
+    case PAD_OBJ_TYPE__UNICODE:
+        return PadUni_GetcMB(obj->unicode);
+        break;
+    case PAD_OBJ_TYPE__IDENT: {
+        const char *idn = PadObj_GetcIdentName(obj);
+        obj = Pad_PullRefAll(obj);
+        if (!obj) {
+            return idn;
+        }
+        goto again;
+    } break;
+    }
+}
+
 /**
  * left priority
  */
@@ -10444,28 +10488,10 @@ trv_dict_elems(PadAST *ast, PadTrvArgs *targs) {
             }
         }
 
-        const char *skey = NULL;
-        switch (key->type) {
-        default:
-            pushb_error("invalid key type");
-            PadObj_Del(arrobj);
-            PadObjDict_Del(objdict);
-            return_trav(NULL);
-            break;
-        case PAD_OBJ_TYPE__UNICODE:
-            skey = PadUni_GetcMB(key->unicode);
-            break;
-        case PAD_OBJ_TYPE__IDENT: {
-            const PadObj *ref = Pad_PullRefAll(key);
-            if (ref->type != PAD_OBJ_TYPE__UNICODE) {
-                pushb_error("invalid key type in variable of dict");
-                PadObj_Del(arrobj);
-                PadObjDict_Del(objdict);
-                return_trav(NULL);
-                break;
-            }
-            skey = PadUni_GetcMB(ref->unicode);
-        } break;
+        const char *skey = pull_dict_elem_key(key);
+        if (!skey) {
+           pushb_error("not found key");
+           return_trav(NULL); 
         }
 
         PadObj_IncRef(val);

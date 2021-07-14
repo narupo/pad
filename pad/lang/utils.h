@@ -296,3 +296,7 @@ Pad_ParseFloat(
  */
 bool
 Pad_IsVarInCurScope(const PadObj *idnobj);
+
+PadObj *
+Pad_ExtractIdent(PadObj *obj);
+

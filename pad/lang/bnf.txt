@@ -67,7 +67,11 @@ BNF of Pad's template language
               expr: term [ add_sub_op term ]*
               term: negative [ mul_div_op negative ]*
           nagative: ( '-' ) ring
-              ring: factor [ ('.' factor) | ('[' simple_assign ']') | ('(' call_args ')') ]*
+              ring: factor [ 
+                        ('.' factor) | 
+                        ('[' simple_assign ']') | 
+                        ('(' call_args ')') 
+                    ]*
             factor: atom | '(' formula ')'
             * atom: nil |
                     false |

@@ -267,8 +267,23 @@ again1:
             break;
         }
     } // fallthrough
-    case PAD_OBJ_TYPE__UNICODE:
     case PAD_OBJ_TYPE__DICT:
+        if (rhs_obj->type != PAD_OBJ_TYPE__IDENT) {
+            push_err("invalid attribute name type (%d)", rhs_obj->type);
+            return NULL;
+        }
+
+        const char *idn = PadObj_GetcIdentName(rhs_obj);
+        PadObjDict *dict = PadObj_GetDict(own);
+        PadObjDictItem *item = PadObjDict_Get(dict, idn);
+        if (!item) {
+            push_err("invalid attribute \"%s\"", idn);
+            return NULL;
+        }
+
+        return item->value;
+        break;
+    case PAD_OBJ_TYPE__UNICODE:
     case PAD_OBJ_TYPE__ARRAY: {
         // create builtin module function object
         if (rhs_obj->type != PAD_OBJ_TYPE__IDENT) {
@@ -425,8 +440,8 @@ again:
     return NULL;
 }
 
-static PadObj *
-extract_idn(PadObj *obj) {
+PadObj *
+Pad_ExtractIdent(PadObj *obj) {
     if (!obj) {
         return NULL;
     }
@@ -473,7 +488,7 @@ invoke_owner_func_obj(
     own = own->owners_method.owner;
     assert(own && funcname);
 
-    own = extract_idn(own);
+    own = Pad_ExtractIdent(own);
     if (!own) {
         return NULL;
     }
@@ -696,7 +711,7 @@ extract_func_args(
     PadObjAry *actual_args = args->objarr;
 
     if (ownpar && func->is_met) {
-        ownpar = extract_idn(ownpar);
+        ownpar = Pad_ExtractIdent(ownpar);
         PadObjAry_PushFront(actual_args, ownpar);
     }
 
@@ -1004,7 +1019,7 @@ gen_struct(
     }
 
     PadObj *own = PadObjAry_GetLast(owns);
-    own = extract_idn(own);
+    own = Pad_ExtractIdent(own);
     if (!own) {
         return NULL;
     }
@@ -1043,7 +1058,7 @@ invoke_type_obj(
     assert(drtargs->type == PAD_OBJ_TYPE__ARRAY);
 
     PadObj *own = PadObjAry_GetLast(owns);
-    own = extract_idn(own);
+    own = Pad_ExtractIdent(own);
     if (!own || own->type != PAD_OBJ_TYPE__TYPE) {
         return NULL;
     }
@@ -1674,17 +1689,17 @@ Pad_ReferRingObjWithRef(
     PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
-    PadObj *chain_obj
+    PadObj *ring_obj
 ) {
-    if (!chain_obj) {
+    if (!ring_obj) {
         push_err("chain object is null");
         return NULL;
     }
 
-    PadObj *operand = PadObj_GetChainOperand(chain_obj);
+    PadObj *operand = PadObj_GetChainOperand(ring_obj);
     assert(operand);
 
-    PadChainObjs *cos = PadObj_GetChainObjs(chain_obj);
+    PadChainObjs *cos = PadObj_GetChainObjs(ring_obj);
     assert(cos);
     if (!PadChainObjs_Len(cos)) {
         return operand;
