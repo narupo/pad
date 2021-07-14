@@ -56,13 +56,54 @@ builtin_file_read(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    return PadObj_NewUnicodeCStr(fargs->ref_ast->ref_gc, text);
+    PadObj *uobj = PadObj_NewUnicodeCStr(fargs->ref_ast->ref_gc, text);
+    PadMem_SafeFree(text);
+    return uobj;
+}
+ 
+static PadObj *
+builtin_file_write(PadBltFuncArgs *fargs) {
+    PadObj *ref_args = fargs->ref_args;
+    if (ref_args->type != PAD_OBJ_TYPE__ARRAY) {
+        push_err("invalid arguments type");
+        return NULL;
+    }
+
+    if (PadObjAry_Len(ref_args->objarr) != 1) {
+        push_err("invalid arugments length");
+        return NULL;
+    }
+
+    PadObj *text = PadObjAry_Get(ref_args->objarr, 0);
+    if (text->type != PAD_OBJ_TYPE__UNICODE) {
+        push_err("invalid argument type");
+        return NULL;
+    }
+
+    PadUni *utext = PadObj_GetUnicode(text);
+    const char *stext = PadUni_GetcMB(utext);
+
+    PadFileObj *file = pull_file(fargs);
+    if (!file) {
+        push_err("not found file");
+        return NULL;
+    }
+
+    int32_t texlen = strlen(stext);
+    int32_t n = fwrite(stext, sizeof(stext[0]), texlen, file->fp);    
+    if (n < texlen) {
+        push_err("failed to write text");
+        return NULL;
+    }
+
+    return PadObj_NewNil(fargs->ref_ast->ref_gc);
 }
  
 static PadBltFuncInfo
 builtin_func_infos[] = {
     {"close", builtin_file_close},
     {"read", builtin_file_read},
+    {"write", builtin_file_write},
     {0},
 };
 

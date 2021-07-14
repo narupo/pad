@@ -30466,6 +30466,12 @@ test_trv_builtin_open_0(void) {
     check_ok("{@ file = open(\"tests/open/file1.txt\", \"r\") @}{: file :}{@ file.close() @}", "(file)");
     check_ok("{@ file = open(\"tests/open/file1.txt\", \"r\") @}{: file.read() :}{@ file.close() @}", "aaa\nbbb\nccc\n");
 
+    check_ok_trace("{@ file = open(\"tests/open/file.w.txt\", \"w\")\n"
+        "file.write(\"abc\") file.close() @}", "");
+    char *s = PadFile_ReadCopyFromPath("tests/open/file.w.txt");
+    assert(!strcmp(s, "abc"));
+    PadFile_Remove("tests/open/file.w.txt");
+
     trv_cleanup;
 }
 

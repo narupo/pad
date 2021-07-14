@@ -776,11 +776,6 @@ builtin_open(PadBltFuncArgs *fargs) {
         PadCStr_Copy(path, sizeof path, sfname);
     }
 
-    if (!PadFile_IsExists(path)) {
-        push_err("\"%s\" is not found", path);
-        return NULL;
-    }
-
     FILE *fp = fopen(path, smode);
     if (!fp) {
         push_err("failed to open file");
