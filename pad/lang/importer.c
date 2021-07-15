@@ -99,7 +99,7 @@ create_modobj(
     // compile source
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAST_New(self->ref_config);
-    PadCtx *ctx = PadCtx_New(ref_gc);  // LOOK ME! gc is *REFERENCE* from arguments!
+    PadCtx *ctx = PadCtx_New(ref_gc, PAD_CTX_TYPE__MODULE);  // LOOK ME! gc is *REFERENCE* from arguments!
     PadCtx_SetRefPrev(ctx, ref_ast->ref_context);
 
     PadTkr_SetProgFname(tkr, src_path);

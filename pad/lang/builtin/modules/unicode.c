@@ -290,7 +290,7 @@ PadObj *
 Pad_NewBltUnicodeMod(const PadConfig *ref_config, PadGC *ref_gc) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAST_New(ref_config);
-    PadCtx *ctx = PadCtx_New(ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_gc, PAD_CTX_TYPE__MODULE);
     ast->ref_context = ctx;
 
     PadBltFuncInfoAry *func_info_ary = PadBltFuncInfoAry_New();

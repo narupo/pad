@@ -30,7 +30,7 @@ Pad_NewBltMod(
         goto error;
     }
 
-    ctx = PadCtx_New(ref_gc);
+    ctx = PadCtx_New(ref_gc, PAD_CTX_TYPE__MODULE);
     if (ctx == NULL) {
         goto error;
     }

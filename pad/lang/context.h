@@ -14,6 +14,13 @@
 #include <pad/lang/scope.h>
 #include <pad/lang/gc.h>
 
+typedef enum {
+    PAD_CTX_TYPE__DEFAULT,
+    PAD_CTX_TYPE__DEF_STRUCT,
+    PAD_CTX_TYPE__OBJECT,
+    PAD_CTX_TYPE__MODULE,
+} PadCtxType;
+
 /**
  * destruct PadObj
  *
@@ -41,7 +48,7 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self);
  * @return pointer to PadCtx dynamic allocate memory (do PadCtx_Del)
  */
 PadCtx *
-PadCtx_New(PadGC *ref_gc);
+PadCtx_New(PadGC *ref_gc, PadCtxType type);
 
 /**
  * clear state of context

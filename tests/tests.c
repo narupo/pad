@@ -135,7 +135,7 @@
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt)); \
     PadAST *ast = PadAST_New(config); \
     PadGC *gc = PadGC_New(); \
-    PadCtx *ctx = PadCtx_New(gc); \
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT); \
 
 #define trv_cleanup \
     PadCtx_Del(ctx); \
@@ -13043,7 +13043,7 @@ test_trv_array_index(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     // PadTkr_Parse(tkr, "{@ a[0] @}");
     // {
@@ -13159,7 +13159,7 @@ test_trv_text_block_old(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "abc");
     {
@@ -13184,7 +13184,7 @@ test_trv_ref_block_old(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: nil :}");
     {
@@ -13300,7 +13300,7 @@ test_trv_assign_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ a = 1 @}{: a :}");
     {
@@ -13533,7 +13533,7 @@ test_trv_index(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ a = \"abc\" @}{: a :}");
     {
@@ -13920,7 +13920,7 @@ test_trv_string_index(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ a = \"ab\" \n @}{: a[0] :}");
     {
@@ -13996,7 +13996,7 @@ test_trv_multi_assign(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     // error
 
@@ -14065,7 +14065,7 @@ test_trv_and_test(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     // nil and objects
 
@@ -15385,7 +15385,7 @@ test_trv_assign_list(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     // success
 
@@ -15533,7 +15533,7 @@ test_trv_test_list(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ 1, 2 @}");
     {
@@ -15577,7 +15577,7 @@ test_trv_negative_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 :}");
     {
@@ -15667,7 +15667,7 @@ test_trv_dot_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: \"ABC\".lower() :}");
     {
@@ -15835,7 +15835,7 @@ test_trv_builtin_string(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /********
     * upper *
@@ -16192,7 +16192,7 @@ test_trv_builtin_functions(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
     
     /*******
     * puts *
@@ -16331,7 +16331,7 @@ test_trv_builtin_structs_error_0(void) {
     PadTkr *s_tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ err = Error() @}{: type(err) :}");
     PadTkr_Parse(s_tkr, builtin_structs_source);
@@ -16397,7 +16397,7 @@ test_trv_builtin_structs_error_1(void) {
     PadTkr *s_tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr,
 "{@\n"
@@ -16594,7 +16594,7 @@ test_trv_builtin_functions_type_dict(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}");
     {
@@ -16707,7 +16707,7 @@ test_trv_builtin_functions_len_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: len([1, 2]) :}");
     {
@@ -16871,7 +16871,7 @@ test_PadTrv_Trav(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /*******
     * test *
@@ -18888,7 +18888,7 @@ test_trv_assign_and_reference_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = 0\n"
@@ -18941,7 +18941,7 @@ test_trv_assign_and_reference_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = j = 0\n"
@@ -18969,7 +18969,7 @@ test_trv_assign_and_reference_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = 1\n"
@@ -18998,7 +18998,7 @@ test_trv_assign_and_reference_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i, j = 1, 1\n"
@@ -19026,7 +19026,7 @@ test_trv_assign_and_reference_4(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = 1\n"
@@ -19055,7 +19055,7 @@ test_trv_assign_and_reference_5(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = 1, 2\n"
@@ -19084,7 +19084,7 @@ test_trv_assign_and_reference_6(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = [1, 2]\n"
@@ -19114,7 +19114,7 @@ test_trv_assign_and_reference_7(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i, j = [1, 2]\n"
@@ -19142,7 +19142,7 @@ test_trv_assign_and_reference_8(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i, j = k, l = 1, 2\n"
@@ -19170,7 +19170,7 @@ test_trv_assign_and_reference_9(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = { \"a\": 1 }\n"
@@ -19213,7 +19213,7 @@ test_trv_assign_and_reference_11(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   def f():\n"
@@ -19334,7 +19334,7 @@ test_trv_assign_and_reference_13(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   i = j = 0\n"
@@ -19575,7 +19575,7 @@ test_trv_ref_block(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 :}");
     {
@@ -19684,7 +19684,7 @@ test_trv_text_block(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "1");
     {
@@ -19750,7 +19750,7 @@ test_trv_import_stmt_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /**********************
     * import as statement *
@@ -20106,7 +20106,7 @@ test_trv_from_import_stmt_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr,
         "{@ from \"tests/lang/modules/funcs.cap\" import f1 \n f1() @}");
@@ -20134,7 +20134,7 @@ test_trv_from_import_stmt_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr,
         "{@ import \"tests/lang/modules/hello.cap\" as hello \n"
@@ -20164,7 +20164,7 @@ test_trv_from_import_stmt_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr,
         "{@ from \"tests/lang/modules/funcs.cap\" import ( f1, f2 ) \n "
@@ -20193,7 +20193,7 @@ test_trv_if_stmt_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 1: puts(1) end @}");
     {
@@ -20289,7 +20289,7 @@ test_trv_if_stmt_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 1: @}1{@ end @}");
     {
@@ -20355,7 +20355,7 @@ test_trv_if_stmt_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 1: if 1: puts(1) end end @}");
     {
@@ -20420,7 +20420,7 @@ test_trv_if_stmt_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
@@ -20526,7 +20526,7 @@ test_trv_if_stmt_4(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ i = 1 \n if i: puts(1) end @}");
     {
@@ -20598,7 +20598,7 @@ test_trv_if_stmt_5(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   import \"tests/lang/modules/if.cap\" as mod \n"
@@ -21158,7 +21158,7 @@ test_trv_elif_stmt_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 0: elif 1: if 1: puts(1) end end @}");
     {
@@ -21254,7 +21254,7 @@ test_trv_elif_stmt_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 0: @}{@ elif 1: @}{@ if 1: @}1{@ end @}{@ end @}");
     {
@@ -21693,7 +21693,7 @@ test_trv_else_stmt_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 0: else: puts(1) end @}");
     {
@@ -21779,7 +21779,7 @@ test_trv_else_stmt_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 0: @}{@ else: @}1{@ end @}");
     {
@@ -21875,7 +21875,7 @@ test_trv_else_stmt_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ if 0: else: if 1: puts(1) end end @}");
     {
@@ -22121,7 +22121,7 @@ test_trv_for_stmt_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ for i=0; i<2; i +=1: puts(i) end @}");
     {
@@ -22257,7 +22257,7 @@ test_trv_for_stmt_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ i=0 for i<2: puts(i)\ni+=1 end @}");
     {
@@ -22323,7 +22323,7 @@ test_trv_for_stmt_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ for i, j = 0, 0; i != 4; i += 1, j += 2: end @}{: i :},{: j :}");
     {
@@ -23035,7 +23035,7 @@ test_trv_return_stmt_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ def f(): return 1 end @}{: f() :}");
     {
@@ -23061,7 +23061,7 @@ test_trv_return_stmt_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   def f():\n"
@@ -24754,7 +24754,7 @@ test_trv_func_def_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ def f(): end @}");
     {
@@ -24780,7 +24780,7 @@ test_trv_func_def_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ def f(a, b): puts(a, b) end f(1, 2) @}");
     {
@@ -24806,7 +24806,7 @@ test_trv_func_def_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
         "def func(a, b):\n"
@@ -24835,7 +24835,7 @@ test_trv_func_def_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ def f(): end \n a = not f @}");
     {
@@ -24860,7 +24860,7 @@ test_trv_func_def_4(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ i = 1 \n def f(): puts(i) end \n f() @}");
     {
@@ -24886,7 +24886,7 @@ test_trv_func_def_5(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ def f(arg): end \n f() @}");
     {
@@ -24912,7 +24912,7 @@ test_trv_func_def_6(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@\n"
     "   def f(n, desc):\n"
@@ -26328,7 +26328,7 @@ test_trv_assign_list_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ a = 1 @}{: a :}");
     {
@@ -26354,7 +26354,7 @@ test_trv_assign_list_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ a = 1, b = 2 @}{: a :},{: b :}");
     {
@@ -26380,7 +26380,7 @@ test_trv_assign_list_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ a = b = 1 @}{: a :},{: b :}");
     {
@@ -26520,7 +26520,7 @@ test_trv_comparison_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 == 1 :}");
     {
@@ -26546,7 +26546,7 @@ test_trv_comparison_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 != 1 :}");
     {
@@ -26572,7 +26572,7 @@ test_trv_comparison_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 < 2 :}");
     {
@@ -26598,7 +26598,7 @@ test_trv_comparison_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 2 > 1 :}");
     {
@@ -26624,7 +26624,7 @@ test_trv_comparison_4(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 <= 2 :}");
     {
@@ -26650,7 +26650,7 @@ test_trv_comparison_5(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 2 >= 1 :}");
     {
@@ -26698,7 +26698,7 @@ test_trv_asscalc_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /*****
     * ok *
@@ -26766,7 +26766,7 @@ test_trv_asscalc_1(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /*****
     * ok *
@@ -26860,7 +26860,7 @@ test_trv_asscalc_2(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /*****
     * ok *
@@ -27004,7 +27004,7 @@ test_trv_asscalc_3(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     /*****
     * ok *
@@ -28865,7 +28865,7 @@ test_trv_nil(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: nil :}");
     {
@@ -28891,7 +28891,7 @@ test_trv_false(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: false :}");
     {
@@ -28917,7 +28917,7 @@ test_trv_true(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: true :}");
     {
@@ -28943,7 +28943,7 @@ test_trv_digit(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{: 1 :}");
     {
@@ -29199,7 +29199,7 @@ test_trv_identifier(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ i = 1 @}{: i :}");
     {
@@ -29225,7 +29225,7 @@ test_trv_builtin_array_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ arr = [1, 2] \n arr.push(3) @}{: len(arr) :}");
     {
@@ -29291,7 +29291,7 @@ test_trv_builtin_dict_0(void) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(opt));
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
 
     PadTkr_Parse(tkr, "{@ d = {\"a\": 1} @}{: d.get(1) :}");
     {

@@ -7,6 +7,8 @@ enum {
 };
 
 struct PadCtx {
+    PadCtxType type;
+
     // ref_prevにはコンテキストをつなげたい時に、親のコンテキストを設定する
     // contextはこのref_prevを使い親のコンテキストを辿れるようになっている
     // これによってルートのコンテキストや1つ前のコンテキストを辿れる
@@ -63,12 +65,13 @@ PadCtx_EscDelGlobalVarmap(PadCtx *self) {
 }
 
 PadCtx *
-PadCtx_New(PadGC *ref_gc) {
+PadCtx_New(PadGC *ref_gc, PadCtxType type) {
     PadCtx *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
         return NULL;
     }
 
+    self->type = type;
     self->ref_gc = ref_gc;
     self->alinfo = PadAliasInfo_New();
     if (!self->alinfo) {
@@ -388,7 +391,7 @@ PadCtx_DeepCopy(const PadCtx *other) {
         return NULL;
     }
     
-    PadCtx *self = PadCtx_New(other->ref_gc);
+    PadCtx *self = PadCtx_New(other->ref_gc, other->type);
 
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;
@@ -410,7 +413,7 @@ PadCtx_ShallowCopy(const PadCtx *other) {
         return NULL;
     }
     
-    PadCtx *self = PadCtx_New(other->ref_gc);
+    PadCtx *self = PadCtx_New(other->ref_gc, other->type);
 
     self->ref_prev = other->ref_prev;
     self->ref_gc = other->ref_gc;

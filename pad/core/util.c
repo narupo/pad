@@ -199,7 +199,7 @@ Pad_CompileArgv(const PadConfig *config, PadErrStack *errstack, int argc, char *
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
     PadOpts *opts = PadOpts_New();
 
     if (!PadOpts_Parse(opts, argc, argv)) {
@@ -269,7 +269,7 @@ read_path_var_from_resource(const PadConfig *config, const char *rcpath) {
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     PadAST *ast = PadAST_New(config);
     PadGC *gc = PadGC_New();
-    PadCtx *ctx = PadCtx_New(gc);
+    PadCtx *ctx = PadCtx_New(gc, PAD_CTX_TYPE__DEFAULT);
     PadOpts *opts = PadOpts_New();
 
     PadTkr_Parse(tkr, src);

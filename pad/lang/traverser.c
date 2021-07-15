@@ -1245,7 +1245,7 @@ trv_def_struct(PadAST *ast, PadTrvArgs *targs) {
     }
 
     // parse elems
-    PadCtx *struct_ctx = PadCtx_New(ast->ref_gc);
+    PadCtx *struct_ctx = PadCtx_New(ast->ref_gc, PAD_CTX_TYPE__DEF_STRUCT);
     PadCtx_SetRefPrev(struct_ctx, PadAST_GetRefCtx(ast));
 
     PadAST *struct_ast = PadAST_New(ast->ref_config);

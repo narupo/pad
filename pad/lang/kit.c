@@ -63,7 +63,7 @@ PadKit_New(const PadConfig *config) {
         return NULL;
     }
 
-    self->ctx = PadCtx_New(self->gc);
+    self->ctx = PadCtx_New(self->gc, PAD_CTX_TYPE__DEFAULT);
     if (!self->ctx) {
         PadKit_Del(self);
         return NULL;
@@ -107,7 +107,7 @@ PadKit_NewRefGC(const PadConfig *config, PadGC *ref_gc) {
     self->gc = ref_gc;
     self->gc_is_reference = true;
 
-    self->ctx = PadCtx_New(self->gc);
+    self->ctx = PadCtx_New(self->gc, PAD_CTX_TYPE__DEFAULT);
     if (!self->ctx) {
         PadKit_Del(self);
         return NULL;

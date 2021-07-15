@@ -618,7 +618,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
     PadObjAry *retarr = PadObjAry_New();
     PadTkr *tkr = PadTkr_New(PadTkrOpt_New());
     PadAST *ast = PadAST_New(ref_ast->ref_config);
-    PadCtx *ctx = PadCtx_New(ref_ast->ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_ast->ref_gc, PAD_CTX_TYPE__DEFAULT);
     PadOpts *opts = PadOpts_New();
 
     if (codectx) {
@@ -815,7 +815,7 @@ Pad_NewBltFuncsMod(
 ) {
     PadTkr *tkr = PadTkr_New(PadMem_Move(PadTkrOpt_New()));
     PadAST *ast = PadAST_New(ref_config);
-    PadCtx *ctx = PadCtx_New(ref_gc);
+    PadCtx *ctx = PadCtx_New(ref_gc, PAD_CTX_TYPE__MODULE);
     ast->ref_context = ctx;
 
     // set built-in function infos
