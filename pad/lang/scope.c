@@ -325,6 +325,28 @@ PadScope_FindVarRefAll(PadScope *self, const char *key) {
     return NULL;
 }
 
+PadObj *
+PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key) {
+    if (!self) {
+        return NULL;
+    }
+
+    PadScope *tail = find_tail(self);
+
+    for (PadScope *cur = tail; cur; cur = cur->prev) {
+        if (!cur->prev) {
+            // is head
+            break;
+        }
+        PadObjDictItem *item = PadObjDict_Get(cur->varmap, key);
+        if (item) {
+            return item->value;
+        }
+    }
+
+    return NULL;
+}
+
 void
 PadScope_Dump(const PadScope *self, FILE *fout) {
     if (!self || !fout) {

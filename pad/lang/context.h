@@ -279,6 +279,9 @@ PadCtx_FindVarRef(PadCtx *self, const char *key);
 PadObj *
 PadCtx_FindVarRefAll(PadCtx *self, const char *key);
 
+PadObj *
+PadCtx_FindVarRefAllIgnoreStructHead(PadCtx *self, const char *key);
+
 /**
  * get reference of PadGC in context
  *

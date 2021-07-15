@@ -9,23 +9,23 @@ enum {
 struct PadCtx {
     PadCtxType type;
 
-    // ref_prevã«ã¯ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’ã¤ãªã’ãŸã„æ™‚ã«ã€è¦ªã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’è¨­å®šã™ã‚‹
-    // contextã¯ã“ã®ref_prevã‚’ä½¿ã„è¦ªã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’è¾¿ã‚Œã‚‹ã‚ˆã†ã«ãªã£ã¦ã„ã‚‹
-    // ã“ã‚Œã«ã‚ˆã£ã¦ãƒ«ãƒ¼ãƒˆã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚„1ã¤å‰ã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’è¾¿ã‚Œã‚‹
+    // ref_prev¤Ë¤Ï¥³¥ó¥Æ¥­¥¹¥È¤ò¤Ä¤Ê¤²¤¿¤¤•r¤Ë¡¢ÓH¤Î¥³¥ó¥Æ¥­¥¹¥È¤òÔO¶¨¤¹¤ë
+    // context¤Ï¤³¤Îref_prev¤òÊ¹¤¤ÓH¤Î¥³¥ó¥Æ¥­¥¹¥È¤òŞ{¤ì¤ë¤è¤¦¤Ë¤Ê¤Ã¤Æ¤¤¤ë
+    // ¤³¤ì¤Ë¤è¤Ã¤Æ¥ë©`¥È¤Î¥³¥ó¥Æ¥­¥¹¥È¤ä1¤ÄÇ°¤Î¥³¥ó¥Æ¥­¥¹¥È¤òŞ{¤ì¤ë
     PadCtx *ref_prev;  // reference to previous context
 
     PadGC *ref_gc;  // reference to gc (DO NOT DELETE)
     PadAliasInfo *alinfo;  // alias info for builtin alias module
 
-    // ãƒ«ãƒ¼ãƒˆã®contextã®stdout_buf, stderr_bufã«putsãªã©ã®çµ„ã¿è¾¼ã¿é–¢æ•°ã®å‡ºåŠ›ãŒä¿å­˜ã•ã‚Œã‚‹
-    // ãã®ä»–ref_blockã‚„text_blockãªã©ã®å‡ºåŠ›ã‚‚ãƒ«ãƒ¼ãƒˆã®contextã«ä¿å­˜ã•ã‚Œã‚‹ã‚ˆã†ã«ãªã£ã¦ã„ã‚‹
-    // 2020/10/06ä»¥å‰ã¯ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã”ã¨ã«putsã®å‡ºåŠ›ã‚’ä¿å­˜ã—ã¦ã„ãŸ
+    // ¥ë©`¥È¤Îcontext¤Îstdout_buf, stderr_buf¤Ëputs¤Ê¤É¤Î½M¤ßŞz¤ßévÊı¤Î³öÁ¦¤¬±£´æ¤µ¤ì¤ë
+    // ¤½¤ÎËûref_block¤ätext_block¤Ê¤É¤Î³öÁ¦¤â¥ë©`¥È¤Îcontext¤Ë±£´æ¤µ¤ì¤ë¤è¤¦¤Ë¤Ê¤Ã¤Æ¤¤¤ë
+    // 2020/10/06ÒÔÇ°¤Ï¥³¥ó¥Æ¥­¥¹¥È¤´¤È¤Ëputs¤Î³öÁ¦¤ò±£´æ¤·¤Æ¤¤¤¿
     PadStr *stdout_buf;  // stdout buffer in context
     PadStr *stderr_buf;  // stderr buffer in context
 
-    // ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã¯ã‚¹ã‚³ãƒ¼ãƒ—ã‚’ç®¡ç†ã™ã‚‹
-    // é–¢æ•°ãªã©ã®ãƒ–ãƒ­ãƒƒã‚¯ã«å…¥ã‚‹ã¨ã‚¹ã‚³ãƒ¼ãƒ—ãŒãƒ—ãƒƒã‚·ãƒ¥ã•ã‚Œã€é–¢æ•°ã®ã‚¹ã‚³ãƒ¼ãƒ—ã«ãªã‚‹
-    // é–¢æ•°ã‹ã‚‰å‡ºã‚‹ã¨ã“ã®ã‚¹ã‚³ãƒ¼ãƒ—ãŒãƒãƒƒãƒ—ã•ã‚Œã€ã‚¹ã‚³ãƒ¼ãƒ—ã‹ã‚‰å‡ºã‚‹
+    // ¥³¥ó¥Æ¥­¥¹¥È¤Ï¥¹¥³©`¥×¤ò¹ÜÀí¤¹¤ë
+    // évÊı¤Ê¤É¤Î¥Ö¥í¥Ã¥¯¤ËÈë¤ë¤È¥¹¥³©`¥×¤¬¥×¥Ã¥·¥å¤µ¤ì¡¢évÊı¤Î¥¹¥³©`¥×¤Ë¤Ê¤ë
+    // évÊı¤«¤é³ö¤ë¤È¤³¤Î¥¹¥³©`¥×¤¬¥İ¥Ã¥×¤µ¤ì¡¢¥¹¥³©`¥×¤«¤é³ö¤ë
     PadScope *scope;  // scope in context
 
     bool do_break;  // if do break from current context then store true
@@ -255,6 +255,30 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     
     for (PadCtx *cur = self; cur; cur = cur->ref_prev) {
         PadObj *ref = PadScope_FindVarRefAll(cur->scope, key);
+        if (ref) {
+            return ref;
+        }
+    }
+
+    return NULL;
+}
+
+PadObj *
+PadCtx_FindVarRefAllIgnoreStructHead(PadCtx *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+    
+    for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
+        PadObj *ref;
+
+        switch (ctx->type) {
+        default:
+            ref = PadScope_FindVarRefAll(ctx->scope, key);
+        case PAD_CTX_TYPE__DEF_STRUCT:
+            ref = PadScope_FindVarRefAllIgnoreHead(ctx->scope, key);
+            break;
+        }
         if (ref) {
             return ref;
         }

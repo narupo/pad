@@ -59,6 +59,9 @@ PadScope_FindVarRef(PadScope *self, const char *key);
 PadObj *
 PadScope_FindVarRefAll(PadScope *self, const char *key);
 
+PadObj *
+PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key);
+
 /**
  * dump PadScope at stream
  *
