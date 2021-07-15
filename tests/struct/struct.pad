@@ -275,7 +275,7 @@ def case10():
         end
     end
 
-    // S.inc()  // error
+    S.inc()
 end
 
 def case11():
@@ -288,8 +288,25 @@ def case11():
         end
     end
 
-    puts(S.A)
-    puts(S.f())  // not found "A"
+    assert(S.A == 1)
+    assert(S.f() == 1)
+end
+
+def case12():
+    puts("Test struct/struct case12")
+
+    struct S:
+        A = 1
+        def f1():
+            def f2():
+                return S.A
+            end
+            return f2()
+        end
+    end
+
+    assert(S.A == 1)
+    assert(S.f() == 1)
 end
 
 def allTest():
@@ -335,6 +352,8 @@ def main(name):
         case10()
     elif name == "case11":
         case11()
+    elif name == "case12":
+        case12()
     end
 
     puts("Done struct/struct")
