@@ -372,7 +372,7 @@ again2:
 }
 
 static PadObj *
-Pad_ReferAndSetRef_chain_dot(
+Pad_ReferAndSetRefChainDot(
     PadErrStack *err,
     PadGC *ref_gc,
     PadCtx *ref_context,
@@ -404,17 +404,6 @@ again:
         }
         goto again;
     } break;
-    case PAD_OBJ_TYPE__MODULE: {
-        if (rhs->type != PAD_OBJ_TYPE__IDENT) {
-            error("invalid identitifer type (%d)", rhs->type);
-            return NULL;
-        }
-
-        const char *idn = PadObj_GetcIdentName(rhs);
-        PadObjDict *varmap = PadCtx_GetVarmap(own->module.context);
-        Pad_SetRef(varmap, idn, ref);
-        return ref;
-    }
     case PAD_OBJ_TYPE__UNICODE:
     case PAD_OBJ_TYPE__DICT:
     case PAD_OBJ_TYPE__ARRAY: {
@@ -428,7 +417,7 @@ again:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs);
-        PadObjDict *varmap = PadCtx_GetVarmap(own->def_struct.context);
+        PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(own->def_struct.context);
         Pad_SetRef(varmap, idn, ref);
         return ref;
     } break;
@@ -439,10 +428,21 @@ again:
         }
 
         const char *idn = PadObj_GetcIdentName(rhs);
-        PadObjDict *varmap = PadCtx_GetVarmap(own->object.struct_context);
+        PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(own->object.struct_context);
         Pad_SetRef(varmap, idn, ref);
         return ref;
     } break;
+    case PAD_OBJ_TYPE__MODULE: {
+        if (rhs->type != PAD_OBJ_TYPE__IDENT) {
+            error("invalid identitifer type (%d)", rhs->type);
+            return NULL;
+        }
+
+        const char *idn = PadObj_GetcIdentName(rhs);
+        PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(own->module.context);
+        Pad_SetRef(varmap, idn, ref);
+        return ref;
+    }
     }
 
     assert(0 && "impossible");
@@ -1668,7 +1668,7 @@ Pad_ReferAndSetRefChainThreeObjs(
 
     switch (PadChainObj_GetcType(co)) {
     case PAD_CHAIN_PAD_OBJ_TYPE___DOT: {
-        operand = Pad_ReferAndSetRef_chain_dot(
+        operand = Pad_ReferAndSetRefChainDot(
             err, ref_gc, ref_context,
             owns, co, ref
         );
@@ -1781,8 +1781,8 @@ Pad_ReferAndSetRef(
         assert(co);
 
         operand = Pad_ReferChainThreeObjs(
-            ref_ast, err, ref_gc, ref_context, ref_node,
-            owns, co
+            ref_ast, err, ref_gc, ref_context,
+            ref_node, owns, co
         );
         if (PadErrStack_Len(err)) {
             push_err("failed to refer three objects");
