@@ -44,6 +44,7 @@ PadUniPath_JoinCStrAry(PadUniPath *self, const PadCStrAry *ary) {
         PadUni_AppOther(dst, tmp);
     }
 
+    PadUni_Del(tmp);
     return self;
 }
 
