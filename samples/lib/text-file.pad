@@ -6,6 +6,6 @@
     lines = f.readlines()
 
     for i = 0; i < len(lines); i += 1:
-        puts("[", lines[i], "]")
+        puts("[", lines[i].rstrip(), "]")
     end
 @}
