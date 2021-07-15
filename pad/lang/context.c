@@ -219,13 +219,20 @@ PadCtx_ClearJumpFlags(PadCtx *self) {
 void
 PadCtx_PushBackScope(PadCtx *self) {
     PadScope *scope = PadScope_New(self->ref_gc);
-    PadScope_MoveBack(self->scope, scope);
+    if (self->scope) {
+        PadScope_MoveBack(self->scope, scope);
+    } else {
+        self->scope = scope;
+    }
 }
 
 void
 PadCtx_PopBackScope(PadCtx *self) {
     PadScope *scope = PadScope_PopBack(self->scope);
     PadScope_Del(scope);
+    if (scope == self->scope) {
+        self->scope = NULL;        
+    }
 }
 
 PadObj *

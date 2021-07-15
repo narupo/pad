@@ -219,13 +219,12 @@ PadScope_PopBack(PadScope *self) {
         prev = cur;
     }
 
-    if (!prev) {
-        // tail is self. can't pop back self
-        return NULL;
+    if (prev) {
+        prev->next = NULL;
     }
-
-    prev->next = NULL;
-    tail->prev = NULL;
+    if (tail) {
+        tail->prev = NULL;
+    }
 
     return tail;
 }
@@ -332,8 +331,9 @@ PadScope_Dump(const PadScope *self, FILE *fout) {
         return;
     }
 
+    int32_t dep = 0;
     for (const PadScope *cur = self; cur; cur = cur->next) {
-        fprintf(fout, "scope[%p]\n", cur);
+        fprintf(fout, "scope[%p] dep[%d]\n", cur, dep++);
         PadObjDict_Dump(cur->varmap, fout);
     }
 }
