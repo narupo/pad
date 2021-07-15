@@ -226,6 +226,49 @@ def case8():
     assert(a.a == 2)
 end
 
+def case9():
+    puts("Test struct/struct case9")
+
+    b = 100 
+    
+    def f3():
+        return 3
+    end
+
+    c = 200
+
+    struct A:
+        b = 1
+
+        def f1():
+            return b
+        end
+
+        met f2(self):
+            return self.b
+        end
+
+        met f3(self):
+            return c
+        end
+
+        met f4(self):
+            d = 300
+            return d
+        end
+    end
+
+    a = A()
+    assert(a.f1() == 1)  // selfつけなくても取得できちゃう
+    assert(a.f2() == 1)  // selfつけても取得できる
+    a.b = 2  // インスタンス変数の値を変える
+    assert(a.f1() == 1)  // クラス変数にアクセスするので値は変わらない
+    assert(a.f2() == 2)  // self付けた場合はインスタンス変数にアクセスできる
+
+    assert(a.f3() == 200)
+    assert(a.f4() == 300)
+end
+
 def allTest():
     puts("Test struct/struct all")
 
@@ -237,6 +280,7 @@ def allTest():
     case6()
     case7()
     case8()
+    case9()
 end
 
 def main(name):
@@ -260,6 +304,8 @@ def main(name):
         case7()
     elif name == "case8":
         case8()
+    elif name == "case9":
+        case9()
     end
 
     puts("Done struct/struct")
