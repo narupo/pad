@@ -1251,17 +1251,6 @@ Pad_ReferChainCall(
         return NULL;
     }
 
-    PadObj *func_obj = extract_func(own);
-    if (func_obj) {
-        result = _invoke_func_obj(func_obj, actual_args);
-        if (PadErrStack_Len(err)) {
-            push_err("failed to invoke func obj");
-            return NULL;
-        } else if (result) {
-            return result;
-        }
-    }
-
     result = _invoke_builtin_modules(actual_args);
     if (PadErrStack_Len(err)) {
         push_err("failed to invoke builtin modules");
@@ -1276,6 +1265,17 @@ Pad_ReferChainCall(
         return NULL;
     } else if (result) {
         return result;
+    }
+
+    PadObj *func_obj = extract_func(own);
+    if (func_obj) {
+        result = _invoke_func_obj(func_obj, actual_args);
+        if (PadErrStack_Len(err)) {
+            push_err("failed to invoke func obj");
+            return NULL;
+        } else if (result) {
+            return result;
+        }
     }
 
     result = _invoke_type_obj(actual_args);
