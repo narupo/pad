@@ -25431,6 +25431,20 @@ test_trv_func_met_1(void) {
 }
 
 static void
+test_trv_func_met_1_2(void) {
+    trv_ready;
+
+    check_ok("{@\n"
+        "met a(self):\n"
+        "    puts(self)\n"
+        "end\n"
+        "a(1)"
+        "@}", "1\n");
+
+    trv_cleanup;
+}
+
+static void
 test_trv_func_met_2(void) {
     trv_ready;
 
@@ -30690,6 +30704,7 @@ traverser_2_tests[] = {
     {"func_def_fail_0", test_trv_func_def_fail_0},
     {"func_met_0", test_trv_func_met_0},
     {"func_met_1", test_trv_func_met_1},
+    {"func_met_1_2", test_trv_func_met_1_2},
     {"func_met_2", test_trv_func_met_2},
     {"func_met_3", test_trv_func_met_3},
     {"func_met_4", test_trv_func_met_4},
