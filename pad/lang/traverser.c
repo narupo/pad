@@ -8238,7 +8238,6 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
         }
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
-        printf("set reference of (%d) at (%s) of current varmap\n", rval->type, idn);
         PadObj_IncRef(rval);
         Pad_SetRefAtCurVarmap(
             ast->error_stack,
