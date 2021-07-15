@@ -1413,7 +1413,6 @@ assign_to_chain_dot(
 ) {
     PadObj *ref_owner = PadObjAry_GetLast(owners);
     PadObj *child = PadChainObj_GetObj(co);
-    PadErrStack *errstack = ast->error_stack;
     PadCtx *ref_context = ast->ref_context;
 
 again1:
@@ -1454,6 +1453,9 @@ again2:
     case PAD_OBJ_TYPE__OBJECT: {
         ref_context = ref_owner->object.struct_context;
     } break;
+    case PAD_OBJ_TYPE__MODULE: {
+        ref_context = ref_owner->module.ast->ref_context;
+    } break;
     case PAD_OBJ_TYPE__DICT: {
         if (child->type != PAD_OBJ_TYPE__IDENT) {
             pushb_error("invalid attribute type");
@@ -1471,9 +1473,6 @@ again2:
         PadObjDict_Move(dict, attr, rhs);
         return rhs;
     } break;
-    case PAD_OBJ_TYPE__MODULE: {
-        ref_context = ref_owner->module.ast->ref_context;
-    } break;
     }
 
 refer_child:
@@ -1483,7 +1482,16 @@ refer_child:
         return NULL;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(child);
-        Pad_SetRefAtCurVarmap(errstack, targs->ref_node, ref_context, owners, idn, rhs);
+        PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(ref_context);
+        PadObjDictItem *item = PadObjDict_Get(varmap, idn);
+        if (item) {
+            PadObj_DecRef(item->value);
+            PadObj_IncRef(rhs);
+            item->value = PadMem_Move(rhs);
+        } else {
+            PadObj_IncRef(rhs);
+            PadObjDict_Move(varmap, idn, PadMem_Move(rhs));
+        }
         return rhs;
     } break;
     }

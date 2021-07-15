@@ -276,6 +276,10 @@ def case10():
     end
 
     S.inc()
+
+    s = S()
+    s.inc()
+    assert(s.a == 2)
 end
 
 def case11():
@@ -328,6 +332,35 @@ def case12():
     assert(s.f2() == 6)
 end
 
+def case14():
+    struct S:
+        a = 0
+
+        def inc():
+            S.a += 1
+        end
+    end
+
+    assert(S.a == 0)
+    S.inc()
+    assert(S.a == 0)
+    S.a += 1
+    assert(S.a == 1)
+
+    // ATODO: fix me!
+    struct T:
+        a = 0
+
+        def set():
+            T.a = 1
+        end
+    end
+
+    assert(T.a == 0)
+    T.set()
+    assert(T.a == 1)
+end
+
 def allTest():
     puts("Test struct/struct all")
 
@@ -343,6 +376,7 @@ def allTest():
     case10()
     case11()
     case12()
+    case14()
 end
 
 def main(name):
@@ -374,6 +408,8 @@ def main(name):
         case11()
     elif name == "case12":
         case12()
+    elif name == "case14":
+        case14()
     end
 
     puts("Done struct/struct")
