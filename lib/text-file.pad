@@ -1,0 +1,44 @@
+{@
+    struct TextFile:
+        fp = nil
+
+        met open(self, fname, mode):
+            self.fp = open(fname, mode)
+        end
+
+        met close(self):
+            if self.fp:
+                self.fp.close()
+                self.fp = nil
+            end
+        end
+
+        met readLines(self):
+            s = self.fp.read()
+            ary = []
+            line = ""
+
+            for i = 0; i < len(s); i += 1:
+                c = s[i]
+                if c == "\r" and i < len(s) - 1 and c == "\n":
+                    i += 1
+                    line += "\r\n"
+                    ary.push(line)
+                    line = ""
+                elif c == "\r":
+                    line += "\r"
+                    ary.push(line)
+                    line = ""
+                elif c == "\n":
+                    line += "\n"
+                    ary.push(line)
+                    line = ""
+                else:
+                    line += c
+                end
+            end
+
+            return ary
+        end
+    end
+@}

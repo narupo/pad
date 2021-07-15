@@ -1,0 +1,11 @@
+{@
+    from "lib/text-file.pad" import TextFile
+
+    f = TextFile()
+    f.open("samples/lib/text-file.pad", "r")
+    lines = f.readlines()
+
+    for i = 0; i < len(lines); i += 1:
+        puts("[", lines[i], "]")
+    end
+@}
