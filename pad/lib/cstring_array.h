@@ -97,6 +97,8 @@ char *
 PadCStrAry_PopMove(PadCStrAry *self);
 
 /**
+ * @deprecated
+ * 
  * move back pointer to dynamic allocate memory to array with move semantics
  *
  * @param[in] *self
@@ -107,6 +109,9 @@ PadCStrAry_PopMove(PadCStrAry *self);
  */
 PadCStrAry *
 PadCStrAry_Move(PadCStrAry *self, char *ptr);
+
+PadCStrAry *
+PadCStrAry_MoveBack(PadCStrAry *self, char *ptr);
 
 /**
  * sort elements

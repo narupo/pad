@@ -3772,6 +3772,80 @@ path_tests[] = {
     {0},
 };
 
+/*******************
+* lib/unicode_path *
+*******************/
+
+static void 
+test_PadUniPath_default(void) {
+    PadUniPath *p = PadUniPath_New();
+
+#ifdef PAD_TESTS__WINDOWS
+    assert(PadUniPath_SetMB(p, "path\\to\\file"));
+    assert(!strcmp(PadUniPath_GetcMB(p), "path\\to\\file"));
+
+    assert(PadUniPath_Len(p));
+    PadUniPath_Clear(p);
+    assert(PadUniPath_Len(p) == 0);
+
+    PadUniPath_SetMB(p, "path");
+    PadCStrAry *ary = PadCStrAry_New();
+    PadCStrAry_PushBack(ary, "to");
+    PadCStrAry_PushBack(ary, "the");
+    PadCStrAry_PushBack(ary, "file");
+    PadUniPath_JoinCStrAry(p, ary);
+    assert(!strcmp(PadUniPath_GetcMB(p), "path\\to\\the\\file"));
+
+    PadUniPath_Clear(p);
+    PadCStrAry_Clear(ary);
+    PadCStrAry_PushBack(ary, "path");
+    PadCStrAry_PushBack(ary, "to");
+    PadCStrAry_PushBack(ary, "file");
+    PadUniPath_JoinCStrAry(p, ary);
+    assert(!strcmp(PadUniPath_GetcMB(p), "path\\to\\file"));
+
+    PadUniPath_Clear(p);
+    PadCStrAry_Clear(ary);
+    PadUniPath_JoinCStrAry(p, ary);
+    assert(!strcmp(PadUniPath_GetcMB(p), ""));
+#else
+    assert(PadUniPath_SetMB(p, "path\\to\\file"));
+    assert(!strcmp(PadUniPath_GetcMB(p), "path\\to\\file"));
+
+    assert(PadUniPath_Len(p));
+    PadUniPath_Clear(p);
+    assert(PadUniPath_Len(p) == 0);
+
+    PadUniPath_SetMB(p, "path");
+    PadCStrAry *ary = PadCStrAry_New();
+    PadCStrAry_PushBack(ary, "to");
+    PadCStrAry_PushBack(ary, "the");
+    PadCStrAry_PushBack(ary, "file");
+    PadUniPath_JoinCStrAry(p, ary);
+    assert(!strcmp(PadUniPath_GetcMB(p), "path/to/the/file"));
+
+    PadUniPath_Clear(p);
+    PadCStrAry_Clear(ary);
+    PadCStrAry_PushBack(ary, "path");
+    PadCStrAry_PushBack(ary, "to");
+    PadCStrAry_PushBack(ary, "file");
+    PadUniPath_JoinCStrAry(p, ary);
+    assert(!strcmp(PadUniPath_GetcMB(p), "path/to/file"));
+
+    PadUniPath_Clear(p);
+    PadCStrAry_Clear(ary);
+    PadUniPath_JoinCStrAry(p, ary);
+    assert(!strcmp(PadUniPath_GetcMB(p), ""));
+#endif
+}
+
+static const struct testcase
+unicode_path_tests[] = {
+    {"PadUniPath_default", test_PadUniPath_default},
+    {0},
+};
+
+
 /*****************
 * lang/tokenizer *
 *****************/
@@ -31500,6 +31574,7 @@ test_modules[] = {
     {"error", error_tests},
     {"util", util_tests},
     {"path", path_tests},
+    {"unicode_path", unicode_path_tests},
     {"dict", dict_tests},
     {"void_dict", void_dict_tests},
     {"tokenizer", tokenizer_tests},

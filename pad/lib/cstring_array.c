@@ -149,6 +149,11 @@ PadCStrAry_PopMove(PadCStrAry *self) {
 
 PadCStrAry *
 PadCStrAry_Move(PadCStrAry *self, char *ptr) {
+	return PadCStrAry_MoveBack(self, ptr);
+}
+
+PadCStrAry *
+PadCStrAry_MoveBack(PadCStrAry *self, char *ptr) {
 	if (!self) {
 		return NULL;
 	}

@@ -35,6 +35,8 @@
 #include <pad/lib/error.h>
 #include <pad/lib/cmdline.h>
 #include <pad/lib/unicode.h>
+#include <pad/lib/path.h>
+#include <pad/lib/unicode_path.h>
 #include <pad/core/util.h>
 #include <pad/core/config.h>
 #include <pad/core/alias_info.h>

@@ -76,6 +76,7 @@ SRCS := build/lib/error.c \
 	build/lib/pipe.c \
 	build/lib/term.c \
 	build/lib/path.c \
+	build/lib/unicode_path.c \
 	build/core/config.c \
 	build/core/util.c \
 	build/core/alias_info.c \
@@ -136,6 +137,7 @@ test: build/pad build/pad_tests
 	valgrind build/pad_tests error && \
 	valgrind build/pad_tests util && \
 	valgrind build/pad_tests path && \
+	valgrind build/pad_tests unicode_path && \
 	valgrind build/pad_tests dict && \
 	valgrind build/pad_tests void_dict && \
 	valgrind build/pad_tests tokenizer && \
@@ -189,6 +191,8 @@ build/lib/pipe.o: pad/lib/pipe.c pad/lib/pipe.h
 build/lib/term.o: pad/lib/term.c pad/lib/term.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/path.o: pad/lib/path.c pad/lib/path.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lib/unicode_path.o: pad/lib/unicode_path.c pad/lib/unicode_path.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/core/config.o: pad/core/config.c pad/core/config.h
 	$(CC) $(CFLAGS) -c $< -o $@
