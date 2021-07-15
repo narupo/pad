@@ -8210,6 +8210,7 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
     } break;
     case PAD_OBJ_TYPE__RING: {
         // TODO: fix me!
+        // what?
         PadObj *val = _Pad_ExtractRefOfObjAll(rhs);
         Pad_SetRefAtCurVarmap(
             ast->error_stack,
@@ -8229,6 +8230,7 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
         }
 
         check("set reference of (%d) at (%s) of current varmap", rval->type, idn);
+        printf("set reference of (%d) at (%s) of current varmap\n", rval->type, idn);
         PadObj_IncRef(rval);
         Pad_SetRefAtCurVarmap(
             ast->error_stack,

@@ -14,6 +14,7 @@
 #include <pad/lang/object_array.h>
 #include <pad/lang/object_dict.h>
 #include <pad/lang/gc.h>
+#include <pad/lang/ast.h>
 #include <pad/lang/chain_object.h>
 #include <pad/lang/chain_objects.h>
 #include <pad/lang/builtin/func_info_array.h>

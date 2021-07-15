@@ -252,9 +252,9 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
-    
-    for (PadCtx *cur = self; cur; cur = cur->ref_prev) {
-        PadObj *ref = PadScope_FindVarRefAll(cur->scope, key);
+
+    for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
+        PadObj *ref = PadScope_FindVarRefAll(ctx->scope, key);
         if (ref) {
             return ref;
         }
@@ -323,6 +323,7 @@ PadCtx_Dump(const PadCtx *self, FILE *fout) {
     }
 
     fprintf(fout, "context[%p]\n", self);
+    fprintf(fout, "type[%d]\n", self->type);
     fprintf(fout, "ref_prev[%p]\n", self->ref_prev);
     PadScope_Dump(self->scope, fout);
 }
@@ -490,4 +491,14 @@ PadCtx_SetUseBuf(PadCtx *self, bool is_use_buf) {
 bool
 PadCtx_GetIsUseBuf(const PadCtx *self) {
     return self->is_use_buf;
+}
+
+void
+PadCtx_SetType(PadCtx *self, PadCtxType type) {
+    self->type = type;
+}
+
+PadCtxType
+PadCtx_GetType(const PadCtx *self) {
+    return self->type;
 }

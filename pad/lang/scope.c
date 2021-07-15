@@ -359,3 +359,17 @@ PadScope_Dump(const PadScope *self, FILE *fout) {
         PadObjDict_Dump(cur->varmap, fout);
     }
 }
+
+int32_t
+PadScope_Len(const PadScope *self) {
+    if (!self) {
+        return 0;
+    }
+
+    int32_t len = 0;
+    for (const PadScope *cur = self; cur; cur = cur->next) {
+        len += 1;
+    }
+
+    return len;
+}

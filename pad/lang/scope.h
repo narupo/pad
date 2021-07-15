@@ -70,3 +70,6 @@ PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key);
  */
 void
 PadScope_Dump(const PadScope *self, FILE *fout);
+
+int32_t
+PadScope_Len(const PadScope *self);

@@ -1127,6 +1127,16 @@ PadObj_Dump(const PadObj *self, FILE *fout) {
     case PAD_OBJ_TYPE__BLTIN_FUNC:
         fprintf(fout, "builtin_func.funcname[%s]\n", self->builtin_func.funcname);
         break;
+    case PAD_OBJ_TYPE__OBJECT:
+        fprintf(fout, "object.object.ref_ast[%p]\n", self->object.ref_ast);
+        // PadAST_Dump(self->object.ref_ast, fout);  // recursive
+        fprintf(fout, "object.object.ref_struct_ast[%p]\n", self->object.ref_struct_ast);
+        PadAST_Dump(self->object.ref_struct_ast, fout);
+        fprintf(fout, "object.object.struct_context[%p]\n", self->object.struct_context);
+        PadCtx_Dump(self->object.struct_context, fout);
+        fprintf(fout, "object.object.ref_def_obj[%p]\n", self->object.ref_def_obj);
+        PadObj_Dump(self->object.ref_def_obj, fout);
+        break;
     }
 }
 

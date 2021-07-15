@@ -276,4 +276,4 @@ PadAST *
 PadAST_PushBackErrTok(PadAST *self, PadTok *ref_token);
 
 void
-PadAST_SetBltFuncInfos(PadAST *self, PadBltFuncInfo infos[]);
+PadAST_SetBltFuncInfos(PadAST *self, PadBltFuncInfo *infos);

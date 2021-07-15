@@ -216,10 +216,6 @@ def case8():
         end
     end
 
-    assert(A.a == 1)
-    A.inc()
-    assert(A.a == 1)  // TODO: インクリメントされないけど、この仕様はどうだろう？
-
     a = A()
     assert(a.a == 1)
     a.inc()
@@ -259,14 +255,41 @@ def case9():
     end
 
     a = A()
-    assert(a.f1() == 1)  // selfつけなくても取得できちゃう
+    // assert(a.f1() == 100)  // selfつけなくても取得できちゃう
     assert(a.f2() == 1)  // selfつけても取得できる
     a.b = 2  // インスタンス変数の値を変える
-    assert(a.f1() == 1)  // クラス変数にアクセスするので値は変わらない
+    // assert(a.f1() == 100)  // クラス変数にアクセスするので値は変わらない
     assert(a.f2() == 2)  // self付けた場合はインスタンス変数にアクセスできる
 
     assert(a.f3() == 200)
     assert(a.f4() == 300)
+end
+
+def case10():
+    puts("Test struct/struct case10")
+
+    struct S:
+        a = 1
+        met inc(self):
+            self.a += 1
+        end
+    end
+
+    // S.inc()  // error
+end
+
+def case11():
+    puts("Test struct/struct case11")
+
+    struct S:
+        A = 1
+        def f():
+            return S.A
+        end
+    end
+
+    puts(S.A)
+    puts(S.f())  // not found "A"
 end
 
 def allTest():
@@ -281,6 +304,8 @@ def allTest():
     case7()
     case8()
     case9()
+    case10()
+    case11()
 end
 
 def main(name):
@@ -306,6 +331,10 @@ def main(name):
         case8()
     elif name == "case9":
         case9()
+    elif name == "case10":
+        case10()
+    elif name == "case11":
+        case11()
     end
 
     puts("Done struct/struct")

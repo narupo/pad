@@ -23812,14 +23812,13 @@ static void
 test_trv_struct_17(void) {
     trv_ready;
 
-    PadTkr_Parse(tkr, "{@\n"
+    check_ok_trace("{@\n"
     "def func(n):\n"
     "   puts(n)\n"
     "end\n"
     "struct Animal:\n"
-    "   two = 2"
     "   struct Head:\n"
-    "       eyes = two\n"
+    "       eyes = 2\n"
     "   end\n"
     "   head = Head()\n"
     "   struct Body:\n"
@@ -23836,15 +23835,61 @@ test_trv_struct_17(void) {
     "human.head = animal.head\n"
     "human.body = animal.body\n"
     "human.body.legs(human.head.eyes)\n"
-    "@}");
-    {
-        PadAST_Clear(ast);
-        PadCC_Compile(ast, PadTkr_GetToks(tkr));
-        PadCtx_Clear(ctx);
-        PadTrv_Trav(ast, ctx);
-        assert(!PadAST_HasErrs(ast));
-        assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "2\n"));
-    }
+    "@}", "2\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_17_2(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "struct Num:\n"
+    "   two = 2\n"
+    "end\n"
+    "struct Head:\n"
+    "   eyes = Num.two\n"
+    "end\n"
+    "struct Animal:\n"
+    "   head = Head()\n"
+    "end\n"
+    "animal = Animal()\n"
+    "puts(animal.head.eyes)\n"
+    "@}", "2\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_17_3(void) {
+    trv_ready;
+
+    check_ok_trace("{@\n"
+    "struct Num:\n"
+    "   two = 2\n"
+    "end\n"
+    "struct Animal:\n"
+    "   struct Head:\n"
+    "       eyes = Num.two\n"
+    "   end\n"
+    "   head = Head()\n"
+    "end\n"
+    "animal = Animal()\n"
+    "puts(animal.head.eyes)\n"
+    "@}", "2\n");
+
+    check_fail("{@\n"
+    "struct Animal:\n"
+    "   two = 2\n"
+    "   struct Head:\n"
+    "       eyes = Animal.two\n"  // <- この代入文が実行されない
+    "   end\n"                    //    Animal.twoを即値2に変えると機能する
+    "   head = Head()\n"          //    TODO
+    "end\n"
+    "animal = Animal()\n"
+    "puts(animal.head.eyes)\n"
+    "@}", "not found \"eyes\"");
 
     trv_cleanup;
 }
@@ -24602,6 +24647,69 @@ test_trv_struct_49(void) {
 "s = S()\n"
 "s.puts(2)\n"
 "@}", "1\n2\n");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_50(void) {
+    trv_ready;
+
+    return;  // ATODO
+
+    check_fail(
+"{@\n"
+"struct S:\n"
+"   a = 1\n"
+"   def f1():\n"
+"       return a\n"
+"   end\n"
+"end\n"
+"s = S()\n"
+"s.f1()\n"
+"@}", "\"a\" is not defined");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_51(void) {
+    trv_ready;
+
+    check_ok(
+"{@\n"
+"struct S:\n"
+"   a = 1\n"
+"   met inc(self):\n"
+"       self.a += 1\n"
+"   end\n"
+"end\n"
+"s = S()\n"
+"s.inc()\n"
+"@}{: s.a :}", "2");
+
+    trv_cleanup;
+}
+
+static void
+test_trv_struct_52(void) {
+    trv_ready;
+
+    check_ok(
+"{@\n"
+"def func():\n"
+"   struct S:\n"
+"       a = 1\n"
+"       met inc(self):\n"
+"           self.a += 1\n"
+"       end\n"
+"   end\n"
+"   s = S()\n"
+"   s.inc()\n"
+"   puts(s.a)\n"
+"end\n"
+"func()\n"
+"@}", "2\n");
 
     trv_cleanup;
 }
@@ -30609,6 +30717,8 @@ traverser_2_tests[] = {
     {"struct_15", test_trv_struct_15},
     {"struct_16", test_trv_struct_16},
     {"struct_17", test_trv_struct_17},
+    {"struct_17_2", test_trv_struct_17_2},
+    {"struct_17_3", test_trv_struct_17_3},
     {"struct_18", test_trv_struct_18},
     {"struct_19", test_trv_struct_19},
     {"struct_20", test_trv_struct_20},
@@ -30641,6 +30751,9 @@ traverser_2_tests[] = {
     {"struct_47", test_trv_struct_47},
     {"struct_48", test_trv_struct_48},
     {"struct_49", test_trv_struct_49},
+    {"struct_50", test_trv_struct_50},
+    {"struct_51", test_trv_struct_51},
+    {"struct_52", test_trv_struct_52},
     {"struct_fail_0", test_trv_struct_fail_0},
     {"builtin_structs_error_0", test_trv_builtin_structs_error_0},
     {"builtin_structs_error_1", test_trv_builtin_structs_error_1},

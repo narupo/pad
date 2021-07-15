@@ -390,3 +390,9 @@ PadCtx_SetUseBuf(PadCtx *self, bool is_use_buf);
 
 bool
 PadCtx_GetIsUseBuf(const PadCtx *self);
+
+void
+PadCtx_SetType(PadCtx *self, PadCtxType type);
+
+PadCtxType
+PadCtx_GetType(const PadCtx *self);

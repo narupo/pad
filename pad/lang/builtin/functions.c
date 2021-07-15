@@ -785,6 +785,22 @@ builtin_open(PadBltFuncArgs *fargs) {
     return PadObj_NewFile(ref_gc, PadMem_Move(fp));
 }
 
+static PadObj *
+builtin_dump(PadBltFuncArgs *fargs) {
+    PadObj *actual_args = fargs->ref_args;
+    PadObjAry *args = actual_args->objarr;
+
+    if (PadObjAry_Len(args) != 1) {
+        push_err("need one argument");
+        return NULL;
+    }    
+    
+    PadObj *obj = PadObjAry_Get(args, 0);
+    PadObj_Dump(obj, stderr);
+
+    return PadObj_NewNil(fargs->ref_ast->ref_gc);
+}
+
 static PadBltFuncInfo
 builtin_func_infos[] = {
     {"id", builtin_id},
@@ -804,6 +820,7 @@ builtin_func_infos[] = {
     {"ord", builtin_ord},
     {"chr", builtin_chr},
     {"open", builtin_open},
+    {"dump", builtin_dump},
     {0},
 };
 

@@ -1046,6 +1046,7 @@ gen_struct(
         push_err("failed to unpack arguments for struct");
         return NULL;
     }
+    PadCtx_SetType(context, PAD_CTX_TYPE__OBJECT);
 
     PadObj_IncRef(own);
     return PadObj_NewObj(
