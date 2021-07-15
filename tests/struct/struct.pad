@@ -370,12 +370,12 @@ def case16():
         bbb = 0
     end
 
-    assert(id(A.aaa) != id(A.bbb))
+    assert(id(A.aaa) != id(B.bbb))
     a1 = A()
     A.aaa += 1
     a2 = A()
     assert(id(a1.aaa) != id(a2.aaa))
-    assert(a1.aaa == 1)
+    assert(a1.aaa == 0)
     assert(a2.aaa == 1)
 end
 
@@ -396,6 +396,7 @@ def allTest():
     case12()
     case14()
     case15()
+    case16()
 end
 
 def main(name):
@@ -431,6 +432,8 @@ def main(name):
         case14()
     elif name == "case15":
         case15()
+    elif name == "case16":
+        case16()
     end
 
     puts("Done struct/struct")
