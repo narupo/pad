@@ -19,24 +19,17 @@ The options are:
         exit(0)
     end
 
-    from "samples/mysite/models.pad" import (
-        Request,
-    )
-    from "samples/mysite/views.pad" import (
-        home,
-        about,
-    )
+    from "samples/mysite/models.pad" import Request
+    from "samples/mysite/routes.pad" import routes
 
     path = opts.get("path")
     method = opts.get("method")
     request = Request.new(path, method)
 
-    if path == "/":
-        out, err = home(request)
-    elif path == "/about":
-        out, err = about(request)
-    else:
-        err = "404 Not Found"
+    out, err = nil, nil
+    view = routes.get(path, nil)
+    if view:
+        out, err = view(request)
     end
 
     if err != nil:

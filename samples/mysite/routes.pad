@@ -1,0 +1,11 @@
+{@
+    from "samples/mysite/views.pad" import (
+        home,
+        about,
+    )
+
+    routes = {
+        "/": home,
+        "/about": about,
+    }
+@}
