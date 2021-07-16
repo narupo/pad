@@ -7,7 +7,7 @@ struct PadVoidAry {
     void (*deleter)(void *);
     void *(*deep_copy)(const void *);
     void *(*shallow_copy)(const void *);
-    int (*compare)(const void *, const void *);
+    int (*sort_compare)(const void *, const void *);
 };
 
 enum {
@@ -45,7 +45,7 @@ PadVoidAry_New(
     void (*deleter)(void *),
     void *(*deep_copy)(const void *),
     void *(*shallow_copy)(const void *),
-    int (*compare)(const void *, const void *)
+    int (*sort_compare)(const void *, const void *)
 ) {
     PadVoidAry *self = PadMem_Calloc(1, sizeof(PadVoidAry));
     if (!self) {
@@ -55,7 +55,7 @@ PadVoidAry_New(
     self->deleter = deleter;
     self->deep_copy = deep_copy;
     self->shallow_copy = shallow_copy;
-    self->compare = compare;
+    self->sort_compare = sort_compare;
     self->capa = INIT_CAPA;
 
     self->ary = PadMem_Calloc(self->capa + 1, sizeof(void *));
@@ -87,7 +87,7 @@ copy(const PadVoidAry *other, bool deep) {
     self->deleter = other->deleter;
     self->deep_copy = other->deep_copy;
     self->shallow_copy = other->shallow_copy;
-    self->compare = other->compare;
+    self->sort_compare = other->sort_compare;
 
     self->capa = other->capa;
     self->ary = PadMem_Calloc(other->capa + 1, sizeof(PadVoidAry *));
@@ -198,11 +198,11 @@ PadVoidAry_Sort(PadVoidAry *self) {
     if (!self) {
         return NULL;
     }
-    if (!self->compare) {
+    if (!self->sort_compare) {
         return NULL;
     }
 
-    qsort(self->ary, self->len, sizeof(self->ary[0]), self->compare);
+    qsort(self->ary, self->len, sizeof(self->ary[0]), self->sort_compare);
     return self;
 }
 

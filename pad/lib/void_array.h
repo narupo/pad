@@ -16,7 +16,7 @@ PadVoidAry_New(
     void (*deleter)(void *),
     void *(*deep_copy)(const void *),
     void *(*shallow_copy)(const void *),
-    int (*compare)(const void *, const void *)
+    int (*sort_compare)(const void *, const void *)
 );
 
 PadVoidAry *

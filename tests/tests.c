@@ -31576,7 +31576,7 @@ uni_shallow_copy(const void *ptr) {
 }
 
 static int
-uni_compare(const void *lhs, const void *rhs) {
+uni_sort_compare(const void *lhs, const void *rhs) {
     const PadUni *lu = lhs;
     const PadUni *ru = rhs;
     return PadUni_Compare(lu, ru);
@@ -31588,7 +31588,7 @@ new_uni_void_array(void) {
         uni_deleter,
         uni_deep_copy,
         uni_shallow_copy,
-        uni_compare
+        uni_sort_compare
     );
 }
 
