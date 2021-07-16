@@ -1,5 +1,5 @@
 {@
-    from "samples/kokun/templates/base.pad" import base
+    from "samples/mysite/templates/base.pad" import base
     
     def about(context) extends base:
         inject content: @}
@@ -9,4 +9,9 @@
 
         return super(context)
     end
+
+    about({
+        "siteName": siteName,
+        "description": description,
+    })
 @}

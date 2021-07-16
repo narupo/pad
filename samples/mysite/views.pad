@@ -1,0 +1,25 @@
+{@
+    def render(request, path, context):
+        fin = open(path, "r")
+        content = fin.read()
+        out, err = dance(content, context)
+        fin.close()
+        return out, err
+    end
+
+    def home(request):
+        context = {
+            siteName: "MySite",
+            description: "MySite is my homepage.",
+        }
+        return render(request, "samples/mysite/templates/home.pad", context)
+    end
+
+    def about(request):
+        context = {
+            siteName: "About - MySite",
+            description: "About this home page.",
+        }
+        return render(request, "samples/mysite/templates/about.pad", context)
+    end
+@}

@@ -1,0 +1,16 @@
+{@
+    from "samples/mysite/templates/base.pad" import base
+
+    def home(context) extends base:
+        inject content: @}
+            <h1>Welcome to my homepage!</h1>
+            <p>{: context.description :}</p>
+        {@ end
+        return super(context)
+    end
+
+    home({
+        "siteName": siteName,
+        "description": description,
+    })
+@}

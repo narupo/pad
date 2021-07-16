@@ -1,6 +1,6 @@
 {@
     def usage():
-        puts("Draw Kokun homepage.
+        puts("Draw mysite homepage.
 
 Usage:
 
@@ -19,10 +19,10 @@ The options are:
         exit(0)
     end
 
-    from "samples/kokun/models.pad" import (
+    from "samples/mysite/models.pad" import (
         Request,
     )
-    from "samples/kokun/views.pad" import (
+    from "samples/mysite/views.pad" import (
         home,
         about,
     )
