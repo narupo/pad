@@ -9,7 +9,7 @@ Usage:
 The options are:
 
     -h, --help    Show usage.
-    --path        Path of site.
+    --path        Path of site (/, /about, etc)
     --method      Method (GET, POST, etc)
 ")
     end
