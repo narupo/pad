@@ -3,9 +3,9 @@
 
     f = TextFile()
     f.open("samples/lib/text-file.pad", "r")
-    lines = f.readlines()
+    lines = f.readLines()
 
     for i = 0; i < len(lines); i += 1:
-        puts("[", lines[i].rstrip(), "]")
+        puts("[" + lines[i].rstrip() + "]")
     end
 @}
