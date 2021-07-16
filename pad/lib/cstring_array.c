@@ -36,7 +36,7 @@ PadCStrAry_New(void) {
 	}
 
 	self->capa = CAP_ARRINITCAPA;
-	self->arr = PadMem_Calloc(self->capa + 1, sizeof(PadCStrAry *));
+	self->arr = PadMem_Calloc(self->capa + 1, sizeof(char *));
 	if (!self->arr) {
 		free(self);
 		return NULL;
