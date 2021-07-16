@@ -1438,15 +1438,18 @@ again:
 
 static PadObj *
 refer_dict_index(
-    PadErrStack *err, 
+    PadErrStack *err,
+    PadAST *ref_ast,
+    PadGC *ref_gc, 
+    PadCtx *ref_context,
     const PadNode *ref_node,
     PadObj *owner,
-    PadObj *indexobj
+    PadObj *idxobj
 ) {
     assert(owner->type == PAD_OBJ_TYPE__DICT);
 
 again:
-    switch (indexobj->type) {
+    switch (idxobj->type) {
     default:
         push_err("index isn't string");
         return NULL;
@@ -1454,19 +1457,28 @@ again:
     case PAD_OBJ_TYPE__UNICODE:
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        const char *idn = PadObj_GetcIdentName(indexobj);
-        indexobj = Pad_PullRefAll(indexobj);
-        if (!indexobj) {
+        const char *idn = PadObj_GetcIdentName(idxobj);
+        idxobj = Pad_PullRefAll(idxobj);
+        if (!idxobj) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
         }
         goto again;
     } break;
+    case PAD_OBJ_TYPE__RING: {
+        idxobj = Pad_ReferRingObjWithRef(
+            ref_ast, err, ref_gc, ref_context, ref_node, idxobj
+        );
+        if (!idxobj) {
+            push_err("failed to refer ring object");
+            return NULL;
+        }
+    } break;
     }
 
     PadObjDict *objdict = PadObj_GetDict(owner);
     assert(objdict);
-    PadUni *key = PadObj_GetUnicode(indexobj);
+    PadUni *key = PadObj_GetUnicode(idxobj);
     const char *ckey = PadUni_GetcMB(key);
 
     PadObjDictItem *item = PadObjDict_Get(objdict, ckey);
@@ -1523,8 +1535,10 @@ again:
 static PadObj *
 refer_chain_index(
     PadErrStack *err,
-    const PadNode *ref_node,
+    PadAST *ref_ast,
     PadGC *ref_gc,
+    PadCtx *ref_context,
+    const PadNode *ref_node,
     PadObjAry *owns,
     PadChainObj *co
 ) {
@@ -1558,7 +1572,9 @@ again:
         return refer_array_index(err, ref_node, owner, indexobj);
         break;
     case PAD_OBJ_TYPE__DICT:
-        return refer_dict_index(err, ref_node, owner, indexobj);
+        return refer_dict_index(
+            err, ref_ast, ref_gc, ref_context, ref_node, owner, indexobj
+        );
         break;
     }
 
@@ -1628,21 +1644,27 @@ Pad_ReferChainThreeObjs(
 
     switch (PadChainObj_GetcType(co)) {
     case PAD_CHAIN_PAD_OBJ_TYPE___DOT: {
-        operand = refer_chain_dot(err, ref_node, ref_gc, ref_context, owns, co);
+        operand = refer_chain_dot(
+            err, ref_node, ref_gc, ref_context, owns, co
+        );
         if (PadErrStack_Len(err)) {
             push_err("failed to refer chain dot");
             return NULL;
         }
     } break;
     case PAD_CHAIN_PAD_OBJ_TYPE___CALL: {
-        operand = Pad_ReferChainCall(ref_ast, err, ref_node, ref_gc, ref_context, owns, co);
+        operand = Pad_ReferChainCall(
+            ref_ast, err, ref_node, ref_gc, ref_context, owns, co
+        );
         if (PadErrStack_Len(err)) {
             push_err("failed to refer chain call");
             return NULL;
         }
     } break;
     case PAD_CHAIN_PAD_OBJ_TYPE___INDEX: {
-        operand = refer_chain_index(err, ref_node, ref_gc, owns, co);
+        operand = refer_chain_index(
+            err, ref_ast, ref_gc, ref_context, ref_node, owns, co
+        );
         if (PadErrStack_Len(err)) {
             push_err("failed to refer chain index");
             return NULL;

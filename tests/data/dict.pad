@@ -83,6 +83,9 @@ def case5():
 
 	dd = { key: "hoge" }
 	d[dd.key] = 2
+
+	d[s.value] = {}
+	d[s.value][dd.key] = 3
 end
 
 def allTest():
