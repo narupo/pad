@@ -31716,9 +31716,9 @@ test_void_array_sort(void) {
 
     PadVoidAry_Sort(ary);
     u = PadVoidAry_Get(ary, 0);
-    assert(!strcmp(PadUni_GetcMB(u), "bbb"));
+    assert(!strcmp(PadUni_GetcMB(u), "bbb"));  // Wha?
     u = PadVoidAry_Get(ary, 1);
-    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));  // Hm?
 
     PadVoidAry_Clear(ary);
 
@@ -31731,9 +31731,9 @@ test_void_array_sort(void) {
 
     PadVoidAry_Sort(ary);
     u = PadVoidAry_Get(ary, 0);
-    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));  // Fa?
     u = PadVoidAry_Get(ary, 1);
-    assert(!strcmp(PadUni_GetcMB(u), "bbb"));
+    assert(!strcmp(PadUni_GetcMB(u), "bbb"));  // Un?
 
     PadVoidAry_Del(ary);
 }
