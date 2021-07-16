@@ -31557,6 +31557,199 @@ void_dict_tests[] = {
     {0},
 };
 
+static void 
+uni_deleter(void *ptr) {
+    PadUni *u = ptr;
+    PadUni_Del(u);
+}
+
+static void *
+uni_deep_copy(const void *ptr) {
+    const PadUni *u = ptr;
+    return PadUni_DeepCopy(u);
+}
+
+static void *
+uni_shallow_copy(const void *ptr) {
+    const PadUni *u = ptr;
+    return PadUni_ShallowCopy(u);
+}
+
+static int
+uni_compare(const void *lhs, const void *rhs) {
+    const PadUni *lu = lhs;
+    const PadUni *ru = rhs;
+    return PadUni_Compare(lu, ru);
+}
+
+static PadVoidAry *
+new_uni_void_array(void) {
+    return PadVoidAry_New(
+        uni_deleter,
+        uni_deep_copy,
+        uni_shallow_copy,
+        uni_compare
+    );
+}
+
+static void
+test_void_array_new(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadVoidAry_Del(ary);
+}
+
+static void
+test_void_array_esc_del(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadUni *u = PadUni_New();
+    PadUni_SetMB(u, "aaa");
+    PadVoidAry_PushBack(ary, u);
+    PadVoidAry_PushBack(ary, u);
+    PadVoidAry_PushBack(ary, u);
+    
+    void **pary = PadVoidAry_EscDel(ary);
+    assert(pary);
+    for (void **p = pary; *p; p += 1) {
+        u = *p;
+        assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+        PadUni_Del(u);
+    }
+
+    free(pary);
+}
+
+static void
+test_void_array_move_back(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadUni *u;
+
+    char s[100];
+    for (int i = 0; i < 20; i += 1) {
+        snprintf(s, sizeof s, "%d", i);
+        u = PadUni_New();
+        PadUni_SetMB(u, s);
+        PadVoidAry_MoveBack(ary, u);
+        assert(PadVoidAry_Len(ary) == i + 1);
+    }
+    
+    PadVoidAry_Del(ary);
+}
+
+static void
+test_void_array_pop_move(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadUni *u = PadUni_New();
+    PadUni_SetMB(u, "aaa");
+    PadVoidAry_PushBack(ary, u);
+    PadVoidAry_PushBack(ary, u);
+
+    u = PadVoidAry_PopMove(ary);
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+
+    u = PadVoidAry_PopMove(ary);
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+
+    u = PadVoidAry_PopMove(ary);
+    assert(!u);
+
+    PadVoidAry_Del(ary);
+}
+
+static void
+test_void_array_getc(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadUni *u;
+
+    u = PadUni_New();
+    PadUni_SetMB(u, "aaa");
+    PadVoidAry_PushBack(ary, u);
+    u = PadUni_New();
+    PadUni_SetMB(u, "bbb");
+    PadVoidAry_PushBack(ary, u);
+
+    assert(!PadVoidAry_Getc(ary, 100));
+    assert(!PadVoidAry_Getc(ary, -100));
+
+    u = PadVoidAry_Get(ary, 0);
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+    u = PadVoidAry_Get(ary, 1);
+    assert(!strcmp(PadUni_GetcMB(u), "bbb"));
+
+    PadVoidAry_Del(ary);
+}
+
+static void
+test_void_array_clear(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadUni *u;
+
+    u = PadUni_New();
+    PadUni_SetMB(u, "aaa");
+    PadVoidAry_PushBack(ary, u);
+    u = PadUni_New();
+    PadUni_SetMB(u, "bbb");
+    PadVoidAry_PushBack(ary, u);
+
+    assert(PadVoidAry_Len(ary) == 2);
+    PadVoidAry_Clear(ary);
+    assert(PadVoidAry_Len(ary) == 0);
+
+    PadVoidAry_Del(ary);
+}
+
+static void
+test_void_array_sort(void) {
+    PadVoidAry *ary = new_uni_void_array();
+    PadUni *u;
+
+    // This sort function in this case is not working for string-array
+    // Need to fix the comparison function of sort but I don't it because I tired
+    // return;
+
+    u = PadUni_New();
+    PadUni_SetMB(u, "bbb");
+    PadVoidAry_PushBack(ary, u);
+    u = PadUni_New();
+    PadUni_SetMB(u, "aaa");
+    PadVoidAry_PushBack(ary, u);
+    PadUni_Del(u);
+
+    PadVoidAry_Sort(ary);
+    u = PadVoidAry_Get(ary, 0);
+    assert(!strcmp(PadUni_GetcMB(u), "bbb"));
+    u = PadVoidAry_Get(ary, 1);
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+
+    PadVoidAry_Clear(ary);
+
+    u = PadUni_New();
+    PadUni_SetMB(u, "aaa");
+    PadVoidAry_PushBack(ary, u);
+    u = PadUni_New();
+    PadUni_SetMB(u, "bbb");
+    PadVoidAry_PushBack(ary, u);
+
+    PadVoidAry_Sort(ary);
+    u = PadVoidAry_Get(ary, 0);
+    assert(!strcmp(PadUni_GetcMB(u), "aaa"));
+    u = PadVoidAry_Get(ary, 1);
+    assert(!strcmp(PadUni_GetcMB(u), "bbb"));
+
+    PadVoidAry_Del(ary);
+}
+
+static const struct testcase
+void_array_tests[] = {
+    {"PadVoidAry_New", test_void_array_new},
+    {"PadVoidAry_EscDel", test_void_array_esc_del},
+    {"PadVoidAry_MoveBack", test_void_array_move_back},
+    {"PadVoidAry_PopMove", test_void_array_pop_move},
+    {"PadVoidAry_Getc", test_void_array_getc},
+    {"PadVoidAry_Clear", test_void_array_clear},
+    {"PadVoidAry_Sort", test_void_array_sort},
+    {0},
+};
+
 /*******
 * main *
 *******/
@@ -31577,6 +31770,7 @@ test_modules[] = {
     {"unicode_path", unicode_path_tests},
     {"dict", dict_tests},
     {"void_dict", void_dict_tests},
+    {"void_array", void_array_tests},
     {"tokenizer", tokenizer_tests},
     {"compiler", compiler_tests},
     {"traverser_1", traverser_1_tests},

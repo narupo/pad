@@ -32,6 +32,7 @@
 #include <pad/lib/file.h>
 #include <pad/lib/cl.h>
 #include <pad/lib/void_dict.h>
+#include <pad/lib/void_array.h>
 #include <pad/lib/error.h>
 #include <pad/lib/cmdline.h>
 #include <pad/lib/unicode.h>

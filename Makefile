@@ -72,6 +72,7 @@ SRCS := build/lib/error.c \
 	build/lib/format.c \
 	build/lib/dict.c \
 	build/lib/void_dict.c \
+	build/lib/void_array.c \
 	build/lib/cmdline.c \
 	build/lib/pipe.c \
 	build/lib/term.c \
@@ -140,6 +141,7 @@ test: build/pad build/pad_tests
 	valgrind build/pad_tests unicode_path && \
 	valgrind build/pad_tests dict && \
 	valgrind build/pad_tests void_dict && \
+	valgrind build/pad_tests void_array && \
 	valgrind build/pad_tests tokenizer && \
 	valgrind build/pad_tests compiler && \
 	valgrind build/pad_tests traverser_1 && \
@@ -183,6 +185,8 @@ build/lib/format.o: pad/lib/format.c pad/lib/format.h
 build/lib/dict.o: pad/lib/dict.c pad/lib/dict.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/void_dict.o: pad/lib/void_dict.c pad/lib/void_dict.h
+	$(CC) $(CFLAGS) -c $< -o $@
+build/lib/void_array.o: pad/lib/void_array.c pad/lib/void_array.h
 	$(CC) $(CFLAGS) -c $< -o $@
 build/lib/cmdline.o: pad/lib/cmdline.c pad/lib/cmdline.h
 	$(CC) $(CFLAGS) -c $< -o $@

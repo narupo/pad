@@ -1086,4 +1086,13 @@ PadUni_IsSpace(const PadUni *self) {
     return true;
 }
 
+int
+PadUni_Compare(const PadUni *self, const PadUni *other) {
+    if (!self || !other) {
+        return 0;
+    }
+
+    return PadU_StrCmp(self->buffer, other->buffer);
+}
+
 #undef NIL

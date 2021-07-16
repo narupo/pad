@@ -667,3 +667,6 @@ PadUni_IsAlpha(const PadUni *self);
 
 bool
 PadUni_IsSpace(const PadUni *self);
+
+int
+PadUni_Compare(const PadUni *self, const PadUni *other);
