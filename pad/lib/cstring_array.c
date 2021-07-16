@@ -133,6 +133,20 @@ PadCStrAry_PushBack(PadCStrAry *self, const char *str) {
 	return self;
 }
 
+PadCStrAry *
+PadCStrAry_ExtendBackOther(PadCStrAry *self, const PadCStrAry *other) {
+	if (!self || !other) {
+		return NULL;
+	}
+
+	for (int32_t i = 0; i < other->len; i += 1) {
+		const char *elem = PadCStrAry_Getc(other, i);
+		PadCStrAry_PushBack(self, elem);
+	}
+
+	return self;
+}
+
 char *
 PadCStrAry_PopMove(PadCStrAry *self) {
 	if (!self || !self->len) {

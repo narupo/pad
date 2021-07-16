@@ -353,6 +353,32 @@ test_PadCStrAry_PushBack(void) {
 }
 
 void
+test_PadCStrAry_ExtendBackOther(void) {
+    PadCStrAry *ary1 = PadCStrAry_New();
+    assert(ary1 != NULL);
+    PadCStrAry *ary2 = PadCStrAry_New();
+    assert(ary2 != NULL);
+
+    PadCStrAry_PushBack(ary1, "ccc");
+    PadCStrAry_PushBack(ary1, "ddd");
+
+    PadCStrAry_PushBack(ary2, "aaa");
+    PadCStrAry_PushBack(ary2, "bbb");
+
+    PadCStrAry_ExtendBackOther(ary2, ary1);
+
+    assert(!strcmp(PadCStrAry_Getc(ary2, 0), "aaa"));
+    assert(!strcmp(PadCStrAry_Getc(ary2, 1), "bbb"));
+    assert(!strcmp(PadCStrAry_Getc(ary2, 2), "ccc"));
+    assert(!strcmp(PadCStrAry_Getc(ary2, 3), "ddd"));
+
+    assert(PadCStrAry_Len(ary1) == 2);
+
+    PadCStrAry_Del(ary1);
+    PadCStrAry_Del(ary2);
+}
+
+void
 test_PadCStrAry_PopMove(void) {
     PadCStrAry *arr = PadCStrAry_New();
     assert(arr);
@@ -489,6 +515,7 @@ cstrarr_tests[] = {
     {"PadCStrAry_EscDel", test_PadCStrAry_EscDel},
     {"PadCStrAry_Push", test_PadCStrAry_Push},
     {"PadCStrAry_PushBack", test_PadCStrAry_PushBack},
+    {"PadCStrAry_ExtendBackOther", test_PadCStrAry_ExtendBackOther},
     {"PadCStrAry_PopMove", test_PadCStrAry_PopMove},
     {"PadCStrAry_Move", test_PadCStrAry_Move},
     {"PadCStrAry_Sort", test_PadCStrAry_Sort},

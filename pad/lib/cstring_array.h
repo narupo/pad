@@ -85,6 +85,9 @@ PadCStrAry_Push(PadCStrAry *self, const char *str);
 PadCStrAry *
 PadCStrAry_PushBack(PadCStrAry *self, const char *str);
 
+PadCStrAry *
+PadCStrAry_ExtendBackOther(PadCStrAry *self, const PadCStrAry *other);
+
 /**
  * pop tail element in array with move semantics
  *
