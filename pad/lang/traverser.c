@@ -1353,7 +1353,7 @@ again:
     case PAD_OBJ_TYPE__RING: {
         rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadAST_HasErrs(ast)) {
-            pushb_error("failed to refer chain object");
+            pushb_error("failed to refer ring object");
             return_trav(NULL);
         }
         goto again;
@@ -1608,6 +1608,13 @@ bob:
     case PAD_OBJ_TYPE__UNICODE: {
         // pass
     } break;
+    case PAD_OBJ_TYPE__RING: {
+        idxobj = _Pad_ReferRingObjWithRef(idxobj);
+        if (PadErrStack_Len(ast->error_stack)) {
+            pushb_error("failed to refer ring object");
+            return NULL;
+        }
+    } break;
     }
 
 marley:
@@ -1616,7 +1623,7 @@ marley:
     case PAD_OBJ_TYPE__RING: {
         rhs = _Pad_ReferRingObjWithRef(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
-            pushb_error("failed to refer chain object");
+            pushb_error("failed to refer ring object");
             return NULL;
         }
         goto marley;
@@ -1946,8 +1953,8 @@ trv_assign(PadAST *ast, PadTrvArgs *targs) {
         targs->ref_node = lnode;
         targs->depth = depth + 1;
 
-        // left hand side operand don't refer chain object
-        // this flag store true to don't refer chain object
+        // left hand side operand don't refer ring object
+        // this flag store true to don't refer ring object
         targs->do_not_refer_ring = true;
 
         PadObj *lhs = _PadTrv_Trav(ast, targs);
@@ -5024,7 +5031,7 @@ trv_compare_comparison_eq_chain(PadAST *ast, PadTrvArgs *targs) {
 
     PadObj *lval = _Pad_ExtractRefOfObjAll(lhs);
     if (!lval) {
-        pushb_error("chain object value is null");
+        pushb_error("ring object value is null");
         return_trav(NULL);
     }
 
@@ -8463,7 +8470,7 @@ again:
     case PAD_OBJ_TYPE__RING: {
         rhs = _Pad_ExtractRefOfObjAll(rhs);
         if (PadErrStack_Len(ast->error_stack)) {
-            pushb_error("failed to extract chain object");
+            pushb_error("failed to extract ring object");
             return_trav(NULL);
         }
         goto again;
@@ -8543,7 +8550,7 @@ trv_calc_asscalc_add_ass_chain(PadAST *ast, PadTrvArgs *targs) {
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAST_HasErrs(ast)) {
-        pushb_error("failed to refer chain object");
+        pushb_error("failed to refer ring object");
         return_trav(NULL);
     }
 
@@ -8676,7 +8683,7 @@ trv_calc_asscalc_sub_ass_chain(PadAST *ast, PadTrvArgs *targs) {
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAST_HasErrs(ast)) {
-        pushb_error("failed to refer chain object");
+        pushb_error("failed to refer ring object");
         return NULL;
     }
 
@@ -8783,7 +8790,7 @@ trv_calc_asscalc_mul_ass_chain(PadAST *ast, PadTrvArgs *targs) {
 
     PadObj *lref = _Pad_ReferRingObjWithRef(chainobj);
     if (PadAST_HasErrs(ast)) {
-        pushb_error("failed to refer chain object");
+        pushb_error("failed to refer ring object");
         return NULL;
     }
 
@@ -8905,7 +8912,7 @@ trv_calc_asscalc_div_ass_chain(PadAST *ast, PadTrvArgs *targs) {
 
     PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
     if (PadAST_HasErrs(ast)) {
-        pushb_error("failed to refer chain object");
+        pushb_error("failed to refer ring object");
         return NULL;
     }
 
@@ -9030,7 +9037,7 @@ trv_calc_asscalc_mod_ass_chain(PadAST *ast, PadTrvArgs *targs) {
 
     PadObj *lref = _Pad_ReferRingObjWithRef(lhs);
     if (PadAST_HasErrs(ast)) {
-        pushb_error("failed to refer chain object");
+        pushb_error("failed to refer ring object");
         return NULL;
     }
 
@@ -9119,7 +9126,7 @@ again:
     case PAD_OBJ_TYPE__RING: {
         obj = _Pad_ReferRingObjWithRef(obj);
         if (PadAST_HasErrs(ast)) {
-            pushb_error("failed to refer chain object");
+            pushb_error("failed to refer ring object");
             return_trav(NULL);
         }
         assert(obj);

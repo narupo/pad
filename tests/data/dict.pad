@@ -69,12 +69,29 @@ def case4():
 	assert(d.m() == 1)
 end
 
+def case5():
+	puts("Test data/dict case5")
+	
+	struct S:
+		value = "hige"
+	end
+
+	s = S()
+	d = {}
+
+	d[s.value] = 1
+
+	dd = { key: "hoge" }
+	d[dd.key] = 2
+end
+
 def allTest():
 	puts("Test data/dict all")
 	case1()
 	case2()
 	case3()
 	case4()
+	case5()
 end
 
 def main(name):
@@ -90,6 +107,8 @@ def main(name):
 		case3()
 	elif name == "case4":
 		case4()
+	elif name == "case5":
+		case5()
 	end
 
 	puts("Done data/dict")
