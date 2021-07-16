@@ -1,0 +1,8 @@
+{@
+    from "lib/ini.pad" import INI
+
+    ini = INI.new()
+    ini.load("tests/lib/ini/settings.ini")
+    // puts(ini.get("s1", "n1"))  // TODO: fix me!
+    puts(ini.get("s1", "n2"))
+@}

@@ -13,7 +13,7 @@
             end
         end
 
-        met readlines(self):
+        met readLines(self):
             s = self.fp.read()
             ary = []
             line = ""

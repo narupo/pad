@@ -1,0 +1,101 @@
+{@
+    from "lib/stream.pad" import Stream
+    from "lib/text-file.pad" import TextFile
+
+    struct INI:
+        data = {}
+        cur_section = nil
+        mode = nil
+
+        def new():
+            return INI()
+        end
+
+        met load(self, fname):
+            fin = TextFile()
+            fin.open(fname, "r")
+            lines = fin.readLines()
+            fin.close()
+
+            self.mode = "first"
+
+            for i = 0; i < len(lines); i += 1:
+                line = lines[i]
+                self.parse_line(line)
+            end
+        end
+
+        met is_name_char(self, c):
+            return c.isalpha() or c.isdigit() or c == "_" or c == "-"
+        end
+
+        met is_value_char(self, c):
+            return not c.isspace()
+        end
+
+        met parse_line(self, line):
+            section = ""
+            name = ""
+            value = ""
+
+            for i = 0; i < len(line); i += 1:
+                c = line[i]
+                // puts("[" + self.mode + "]", c)
+                if self.mode == "first":
+                    if c == "[":
+                        self.mode = "read section"
+                        section = ""
+                    end
+                elif self.mode == "read section":
+                    if c == "]":
+                        self.mode = "read name"
+                        self.cur_section = section
+                    else:
+                        section += c
+                    end
+                elif self.mode == "read name":
+                    if self.is_name_char(c):
+                        self.mode = "read name 2"
+                        name = c 
+                    elif c == "[":
+                        self.mode = "read section"
+                    end
+                elif self.mode == "read name 2":
+                    if self.is_name_char(c):
+                        name += c
+                    elif c.isspace():
+                        self.mode = "read name 3"
+                    elif c == "=":
+                        self.mode = "read value"
+                    end
+                elif self.mode == "read name 3":
+                    if c == "=":
+                        self.mode = "read value"
+                    end
+                elif self.mode == "read value":
+                    if self.is_value_char(c):
+                        self.mode = "read value 2"
+                        value += c
+                    end
+                elif self.mode == "read value 2":
+                    if self.is_value_char(c):
+                        value += c
+                    else:
+                        self.mode = "read name"
+                        self.data[self.cur_section] = {}
+                        /*  TODO:
+                            if s not in self.data.keys():
+                                self.data[s] = {}
+                            end
+                        */
+                        self.data[self.cur_section][name] = value
+                    end
+                end
+            end
+        end
+
+        met get(self, section, name):
+            return self.data[section][name]
+        end
+    end
+@}
