@@ -52,15 +52,21 @@ def case4():
 		return 1
 	end
 
+	met method(self):
+		return self.call()
+	end
+
 	d = {
 		call: func,
 		sub: {
 			call: func,
-		}
+		},
+		m: method,
 	}
 
 	assert(d.call() == 1)
 	assert(d.sub.call() == 1)
+	assert(d.m() == 1)
 end
 
 def allTest():
