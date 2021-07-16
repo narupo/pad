@@ -45,11 +45,30 @@ def case3():
 	assert(d["class"] == 1)
 end
 
+def case4():
+	puts("Test data/dict case4")
+
+	def func():
+		return 1
+	end
+
+	d = {
+		call: func,
+		sub: {
+			call: func,
+		}
+	}
+
+	assert(d.call() == 1)
+	assert(d.sub.call() == 1)
+end
+
 def allTest():
 	puts("Test data/dict all")
 	case1()
 	case2()
 	case3()
+	case4()
 end
 
 def main(name):
@@ -63,6 +82,8 @@ def main(name):
 		case2()
 	elif name == "case3":
 		case3()
+	elif name == "case4":
+		case4()
 	end
 
 	puts("Done data/dict")
