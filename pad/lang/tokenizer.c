@@ -516,6 +516,8 @@ PadTkr_Parse_identifier(PadTkr *self) {
         token->type = PAD_TOK_TYPE__STMT_BLOCK;
     } else if (PadCStr_Eq(token->text, "inject")) {
         token->type = PAD_TOK_TYPE__STMT_INJECT;
+    } else if (PadCStr_Eq(token->text, "global")) {
+        token->type = PAD_TOK_TYPE__STMT_GLOBAL;
     } else if (PadCStr_Eq(token->text, "extends")) {
         token->type = PAD_TOK_TYPE__EXTENDS;
     } else if (PadCStr_Eq(token->text, "struct")) {

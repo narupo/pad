@@ -230,7 +230,7 @@ PadScope_PopBack(PadScope *self) {
 }
 
 PadScope *
-PadScope_GetLast(PadScope *self) {
+PadScope_GetTail(PadScope *self) {
     if (!self) {
         return NULL;
     }
@@ -247,8 +247,8 @@ PadScope_GetLast(PadScope *self) {
 }
 
 const PadScope *
-PadScope_GetcLast(const PadScope *self) {
-    return PadScope_GetLast((PadScope *) self);
+PadScope_GetcTail(const PadScope *self) {
+    return PadScope_GetTail((PadScope *) self);
 }
 
 PadScope *
@@ -276,6 +276,8 @@ PadScope_GetVarmap(PadScope *self) {
 
 const PadObjDict *
 PadScope_GetcVarmap(const PadScope *self) {
+    // this is strange code
+    // why you don't write 'return self->varmap;' ?
     return PadScope_GetVarmap((PadScope *) self);
 }
 
@@ -326,6 +328,20 @@ PadScope_FindVarRefAll(PadScope *self, const char *key) {
 }
 
 PadObj *
+PadScope_FindVarRefAtGlobal(PadScope *self, const char *key) {
+    if (!self) {
+        return NULL;
+    }
+
+    PadObjDictItem *item = PadObjDict_Get(self->varmap, key);
+    if (item) {
+        return item->value;
+    }
+
+    return NULL;
+}
+
+PadObj *
 PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key) {
     if (!self) {
         return NULL;
@@ -347,6 +363,27 @@ PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key) {
     return NULL;
 }
 
+PadObjDict *
+PadScope_FindVarmapByIdent(PadScope *self, const PadObj *idn) {
+    if (!self || !idn) {
+        return NULL;
+    }
+
+    const char *key = PadObj_GetcIdentName(idn);
+
+    for (const PadScope *cur = self; cur; cur = cur->next) {
+        PadObjDictItem *item = PadObjDict_Get(cur->varmap, key);
+        if (!item) {
+            continue;
+        }
+        if (item->value == idn) {
+            return cur->varmap;
+        }
+    }
+
+    return NULL;
+}
+
 void
 PadScope_Dump(const PadScope *self, FILE *fout) {
     if (!self || !fout) {
@@ -355,7 +392,7 @@ PadScope_Dump(const PadScope *self, FILE *fout) {
 
     int32_t dep = 0;
     for (const PadScope *cur = self; cur; cur = cur->next) {
-        fprintf(fout, "scope[%p] dep[%d]\n", cur, dep++);
+        fprintf(fout, "---- scope[%p] dep[%d]\n", cur, dep++);
         PadObjDict_Dump(cur->varmap, fout);
     }
 }

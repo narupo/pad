@@ -38,7 +38,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = Pad_PullRef(ref_owner);
+        ref_owner = Pad_PullRef(ref_ast, ref_owner);
         if (!ref_owner) {
             PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't push");
             return NULL;
@@ -61,7 +61,7 @@ again2:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(arg);
-        arg = Pad_PullRef(arg);
+        arg = Pad_PullRef(ref_ast, arg);
         if (!arg) {
             PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "\"%s\" is not defined", idn);
             return NULL;
@@ -108,7 +108,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = Pad_PullRef(ref_owner);
+        ref_owner = Pad_PullRef(ref_ast, ref_owner);
         if (!ref_owner) {
             PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "object is not found. can't pop");
             return NULL;

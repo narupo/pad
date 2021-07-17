@@ -147,6 +147,9 @@ static PadNode *
 cc_inject_stmt(PadAST *ast, PadCCArgs *cargs);
 
 static PadNode *
+cc_global_stmt(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
 cc_block_stmt(PadAST *ast, PadCCArgs *cargs);
 
 static PadNode *
@@ -3259,6 +3262,9 @@ cc_stmt(PadAST *ast, PadCCArgs *cargs) {
         PadAST_DelNodes(ast, cur->break_stmt); \
         PadAST_DelNodes(ast, cur->continue_stmt); \
         PadAST_DelNodes(ast, cur->return_stmt); \
+        PadAST_DelNodes(ast, cur->block_stmt); \
+        PadAST_DelNodes(ast, cur->inject_stmt); \
+        PadAST_DelNodes(ast, cur->global_stmt); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3347,6 +3353,16 @@ cc_stmt(PadAST *ast, PadCCArgs *cargs) {
     if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->inject_stmt) {
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
+    }
+
+    check("call cc_global_stmt");
+    t = cur_tok(ast);
+    cargs->depth = depth + 1;
+    cur->global_stmt = cc_global_stmt(ast, cargs);
+    if (PadAST_HasErrs(ast)) {
+        return_cleanup("");
+    } else if (cur->global_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
@@ -3506,6 +3522,67 @@ cc_inject_stmt(PadAST *ast, PadCCArgs *cargs) {
 
     // done
     PadNode *node = PadNode_New(PAD_NODE_TYPE__INJECT_STMT, cur, savetok);
+    return_parse(node);
+}
+
+static PadNode *
+cc_global_stmt(PadAST *ast, PadCCArgs *cargs) {
+    ready();
+    declare(PadGlobalStmtNode, cur);
+    cur->identifiers = PadNodeAry_New();
+    PadTok **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        PadTok *curtok = cur_tok(ast); \
+        ast->ref_ptr = save_ptr; \
+        for (int32_t i = 0; i < PadNodeAry_Len(cur->identifiers); ++i) { \
+            PadNode *n = PadNodeAry_Get(cur->identifiers, i); \
+            PadAST_DelNodes(ast, n); \
+        } \
+        PadNodeAry_DelWithoutNodes(cur->identifiers); \
+        free(cur); \
+        if (strlen(msg)) { \
+            pushb_error(ast, curtok, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    PadDepth depth = cargs->depth;
+    PadTok *t = next_tok(ast);
+    if (!t || t->type != PAD_TOK_TYPE__STMT_GLOBAL) {
+        return_cleanup("");  // not error
+    }
+
+    const PadTok *savetok = cur_tok(ast);
+    const PadTok *curtok = cur_tok(ast);
+
+    for (;;) {
+        cargs->depth = depth + 1;
+        PadNode *ident = cc_identifier(ast, cargs);
+        if (!ident) {
+            return_cleanup("not found identifier");
+        }
+
+        if (!PadNodeAry_MoveBack(cur->identifiers, PadMem_Move(ident))) {
+            return_cleanup("failed to move back identifier");
+        }
+
+        curtok = next_tok(ast);
+        if (!curtok) {
+            return_cleanup("reached EOF in global statement");
+        } else if (curtok->type == PAD_TOK_TYPE__NEWLINE) {
+            break;            
+        } else if (curtok->type == PAD_TOK_TYPE__COMMA) {
+            // pass
+        } else {
+            prev_tok(ast);
+            break;
+        }
+    }
+
+    // done
+    PadNode *node = PadNode_New(PAD_NODE_TYPE__GLOBAL_STMT, cur, savetok);
     return_parse(node);
 }
 

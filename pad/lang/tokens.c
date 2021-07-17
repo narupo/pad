@@ -169,6 +169,7 @@ PadTok_TypeToStr(const PadTok *self) {
     case PAD_TOK_TYPE__STMT_RETURN: return "return"; break;
     case PAD_TOK_TYPE__STMT_BLOCK: return "block"; break;
     case PAD_TOK_TYPE__STMT_INJECT: return "inject"; break;
+    case PAD_TOK_TYPE__STMT_GLOBAL: return "global"; break;
 
     // struct
     case PAD_TOK_TYPE__STRUCT: return "struct"; break;

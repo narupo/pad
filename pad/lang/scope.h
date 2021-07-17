@@ -35,10 +35,10 @@ PadScope *
 PadScope_PopBack(PadScope *self);
 
 const PadScope *
-PadScope_GetcLast(const PadScope *self);
+PadScope_GetcTail(const PadScope *self);
 
 PadScope *
-PadScope_GetLast(PadScope *self);
+PadScope_GetTail(PadScope *self);
 
 PadObjDict *
 PadScope_GetVarmap(PadScope *self);
@@ -60,7 +60,23 @@ PadObj *
 PadScope_FindVarRefAll(PadScope *self, const char *key);
 
 PadObj *
+PadScope_FindVarRefAtGlobal(PadScope *self, const char *key);
+
+/**
+ * find reference of object from scope chain.
+ * ignore the head scope.
+ */
+PadObj *
 PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key);
+
+/**
+ * find varmap from scope chain by the identifier object.
+ * if varmap has the identifier object (compare to pointer address)
+ * then this function return that varmap.
+ * if not found then return NULL.
+ */
+PadObjDict *
+PadScope_FindVarmapByIdent(PadScope *self, const PadObj *idn);
 
 /**
  * dump PadScope at stream

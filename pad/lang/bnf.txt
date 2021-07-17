@@ -21,7 +21,8 @@ BNF of Pad's template language
                     continue_stmt |
                     return_stmt |
                     block_stmt |
-                    inject_stmt
+                    inject_stmt |
+                    global_stmt
 
        import_stmt: import_as_stmt | from_import_stmt
     import_as_stmt: 'import' string 'as' identifier
@@ -44,6 +45,7 @@ BNF of Pad's template language
        return_stmt: 'return' [ formula ]*
         block_stmt: 'block' identifier ':' [ content ]* 'end'
        inject_stmt: 'inject' identifier ':' [ content ]* 'end'
+       global_stmt: 'global' [ identifier , ]*
 
             struct: 'struct' identifier ':' elems 'end'
 

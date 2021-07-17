@@ -44,6 +44,7 @@ typedef enum {
     PAD_NODE_TYPE__RETURN_STMT,
     PAD_NODE_TYPE__BLOCK_STMT,
     PAD_NODE_TYPE__INJECT_STMT,
+    PAD_NODE_TYPE__GLOBAL_STMT,
 
     PAD_NODE_TYPE__STRUCT,
 
@@ -178,6 +179,7 @@ typedef struct {
     PadNode *return_stmt;
     PadNode *block_stmt;
     PadNode *inject_stmt;
+    PadNode *global_stmt;
 } PadStmtNode;
 
 typedef struct {
@@ -247,6 +249,11 @@ typedef struct {
     PadNodeAry *contents;
 } PadInjectStmtNode;
 
+// global_stmt ::= global [ identifiers , ]*
+typedef struct {
+    PadNodeAry *identifiers;
+} PadGlobalStmtNode;
+
 /*********
 * struct *
 *********/
@@ -277,9 +284,12 @@ typedef struct {
     PadNode *identifier;
     PadNode *func_def_params;
     PadNode *func_extends;  // function of extended
-    PadNodeAry *contents;  // array of nodes
-    PadNodeDict *blocks;  // block nodes of block statement
-    bool is_met;
+    PadNodeAry *contents;  // array of nodes (function body)
+    PadNodeDict *blocks;  // block nodes of block statement.
+                          // This *blocks* is using func-def 
+                          // and block-stmt logic.
+                          // @see compiler.c:cc_block_stmt()
+    bool is_met;  // if this function is method then store true
 } PadFuncDefNode;
 
 typedef struct {

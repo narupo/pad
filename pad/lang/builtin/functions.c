@@ -28,7 +28,7 @@ builtin_id(PadBltFuncArgs *fargs) {
     PadObj *obj = PadObjAry_Get(args, 0);
     assert(obj);
 
-    obj = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+    obj = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
     if (PadAST_HasErrs(ref_ast)) {
         return NULL;
     }
@@ -81,7 +81,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(obj);
-        obj = Pad_PullRef(obj);
+        obj = Pad_PullRef(ref_ast, obj);
         if (!obj) {
             push_err("not defined \"%s\" in type()", idn);
             return NULL;
@@ -138,8 +138,8 @@ builtin_eputs(PadBltFuncArgs *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
-        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -150,8 +150,8 @@ builtin_eputs(PadBltFuncArgs *fargs) {
     if (arrlen) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
-        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -187,12 +187,12 @@ builtin_puts(PadBltFuncArgs *fargs) {
     for (int32_t i = 0; i < arrlen-1; ++i) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
-        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (PadAST_HasErrs(ref_ast)) {
             push_err("failed to get argument");
             return NULL;
         }
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -203,12 +203,12 @@ builtin_puts(PadBltFuncArgs *fargs) {
     if (arrlen) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
-        PadObj *ref = Pad_ExtractRefOfObj(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
+        PadObj *ref = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
         if (PadAST_HasErrs(ref_ast)) {
             push_err("failed to get argument");
             return NULL;
         }
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -245,7 +245,7 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *obj = Pad_PullRef(arg);
+        PadObj *obj = Pad_PullRef(ref_ast, arg);
         if (!obj) {
             push_err("not found object for len");
             return NULL;
@@ -366,7 +366,14 @@ builtin_assert(PadBltFuncArgs *fargs) {
     PadObj *arg = PadObjAry_Get(args, 0);
     assert(arg);
 
-    bool ok = Pad_ParseBool(ref_ast, ref_ast->error_stack, ref_ast->ref_gc, ref_ast->ref_context, NULL, arg);
+    bool ok = Pad_ParseBool(
+        ref_ast->error_stack,
+        ref_ast,
+        ref_ast->ref_gc,
+        ref_ast->ref_context,
+        NULL,
+        arg
+    );
     if (!ok) {
         push_err("assertion error");
         return NULL;
@@ -450,7 +457,7 @@ builtin_extract(PadBltFuncArgs *fargs) {
 }
 
 static const char *
-extract_unicode_mb(const PadObj *obj) {
+extract_unicode_mb(const PadAST *ref_ast, const PadObj *obj) {
 again:
     switch (obj->type) {
     default: {
@@ -460,7 +467,7 @@ again:
         return PadUni_GetcMB(obj->unicode);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRef(obj);
+        obj = Pad_PullRef(ref_ast, obj);
         if (!obj) {
             return NULL;
         }
@@ -506,13 +513,13 @@ builtin_setattr(PadBltFuncArgs *fargs) {
     } break;
     }
 
-    const char *key = extract_unicode_mb(key_);
+    const char *key = extract_unicode_mb(ref_ast, key_);
     if (!key) {
         push_err("invalid key");
         return NULL;
     }
 
-    Pad_SetRefAtCurVarmap(errstack, fargs->ref_node, ref_context, NULL, key, obj);
+    Pad_SetRefAtCurVarmap(errstack, ref_ast, fargs->ref_node, ref_context, NULL, key, obj);
     if (PadErrStack_Len(errstack)) {
         push_err("failed to set reference at varmap");
         return NULL;
@@ -556,7 +563,7 @@ builtin_getattr(PadBltFuncArgs *fargs) {
     } break;
     }
 
-    const char *key = extract_unicode_mb(key_);
+    const char *key = extract_unicode_mb(ref_ast, key_);
     if (!key) {
         push_err("invalid key");
         return NULL;
@@ -602,7 +609,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
         return_fail("need one argument");
     }    
     const PadObj *src = PadObjAry_Getc(args, 0);
-    const char *code = extract_unicode_mb(src);
+    const char *code = extract_unicode_mb(ref_ast, src);
     if (!code) {
         return_fail("invalid source code");
     }

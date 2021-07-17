@@ -122,6 +122,11 @@ struct PadModObj {
     PadBltFuncInfoAry *builtin_func_infos;  // builtin functions
 };
 
+typedef enum {
+    PAD_IDENT_OBJ_SCOPE__DEFAULT,
+    PAD_IDENT_OBJ_SCOPE__GLOBAL,
+} PadIdentObjScope;
+
 /**
  * A identifier object
  */

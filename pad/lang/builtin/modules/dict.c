@@ -5,14 +5,14 @@
     Pad_PushBackErrNode(fargs->ref_ast->error_stack, fargs->ref_node, fmt, ##__VA_ARGS__)
 
 static const char *
-pull_key(PadObj *obj) {
+pull_key(const PadAST *ref_ast, PadObj *obj) {
 again:
     switch (obj->type) {
     default:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRef(obj);
+        obj = Pad_PullRef(ref_ast, obj);
         if (!obj) {
             return NULL;
         }
@@ -26,7 +26,7 @@ again:
 }
 
 static PadObj *
-pull_last_dict(PadObjAry *ref_owners) {
+pull_last_dict(const PadAST *ref_ast, PadObjAry *ref_owners) {
     if (!ref_owners) {
         return NULL;
     }
@@ -46,7 +46,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = Pad_PullRef(ref_owner);
+        ref_owner = Pad_PullRef(ref_ast, ref_owner);
         if (!ref_owner) {
             return NULL;
         }
@@ -81,7 +81,7 @@ builtin_dict_get(PadBltFuncArgs *fargs) {
     }
 
     PadObj *key_obj = PadObjAry_Get(args, 0);
-    const char *key = pull_key(key_obj);
+    const char *key = pull_key(ref_ast, key_obj);
     if (!key) {
         if (def_val_obj) {
             return def_val_obj;
@@ -90,7 +90,7 @@ builtin_dict_get(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    PadObj *dict_obj = pull_last_dict(ref_owners);
+    PadObj *dict_obj = pull_last_dict(ref_ast, ref_owners);
     if (!dict_obj) {
         push_err("invalid owner");
         return NULL;
@@ -110,6 +110,7 @@ builtin_dict_get(PadBltFuncArgs *fargs) {
 
 static PadObj *
 builtin_dict_pop(PadBltFuncArgs *fargs) {
+    PadAST *ref_ast = fargs->ref_ast;
     PadObj *actual_args = fargs->ref_args;
     assert(actual_args);
     assert(actual_args->type == PAD_OBJ_TYPE__ARRAY);
@@ -127,7 +128,7 @@ builtin_dict_pop(PadBltFuncArgs *fargs) {
     }
 
     PadObj *key_obj = PadObjAry_Get(args, 0);
-    const char *key = pull_key(key_obj);
+    const char *key = pull_key(ref_ast, key_obj);
     if (!key) {
         if (def_val_obj) {
             return def_val_obj;
@@ -136,7 +137,7 @@ builtin_dict_pop(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    PadObj *dict_obj = pull_last_dict(ref_owners);
+    PadObj *dict_obj = pull_last_dict(ref_ast, ref_owners);
     if (!dict_obj) {
         push_err("invalid owner");
         return NULL;

@@ -394,23 +394,24 @@ PadAST *
 PadAST_New(const PadConfig *ref_config) {
     PadAST *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
-        return NULL;
+        goto error;
     }
 
     self->ref_config = ref_config;
     self->opts = PadOpts_New();
     if (!self->opts) {
-        PadAST_Del(self);
-        return NULL;
+        goto error;
     }
 
     self->error_stack = PadErrStack_New();
     if (!self->error_stack) {
-        PadAST_Del(self);
-        return NULL;
+        goto error;
     }
 
     return self;
+error:
+    PadAST_Del(self);
+    return NULL;
 }
 
 PadAST *

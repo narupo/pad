@@ -69,6 +69,7 @@ typedef enum {
     PAD_TOK_TYPE__STMT_RETURN, // 'return'
     PAD_TOK_TYPE__STMT_BLOCK,  // 'block'
     PAD_TOK_TYPE__STMT_INJECT,  // 'inject'
+    PAD_TOK_TYPE__STMT_GLOBAL,  // 'global'
 
     PAD_TOK_TYPE__STRUCT,  // 'struct'
 

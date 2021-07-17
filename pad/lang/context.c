@@ -6,35 +6,6 @@ enum {
     OBJDICT_SIZE = 1024,
 };
 
-struct PadCtx {
-    PadCtxType type;
-
-    // ref_prevにはコンテキストをつなげたい時に、親のコンテキストを設定する
-    // contextはこのref_prevを使い親のコンテキストを辿れるようになっている
-    // これによってルートのコンテキストや1つ前のコンテキストを辿れる
-    PadCtx *ref_prev;  // reference to previous context
-
-    PadGC *ref_gc;  // reference to gc (DO NOT DELETE)
-    PadAliasInfo *alinfo;  // alias info for builtin alias module
-
-    // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
-    // その他ref_blockやtext_blockなどの出力もルートのcontextに保存されるようになっている
-    // 2020/10/06以前はコンテキストごとにputsの出力を保存していた
-    PadStr *stdout_buf;  // stdout buffer in context
-    PadStr *stderr_buf;  // stderr buffer in context
-
-    // コンテキストはスコープを管理する
-    // 関数などのブロックに入るとスコープがプッシュされ、関数のスコープになる
-    // 関数から出るとこのスコープがポップされ、スコープから出る
-    PadScope *scope;  // scope in context
-
-    bool do_break;  // if do break from current context then store true
-    bool do_continue;  // if do continue on current context then store
-    bool do_return;
-
-    bool is_use_buf;  // if true then context use stdout/stderr buffer
-};
-
 void
 PadCtx_Del(PadCtx *self) {
     if (!self) {
@@ -98,6 +69,12 @@ PadCtx_New(PadGC *ref_gc, PadCtxType type) {
     }
     
     self->is_use_buf = true;
+
+    self->global_names = PadCStrAry_New();
+    if (!self->global_names) {
+        PadCtx_Del(self);
+        return NULL;
+    }
 
     return self;
 }
@@ -173,13 +150,33 @@ PadCtx_GetcAliasInfo(const PadCtx *self) {
 
 PadObjDict *
 PadCtx_GetVarmap(PadCtx *self) {
-    PadScope *current_scope = PadScope_GetLast(self->scope);
+    PadScope *current_scope = PadScope_GetTail(self->scope);
     return PadScope_GetVarmap(current_scope);
 }
 
 PadObjDict *
-PadCtx_GetVarmapAtGlobal(PadCtx *self) {
+PadCtx_GetVarmapAtHeadScope(PadCtx *self) {
     return PadScope_GetVarmap(self->scope);
+}
+
+PadObjDict *
+PadCtx_GetVarmapAtGlobal(PadCtx *self) {
+    for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
+        switch (ctx->type) {
+        default:
+            if (!ctx->ref_prev) {
+                return PadScope_GetVarmap(ctx->scope);
+            }
+            break;
+        case PAD_CTX_TYPE__MODULE:
+            // stop at module
+            // don't refer out side of module
+            return PadScope_GetVarmap(ctx->scope);
+            break;
+        }
+    }
+
+    return NULL;
 }
 
 bool
@@ -248,12 +245,47 @@ PadCtx_FindVarRef(PadCtx *self, const char *key) {
 }
 
 PadObj *
+PadCtx_FindVarRefAtGlobal(PadCtx *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+
+    PadCtx *global_ctx;
+
+    for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
+        switch (ctx->type) {
+        default:
+            if (!ctx->ref_prev) {
+                global_ctx = ctx;
+                goto done;
+            }
+            break;
+        case PAD_CTX_TYPE__MODULE:
+            // stop at module
+            // don't refer out of module
+            global_ctx = ctx;
+            goto done;
+        }
+    }
+
+done:
+    return PadScope_FindVarRefAtGlobal(global_ctx->scope, key);
+}
+
+PadObj *
 PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
 
     for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
+        bool has_global_name = PadCStrAry_IsContain(
+            ctx->global_names, key
+        );
+        if (has_global_name) {
+            return PadCtx_FindVarRefAtGlobal(ctx, key);
+        }
+
         PadObj *ref = PadScope_FindVarRefAll(ctx->scope, key);
         if (ref) {
             return ref;
@@ -285,6 +317,18 @@ PadCtx_FindVarRefAllIgnoreStructHead(PadCtx *self, const char *key) {
     }
 
     return NULL;
+}
+
+PadObjDict *
+PadCtx_FindVarmapByIdent(PadCtx *self, const PadObj *idn) {
+    if (!self || !idn) {
+        return NULL;
+    }
+    if (self != idn->identifier.ref_context) {
+        return NULL;
+    }
+
+    return PadScope_FindVarmapByIdent(self->scope, idn);
 }
 
 PadGC *
@@ -330,7 +374,7 @@ PadCtx_Dump(const PadCtx *self, FILE *fout) {
 
 bool
 PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
-    PadScope *current_scope = PadScope_GetLast(self->scope);
+    PadScope *current_scope = PadScope_GetTail(self->scope);
     PadObjDict *varmap = PadScope_GetVarmap(current_scope);
 
     for (int32_t i = 0; i < PadObjDict_Len(varmap); ++i) {
@@ -346,7 +390,7 @@ PadCtx_VarInCurScope(const PadCtx *self, const char *idn) {
 
 PadObjDict *
 PadCtx_GetRefVarmapCurScope(const PadCtx *self) {
-    PadScope *current_scope = PadScope_GetLast(self->scope);
+    PadScope *current_scope = PadScope_GetTail(self->scope);
     return PadScope_GetVarmap(current_scope);
 }
 
@@ -428,6 +472,7 @@ PadCtx_DeepCopy(const PadCtx *other) {
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
     self->is_use_buf = other->is_use_buf;
+    self->global_names = PadCStrAry_DeepCopy(other->global_names);
 
     return self;
 }
@@ -450,6 +495,7 @@ PadCtx_ShallowCopy(const PadCtx *other) {
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
     self->is_use_buf = other->is_use_buf;
+    self->global_names = PadCStrAry_ShallowCopy(other->global_names);
 
     return self;
 }

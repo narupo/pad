@@ -21,6 +21,36 @@ typedef enum {
     PAD_CTX_TYPE__MODULE,
 } PadCtxType;
 
+struct PadCtx {
+    PadCtxType type;
+
+    // ref_prevにはコンテキストをつなげたい時に、親のコンテキストを設定する
+    // contextはこのref_prevを使い親のコンテキストを辿れるようになっている
+    // これによってルートのコンテキストや1つ前のコンテキストを辿れる
+    PadCtx *ref_prev;  // reference to previous context
+
+    PadGC *ref_gc;  // reference to gc (DO NOT DELETE)
+    PadAliasInfo *alinfo;  // alias info for builtin alias module
+
+    // ルートのcontextのstdout_buf, stderr_bufにputsなどの組み込み関数の出力が保存される
+    // その他ref_blockやtext_blockなどの出力もルートのcontextに保存されるようになっている
+    // 2020/10/06以前はコンテキストごとにputsの出力を保存していた
+    PadStr *stdout_buf;  // stdout buffer in context
+    PadStr *stderr_buf;  // stderr buffer in context
+
+    // コンテキストはスコープを管理する
+    // 関数などのブロックに入るとスコープがプッシュされ、関数のスコープになる
+    // 関数から出るとこのスコープがポップされ、スコープから出る
+    PadScope *scope;  // scope in context
+
+    bool do_break;  // if do break from current context then store true
+    bool do_continue;  // if do continue on current context then store
+    bool do_return;
+
+    bool is_use_buf;  // if true then context use stdout/stderr buffer
+    PadCStrAry *global_names;
+};
+
 /**
  * destruct PadObj
  *
@@ -171,7 +201,7 @@ PadCtx_GetVarmap(PadCtx *self);
  * @return pointer to PadObjDict
  */
 PadObjDict *
-PadCtx_GetVarmapAtGlobal(PadCtx *self);
+PadCtx_GetVarmapAtHeadScope(PadCtx *self);
 
 /**
  * get do-break flag
@@ -266,6 +296,9 @@ PadCtx_PopBackScope(PadCtx *self);
 PadObj *
 PadCtx_FindVarRef(PadCtx *self, const char *key);
 
+PadObj *
+PadCtx_FindVarRefAtGlobal(PadCtx *self, const char *key);
+
 /**
  * find variable from varmap of scope at tail to head in scope chain
  * traverse previous context on find
@@ -281,6 +314,12 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key);
 
 PadObj *
 PadCtx_FindVarRefAllIgnoreStructHead(PadCtx *self, const char *key);
+
+/**
+ * TODO: test
+ */
+PadObjDict *
+PadCtx_FindVarmapByIdent(PadCtx *self, const PadObj *idn);
 
 /**
  * get reference of PadGC in context

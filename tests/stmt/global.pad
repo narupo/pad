@@ -1,0 +1,105 @@
+{@
+
+def case1():
+    puts("Test stmt/global case1")
+
+    a = 1
+    global a
+    assert(a == 1)
+end
+
+a = 1
+    
+def case2():
+    puts("Test stmt/global case2")
+
+    struct S:
+        a = 2
+        def func():
+            global a
+            assert(a == 1)
+        end
+    end
+
+    S.func()
+
+    s = S()
+    s.func()
+end
+
+b = 1
+
+def case3():
+    puts("Test stmt/global case3")
+
+    assert(b == 1)
+    global b
+    assert(b == 1)
+    b = 2
+    assert(b == 2)
+end
+
+c = 1
+
+def case4():
+    puts("Test stmt/global case4")
+
+    def func1():
+        global c
+        c = 2
+    end
+
+    func1()
+
+    def func2():
+        assert(c == 2)
+    end
+
+    func2()
+end
+
+d = 1
+
+def case5():
+    puts("Test stmt/global case4")
+
+    def func1():
+        global d
+        d += 1
+    end
+
+    func1()
+
+    def func2():
+        assert(d == 2)
+    end
+
+    func2()
+end
+
+def all():
+    puts("all")
+    case1()
+    case2()
+    case3()
+    case4()
+    // case5()
+end
+
+def main(case):
+    if case == "all":
+        all()
+    elif case == "case1":
+        case1()
+    elif case == "case2":
+        case2()
+    elif case == "case3":
+        case3()
+    elif case == "case4":
+        case4()
+    elif case == "case5":
+        case5()
+    end
+end
+
+@}

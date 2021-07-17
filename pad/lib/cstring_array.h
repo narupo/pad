@@ -181,3 +181,5 @@ PadCStrAry_Clear(PadCStrAry *self);
 PadCStrAry * 
 PadCStrAry_Resize(PadCStrAry *self, int32_t capa);
 
+bool
+PadCStrAry_IsContain(const PadCStrAry *self, const char *target);

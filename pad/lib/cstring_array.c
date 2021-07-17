@@ -249,3 +249,18 @@ PadCStrAry_Clear(PadCStrAry *self) {
 
 	self->len = 0;
 }
+
+bool
+PadCStrAry_IsContain(const PadCStrAry *self, const char *target) {
+	if (!self || !target) {
+		return false;
+	}
+
+	for (int32_t i = 0; i < self->len; i += 1) {
+		if (!strcmp(self->arr[i], target)) {
+			return true;
+		}
+	}
+
+	return false;
+}
