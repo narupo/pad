@@ -81,7 +81,7 @@ again:
     } break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(obj);
-        obj = Pad_PullRef(ref_ast, obj);
+        obj = Pad_PullRef(obj);
         if (!obj) {
             push_err("not defined \"%s\" in type()", idn);
             return NULL;
@@ -245,7 +245,7 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *obj = Pad_PullRef(ref_ast, arg);
+        PadObj *obj = Pad_PullRef(arg);
         if (!obj) {
             push_err("not found object for len");
             return NULL;
@@ -467,7 +467,7 @@ again:
         return PadUni_GetcMB(obj->unicode);
     } break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRef(ref_ast, obj);
+        obj = Pad_PullRef(obj);
         if (!obj) {
             return NULL;
         }

@@ -12,7 +12,7 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRef(ref_ast, obj);
+        obj = Pad_PullRef(obj);
         if (!obj) {
             return NULL;
         }
@@ -46,7 +46,7 @@ again:
         goto again;
         break;
     case PAD_OBJ_TYPE__IDENT:
-        ref_owner = Pad_PullRef(ref_ast, ref_owner);
+        ref_owner = Pad_PullRef(ref_owner);
         if (!ref_owner) {
             return NULL;
         }

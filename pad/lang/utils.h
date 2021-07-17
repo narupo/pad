@@ -65,13 +65,13 @@ Pad_GetCtxByOwns(const PadAST *ref_ast, PadObjAry *ref_owners, PadCtx *def_conte
  * @param return NULL or reference to object in varmap in current scope (DO NOT DELETE)
  */
 PadObj *
-Pad_PullRef(const PadAST *ref_ast, const PadObj *idn_obj);
+Pad_PullRef(const PadObj *idn_obj);
 
 /**
  * traverse previous context
  */
 PadObj *
-Pad_PullRefAll(const PadAST *ref_ast, const PadObj *idn_obj);
+Pad_PullRefAll(const PadObj *idn_obj);
 
 /**
  * object to string

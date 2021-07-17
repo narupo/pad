@@ -102,6 +102,12 @@ PadScope_DeepCopy(const PadScope *other) {
         return NULL;
     }
 
+    self->global_names = PadCStrAry_DeepCopy(other->global_names);
+    if (!self->global_names) {
+        PadScope_Del(self);
+        return NULL;
+    }
+
     PadScope *dst = self;
     for (PadScope *cur = other->prev; cur; cur = cur->prev) {
         dst->prev = PadScope_DeepCopyOnce(cur);
@@ -123,12 +129,6 @@ PadScope_DeepCopy(const PadScope *other) {
         }
         dst->next->prev = dst;
         dst = dst->next;
-    }
-
-    self->global_names = PadCStrAry_DeepCopy(other->global_names);
-    if (!self->global_names) {
-        PadScope_Del(self);
-        return NULL;
     }
 
     return self;
@@ -179,6 +179,12 @@ PadScope_ShallowCopy(const PadScope *other) {
         return NULL;
     }
 
+    self->global_names = PadCStrAry_ShallowCopy(other->global_names);
+    if (!self->global_names) {
+        PadScope_Del(self);
+        return NULL;
+    }
+
     PadScope *dst = self;
     for (PadScope *cur = other->prev; cur; cur = cur->prev) {
         dst->prev = PadScope_ShallowCopyOnce(cur);
@@ -199,12 +205,6 @@ PadScope_ShallowCopy(const PadScope *other) {
         }
         dst->next->prev = dst;
         dst = dst->next;
-    }
-
-    self->global_names = PadCStrAry_ShallowCopy(other->global_names);
-    if (!self->global_names) {
-        PadScope_Del(self);
-        return NULL;
     }
 
     return self;
@@ -287,6 +287,7 @@ PadScope_Clear(PadScope *self) {
         PadScope *del = cur;
         cur = cur->next;
         PadObjDict_Del(del->varmap);
+        PadCStrAry_Del(del->global_names);
         free(del);
     }
 
@@ -420,6 +421,8 @@ PadScope_Dump(const PadScope *self, FILE *fout) {
     for (const PadScope *cur = self; cur; cur = cur->next) {
         fprintf(fout, "---- scope[%p] dep[%d]\n", cur, dep++);
         PadObjDict_Dump(cur->varmap, fout);
+        fprintf(fout, "global_names[%p]\n", cur->global_names);
+        PadCStrAry_Dump(cur->global_names, fout);
     }
 }
 

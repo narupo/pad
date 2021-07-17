@@ -8,16 +8,16 @@ def case1():
     assert(a == 1)
 end
 
-a = 1
-    
+aa = 1
+
 def case2():
     puts("Test stmt/global case2")
 
     struct S:
-        a = 2
+        aa = 2
         def func():
-            global a
-            assert(a == 1)
+            global aa
+            assert(aa == 1)
         end
     end
 
@@ -25,6 +25,23 @@ def case2():
 
     s = S()
     s.func()
+end
+
+bb = 1
+
+def case2_2():
+    puts("Test stmt/global case2_2")
+
+    assert(bb == 1)
+    bb = 2
+    assert(bb == 2)
+
+    def func():
+        global bb
+        assert(bb == 1)
+    end
+
+    func()
 end
 
 b = 1
@@ -146,6 +163,7 @@ def all():
     puts("all")
     case1()
     case2()
+    case2_2()
     case3()
     case4()
     case5()
@@ -159,6 +177,8 @@ def main(case):
         case1()
     elif case == "case2":
         case2()
+    elif case == "case2_2":
+        case2_2()
     elif case == "case3":
         case3()
     elif case == "case4":

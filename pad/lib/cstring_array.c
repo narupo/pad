@@ -237,6 +237,21 @@ PadCStrAry_Show(const PadCStrAry *self, FILE *fout) {
 	return self;
 }
 
+const PadCStrAry *
+PadCStrAry_Dump(const PadCStrAry *self, FILE *fout) {
+	if (!self || !fout) {
+		return NULL;
+	}
+
+	for (int32_t i = 0; i < self->len; ++i) {
+		fprintf(fout, "ary[%d] = [%s] (%p)\n",
+			i, self->arr[i], self->arr[i]);
+	}
+	fflush(fout);
+
+	return self;
+}
+
 void
 PadCStrAry_Clear(PadCStrAry *self) {
 	if (!self) {

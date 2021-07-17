@@ -146,6 +146,7 @@ PadNode_DeepCopy(const PadNode *other) {
         dst->return_stmt = PadNode_DeepCopy(src->return_stmt);
         dst->block_stmt = PadNode_DeepCopy(src->block_stmt);
         dst->inject_stmt = PadNode_DeepCopy(src->inject_stmt);
+        dst->global_stmt = PadNode_DeepCopy(src->global_stmt);
         self->real = dst;
     } break;
     case PAD_NODE_TYPE__IMPORT_STMT: {

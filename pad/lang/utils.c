@@ -69,7 +69,7 @@ again:
         return own->module.context;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        own = Pad_PullRefAll(ref_ast, own);
+        own = Pad_PullRefAll(own);
         if (!own) {
             return def_ctx;
         }
@@ -85,7 +85,7 @@ again:
  * this function do not push error at ast's error stack
  */
 static PadObj *
-_Pad_PullRef(const PadAST *ref_ast, const PadObj *idn_obj, bool all) {
+_Pad_PullRef(const PadObj *idn_obj, bool all) {
     if (!idn_obj) {
         return NULL;
     }
@@ -95,31 +95,31 @@ _Pad_PullRef(const PadAST *ref_ast, const PadObj *idn_obj, bool all) {
     PadCtx *ref_ctx = PadObj_GetIdentRefCtx(idn_obj);
     assert(idn && ref_ctx);
 
-    PadObj *ref_obj = NULL;
+    PadObj *ref = NULL;
 
     if (all) {
-        ref_obj = PadCtx_FindVarRefAll(ref_ctx, idn);
+        ref = PadCtx_FindVarRefAll(ref_ctx, idn);
     } else {
-        ref_obj = PadCtx_FindVarRef(ref_ctx, idn);
+        ref = PadCtx_FindVarRef(ref_ctx, idn);
     }
 
-    if (!ref_obj) {
+    if (!ref) {
         return NULL;
-    } else if (ref_obj->type == PAD_OBJ_TYPE__IDENT) {
-        return _Pad_PullRef(ref_ast, ref_obj, all);
+    } else if (ref->type == PAD_OBJ_TYPE__IDENT) {
+        return _Pad_PullRef(ref, all);
     }
 
-    return ref_obj;
+    return ref;
 }
 
 PadObj *
-Pad_PullRef(const PadAST *ref_ast, const PadObj *idn_obj) {
-    return _Pad_PullRef(ref_ast, idn_obj, false);
+Pad_PullRef(const PadObj *idn_obj) {
+    return _Pad_PullRef(idn_obj, false);
 }
 
 PadObj *
-Pad_PullRefAll(const PadAST *ref_ast, const PadObj *idn_obj) {
-    return _Pad_PullRef(ref_ast, idn_obj, true);
+Pad_PullRefAll(const PadObj *idn_obj) {
+    return _Pad_PullRef(idn_obj, true);
 }
 
 PadStr *
@@ -139,7 +139,7 @@ again:
         return PadObj_ToStr(obj);
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *var = Pad_PullRefAll(ref_ast, obj);
+        PadObj *var = Pad_PullRefAll(obj);
         if (!var) {
             push_err("\"%s\" is not defined in object-to-string", PadObj_GetcIdentName(obj));
             return NULL;
@@ -205,9 +205,11 @@ Pad_SetRefAtVarmap(
     // allow owns is null
 
     PadScope *curscope = PadCtx_GetCurScope(ctx);
-    bool has_global_name = PadCStrAry_IsContain(curscope->global_names, ident);
+    bool has_global_name = PadCStrAry_IsContain(
+        curscope->global_names, ident
+    );
     if (has_global_name) {
-        PadObjDict *varmap = PadCtx_GetVarmapAtHeadScope(ctx);    
+        PadObjDict *varmap = PadCtx_GetVarmapAtGlobal(ctx);    
         return Pad_SetRef(varmap, ident, ref);
     }
 
@@ -294,7 +296,7 @@ again1:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(own);
-        own = Pad_PullRefAll(ref_ast, own);
+        own = Pad_PullRefAll(own);
         if (!own) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -441,7 +443,7 @@ again:
         return NULL;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(own);
-        own = Pad_PullRefAll(ref_ast, own);
+        own = Pad_PullRefAll(own);
         if (!own) {
             error("\"%s\" is not defined", idn);
             return NULL;
@@ -504,7 +506,7 @@ again:
     default:
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRefAll(ref_ast, obj);
+        obj = Pad_PullRefAll(obj);
         if (!obj) {
             return NULL;
         }
@@ -666,7 +668,7 @@ copy_func_args(
             goto again;
         case PAD_OBJ_TYPE__IDENT: {
             const char *idn = PadObj_GetcIdentName(arg);
-            arg = Pad_PullRefAll(ref_ast, arg);
+            arg = Pad_PullRefAll(arg);
             if (!arg) {
                 push_err("\"%s\" is not defined", idn);
                 return NULL;
@@ -729,7 +731,7 @@ copy_array_args(
             goto again;
         case PAD_OBJ_TYPE__IDENT: {
             const char *idn = PadObj_GetcIdentName(arg);
-            arg = Pad_PullRefAll(ref_ast, arg);
+            arg = Pad_PullRefAll(arg);
             if (!arg) {
                 push_err("\"%s\" is not defined", idn);
                 return NULL;
@@ -789,7 +791,7 @@ extract_func_args(
         PadObj *aarg = PadObjAry_Get(actual_args, i);
         PadObj *ref_aarg = aarg;
         if (aarg->type == PAD_OBJ_TYPE__IDENT) {
-            ref_aarg = Pad_PullRefAll(ref_ast, aarg);
+            ref_aarg = Pad_PullRefAll(aarg);
             if (!ref_aarg) {
                 push_err("\"%s\" is not defined in invoke function", PadObj_GetcIdentName(aarg));
                 PadObj_Del(args);
@@ -1005,7 +1007,7 @@ invoke_builtin_modules(
             module = ownpar;
             break;
         case PAD_OBJ_TYPE__IDENT: {
-            ownpar = Pad_PullRefAll(ref_ast, ownpar);
+            ownpar = Pad_PullRefAll(ownpar);
             if (!ownpar) {
                 return NULL;
             }
@@ -1232,7 +1234,7 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRefAll(ref_ast, obj);
+        obj = Pad_PullRefAll(obj);
         if (!obj) {
             return NULL;
         }
@@ -1252,7 +1254,7 @@ again:
         return NULL;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        obj = Pad_PullRefAll(ref_ast, obj);
+        obj = Pad_PullRefAll(obj);
         if (!obj) {
             return NULL;
         }
@@ -1371,7 +1373,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(indexobj);
-        indexobj = Pad_PullRefAll(ref_ast, indexobj);
+        indexobj = Pad_PullRefAll(indexobj);
         if (!indexobj) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1415,7 +1417,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(indexobj);
-        indexobj = Pad_PullRefAll(ref_ast, indexobj);
+        indexobj = Pad_PullRefAll(indexobj);
         if (!indexobj) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1459,7 +1461,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(indexobj);
-        indexobj = Pad_PullRefAll(ref_ast, indexobj);
+        indexobj = Pad_PullRefAll(indexobj);
         if (!indexobj) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1507,7 +1509,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(idxobj);
-        idxobj = Pad_PullRefAll(ref_ast, idxobj);
+        idxobj = Pad_PullRefAll(idxobj);
         if (!idxobj) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1560,7 +1562,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(indexobj);
-        indexobj = Pad_PullRefAll(ref_ast, indexobj);
+        indexobj = Pad_PullRefAll(indexobj);
         if (!indexobj) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1608,7 +1610,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(owner);
-        owner = Pad_PullRefAll(ref_ast, owner);
+        owner = Pad_PullRefAll(owner);
         if (!owner) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1660,7 +1662,7 @@ again:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(owner);
-        owner = Pad_PullRefAll(ref_ast, owner);
+        owner = Pad_PullRefAll(owner);
         if (!owner) {
             push_err("\"%s\" is not defined", idn);
             return NULL;
@@ -1900,7 +1902,7 @@ Pad_ExtractCopyOfObj(
         return PadObj_DeepCopy(obj);
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        PadObj *ref = Pad_PullRefAll(ref_ast, obj);
+        PadObj *ref = Pad_PullRefAll(obj);
         if (!ref) {
             push_err("\"%s\" is not defined in extract obj", PadObj_GetcIdentName(obj));
             return NULL;
@@ -1966,12 +1968,11 @@ _Pad_ExtractRefOfObj(
     case PAD_OBJ_TYPE__IDENT: {
         PadObj *ref = NULL;
         if (all) {
-            ref = Pad_PullRefAll(ref_ast, obj);
+            ref = Pad_PullRefAll(obj);
         } else {
-            ref = Pad_PullRef(ref_ast, obj);
+            ref = Pad_PullRef(obj);
         }
         if (!ref) {
-            // PadCtx_Dump(ref_ast->ref_context, stderr);
             push_err("\"%s\" is not defined", PadObj_GetcIdentName(obj));
             return NULL;
         }

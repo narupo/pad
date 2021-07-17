@@ -16490,7 +16490,6 @@ test_trv_builtin_structs_error_0(void) {
     PadConfig_Del(config);
 }
 
-// ATODO
 static void
 test_trv_builtin_structs_error_1(void) {
     PadConfig *config = PadConfig_New();

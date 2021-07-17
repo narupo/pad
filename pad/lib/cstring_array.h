@@ -161,6 +161,9 @@ PadCStrAry_Len(const PadCStrAry *self);
 const PadCStrAry *
 PadCStrAry_Show(const PadCStrAry *self, FILE *fout);
 
+const PadCStrAry *
+PadCStrAry_Dump(const PadCStrAry *self, FILE *fout);
+
 /**
  * clear state
  *
