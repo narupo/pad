@@ -632,22 +632,22 @@ PadUni_SetMB(PadUni *self, const char *mb) {
             break;
         } else if (result == -1) {
             // invalid bytes
-            fprintf(stderr, "PadUni_SetMB: invalid characters\n");
+            // fprintf(stderr, "PadUni_SetMB: invalid characters\n");
             if (errno) {
-                perror("mbrtoc32");
+                // perror("mbrtoc32");
             }
             return NULL;
         } else if (result == -2) {
             // don't display error messages (i hate these error messages)
             // fprintf(stderr, "PadUni_SetMB: incomplete input characters\n");
             if (errno) {
-                perror("mbrtoc32");
+                // perror("mbrtoc32");
             }
             return NULL;
         } else if (result == -3) {
             // char32_t の文字を構成する残りの部分を得た。
             // マルチバイト文字側のバイトは消費していない
-            fprintf(stderr, "PadUni_SetMB: got -3\n");
+            // fprintf(stderr, "PadUni_SetMB: got -3\n");
         }
 
         if (!PadUni_PushBack(self, c32)) {
