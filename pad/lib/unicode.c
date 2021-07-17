@@ -270,6 +270,16 @@ PadUni_New(void) {
 }
 
 PadUni *
+PadUni_NewCStr(const char *str) {
+    PadUni *self = PadUni_New();
+    if (!self) {
+        return NULL;
+    }
+    
+    return PadUni_SetMB(self, str);
+}
+
+PadUni *
 PadUni_Resize(PadUni *self, int32_t newcapa) {
     if (!self || newcapa < 0) {
         return NULL;

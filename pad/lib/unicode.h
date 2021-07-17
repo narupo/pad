@@ -323,6 +323,9 @@ PadUni_EscDel(PadUni *self);
 PadUni *
 PadUni_New(void);
 
+PadUni *
+PadUni_NewCStr(const char *str);
+
 /**
  * clear state of object
  * 
