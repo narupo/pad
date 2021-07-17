@@ -2,10 +2,19 @@
 
 // TODO: test
 
+#include <pad/lib/cstring_array.h>
 #include <pad/lib/memory.h>
 #include <pad/lang/object.h>
 #include <pad/lang/object_dict.h>
 #include <pad/lang/gc.h>
+
+struct PadScope {
+    PadGC *ref_gc; // do not delete (this is reference)
+    PadObjDict *varmap;
+    PadScope *prev;
+    PadScope *next;
+    PadCStrAry *global_names;
+};
 
 void
 PadScope_Del(PadScope *self);
@@ -60,7 +69,7 @@ PadObj *
 PadScope_FindVarRefAll(PadScope *self, const char *key);
 
 PadObj *
-PadScope_FindVarRefAtGlobal(PadScope *self, const char *key);
+PadScope_FindVarRefAtHead(PadScope *self, const char *key);
 
 /**
  * find reference of object from scope chain.

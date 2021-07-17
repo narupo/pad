@@ -174,7 +174,7 @@ Pad_MoveObjAtCurVarmap(
         return false;
     }
 
-    PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
     PadObj *popped = PadObjDict_Pop(varmap, ident);
     if (popped == move_obj) {
         PadObjDict_Move(varmap, ident, PadMem_Move(move_obj));        
@@ -204,7 +204,8 @@ Pad_SetRefAtVarmap(
     assert(ref->type != PAD_OBJ_TYPE__IDENT);
     // allow owns is null
 
-    bool has_global_name = PadCStrAry_IsContain(ctx->global_names, ident);
+    PadScope *curscope = PadCtx_GetCurScope(ctx);
+    bool has_global_name = PadCStrAry_IsContain(curscope->global_names, ident);
     if (has_global_name) {
         PadObjDict *varmap = PadCtx_GetVarmapAtHeadScope(ctx);    
         return Pad_SetRef(varmap, ident, ref);
@@ -216,7 +217,7 @@ Pad_SetRefAtVarmap(
         return false;
     }
 
-    PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
     return Pad_SetRef(varmap, ident, ref);
 }
 
@@ -242,7 +243,7 @@ Pad_SetRefAtCurVarmap(
         return false;
     }
 
-    PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
     return Pad_SetRef(varmap, ident, ref_obj);
 }
 
@@ -1948,8 +1949,8 @@ Pad_ExtractCopyOfObj(
 
 static PadObj *
 _Pad_ExtractRefOfObj(
-    PadAST *ref_ast,
     PadErrStack *err,
+    PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
     const PadNode *ref_node,
@@ -1970,6 +1971,7 @@ _Pad_ExtractRefOfObj(
             ref = Pad_PullRef(ref_ast, obj);
         }
         if (!ref) {
+            // PadCtx_Dump(ref_ast->ref_context, stderr);
             push_err("\"%s\" is not defined", PadObj_GetcIdentName(obj));
             return NULL;
         }
@@ -1990,7 +1992,7 @@ _Pad_ExtractRefOfObj(
             const PadObjDictItem *item = PadObjDict_GetcIndex(d, i);
             assert(item);
             PadObj *el = item->value;
-            PadObj *ref = _Pad_ExtractRefOfObj(ref_ast, err, ref_gc, ref_context, ref_node, el, all);
+            PadObj *ref = _Pad_ExtractRefOfObj(err, ref_ast, ref_gc, ref_context, ref_node, el, all);
             PadObjDict_Set(d, item->key, ref);
         }
 
@@ -2001,7 +2003,7 @@ _Pad_ExtractRefOfObj(
 
         for (int32_t i = 0; i < PadObjAry_Len(arr); ++i) {
             PadObj *el = PadObjAry_Get(arr, i);
-            PadObj *ref = _Pad_ExtractRefOfObj(ref_ast, err, ref_gc, ref_context, ref_node, el, all);
+            PadObj *ref = _Pad_ExtractRefOfObj(err, ref_ast, ref_gc, ref_context, ref_node, el, all);
             PadObjAry_Set(arr, i, ref);
         }
 
@@ -2022,7 +2024,7 @@ Pad_ExtractRefOfObj(
     const PadNode *ref_node,
     PadObj *obj
 ) {
-    return _Pad_ExtractRefOfObj(ref_ast, err, ref_gc, ref_context, ref_node, obj, false);
+    return _Pad_ExtractRefOfObj(err, ref_ast, ref_gc, ref_context, ref_node, obj, false);
 }
 
 PadObj *
@@ -2034,7 +2036,7 @@ Pad_ExtractRefOfObjAll(
     const PadNode *ref_node,
     PadObj *obj
 ) {
-    return _Pad_ExtractRefOfObj(ref_ast, err, ref_gc, ref_context, ref_node, obj, true);
+    return _Pad_ExtractRefOfObj(err, ref_ast, ref_gc, ref_context, ref_node, obj, true);
 }
 
 void

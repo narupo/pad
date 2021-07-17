@@ -18824,7 +18824,7 @@ test_PadTrv_Trav(void) {
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
     }
 
@@ -18839,7 +18839,7 @@ test_PadTrv_Trav(void) {
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
         assert(!PadAST_HasErrs(ast));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
     }
 
@@ -18853,7 +18853,7 @@ test_PadTrv_Trav(void) {
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "\"a\" is not defined in ref block"));
@@ -18870,7 +18870,7 @@ test_PadTrv_Trav(void) {
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "\"a\" is not defined in ref block"));
@@ -18887,7 +18887,7 @@ test_PadTrv_Trav(void) {
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "\"a\" is not defined in ref block"));
@@ -18904,7 +18904,7 @@ test_PadTrv_Trav(void) {
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
         assert(PadAST_HasErrs(ast));
         assert(!strcmp(PadAST_GetcFirstErrMsg(ast), "\"c\" is not defined in ref block"));
@@ -18922,7 +18922,7 @@ test_PadTrv_Trav(void) {
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1"));
     }
@@ -18941,7 +18941,7 @@ test_PadTrv_Trav(void) {
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         PadCtx_Clear(ctx);
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
         assert(!strcmp(PadCtx_GetcStdoutBuf(ctx), "1\n3\n1"));
     }
@@ -25026,7 +25026,7 @@ test_trv_func_def_2(void) {
         PadAST_Clear(ast);
         (PadCC_Compile(ast, PadTkr_GetToks(tkr)));
         (PadTrv_Trav(ast, ctx));
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         assert(PadObjDict_Get(varmap, "func"));
     }
 

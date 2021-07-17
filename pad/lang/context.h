@@ -46,9 +46,7 @@ struct PadCtx {
     bool do_break;  // if do break from current context then store true
     bool do_continue;  // if do continue on current context then store
     bool do_return;
-
     bool is_use_buf;  // if true then context use stdout/stderr buffer
-    PadCStrAry *global_names;
 };
 
 /**
@@ -191,7 +189,10 @@ PadCtx_GetcAliasInfo(const PadCtx *self);
  * @return pointer to PadObjDict
  */
 PadObjDict *
-PadCtx_GetVarmap(PadCtx *self);
+PadCtx_GetVarmapAtCurScope(PadCtx *self);
+
+PadObjDict *
+PadCtx_GetVarmapAtGlobal(PadCtx *self);
 
 /**
  * get variables map as PadObjDict from global scope
@@ -284,6 +285,9 @@ PadCtx_PushBackScope(PadCtx *self);
 void
 PadCtx_PopBackScope(PadCtx *self);
 
+bool
+PadCtx_CurScopeHasGlobalName(PadCtx *self, const char *key);
+
 /**
  * find variable from varmap of scope at tail to head in scope chain
  *
@@ -330,6 +334,9 @@ PadCtx_FindVarmapByIdent(PadCtx *self, const PadObj *idn);
  */
 PadGC *
 PadCtx_GetGC(PadCtx *self);
+
+PadScope *
+PadCtx_GetCurScope(PadCtx *self);
 
 /**
  * clear stdout buffer

@@ -163,7 +163,7 @@ PadImporter_ImportAs(
         return NULL;
     }
 
-    PadObjDict *dst_varmap = PadCtx_GetVarmap(dstctx);
+    PadObjDict *dst_varmap = PadCtx_GetVarmapAtCurScope(dstctx);
     PadObj_IncRef(modobj);
     PadObjDict_Move(dst_varmap, alias, PadMem_Move(modobj));
 
@@ -201,7 +201,7 @@ PadImporter_FromImport(
     PadObjAry *v = varobj->objarr; \
     assert(PadObjAry_Len(v) == 1 || PadObjAry_Len(v) == 2); \
 
-    PadObjDict *dst_varmap = PadCtx_GetVarmap(dstctx);
+    PadObjDict *dst_varmap = PadCtx_GetVarmapAtCurScope(dstctx);
 
     // assign objects at global varmap of current context from module context
     // increment a reference count of objects

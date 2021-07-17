@@ -317,7 +317,7 @@ PadKit_MoveBltMod(PadKit *self, PadObj *move_mod) {
         return NULL;
     }
 
-    PadObjDict *varmap = PadCtx_GetVarmap(self->ctx);
+    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(self->ctx);
     PadObj_IncRef(move_mod);
     PadObjDict_Move(varmap, move_mod->module.name, PadMem_Move(move_mod));
 

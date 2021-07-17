@@ -58,23 +58,88 @@ def case4():
     func2()
 end
 
-d = 1
+d1 = 1
+d2 = 1.0
+d3 = "aaa"
+d4 = 1
+
+e1 = 2
+e2 = 2.0
+
+f1 = 2
+f2 = 2.0
+f3 = "aaa"
+
+g1 = 4
+g2 = 4.0
 
 def case5():
     puts("Test stmt/global case4")
 
     def func1():
-        global d
-        d += 1
+        global d1, d2, d3, d4
+        d1 += 1
+        d2 += 1.0
+        d3 += "bbb"
+        d4 += d4
+
+        global e1, e2
+        e1 -= 1
+        e2 -= 1.0
+
+        global f1, f2, f3
+        f1 *= 2
+        f2 *= 2.0
+        f3 *= 2
+
+        global g1, g2
+        g1 /= 2
+        g2 /= 2.0
     end
 
     func1()
 
     def func2():
-        assert(d == 2)
+        assert(d1 == 2)
+        assert(d2 == 2.0)
+        assert(d3 == "aaabbb")
+        assert(d4 == 2)
+
+        assert(e1 == 1)
+        assert(e2 == 1.0)
+
+        assert(f1 == 4)
+        assert(f2 == 4.0)
+        assert(f3 == "aaaaaa")
+
+        assert(g1 == 2)
+        assert(g2 == 2.0)
     end
 
     func2()
+end
+
+a = 1
+
+def case6():
+    puts("Test stmt/global case6")
+
+    assert(a == 1)
+
+    def f1():
+        global a
+        a = 2
+    end
+
+    f1()
+    assert(a == 2)
+
+    def f2():
+        a = 3
+    end
+
+    f2()
+    assert(a == 2)
 end
 
 def all():
@@ -83,7 +148,8 @@ def all():
     case2()
     case3()
     case4()
-    // case5()
+    case5()
+    case6()
 end
 
 def main(case):
@@ -99,6 +165,8 @@ def main(case):
         case4()
     elif case == "case5":
         case5()
+    elif case == "case6":
+        case6()
     end
 end
 

@@ -1,24 +1,20 @@
 #include <pad/lang/scope.h>
 
-struct PadScope {
-    PadGC *ref_gc; // do not delete (this is reference)
-    PadObjDict *varmap;
-    PadScope *prev;
-    PadScope *next;
-};
-
 void
 PadScope_Del(PadScope *self) {
     if (!self) {
         return;
     }
 
-    for (PadScope *cur = self; cur; ) {
+    for (PadScope *cur = self /* <- look me! */; cur; ) {
         PadScope *del = cur;
         cur = cur->next;
         PadObjDict_Del(del->varmap);
+        PadCStrAry_Del(del->global_names);
         free(del);
     }
+
+    // free(self);  // not needed
 }
 
 PadObjDict *
@@ -52,11 +48,17 @@ PadScope_New(PadGC *ref_gc) {
         return NULL;
     }
 
+    self->global_names = PadCStrAry_New();
+    if (!self->global_names) {
+        PadScope_Del(self);
+        return NULL;
+    }
+
     return self;
 }
 
 static PadScope *
-PadScope_DeepCopy_once(const PadScope *other) {
+PadScope_DeepCopyOnce(const PadScope *other) {
     if (!other) {
         return NULL;
     }
@@ -69,6 +71,12 @@ PadScope_DeepCopy_once(const PadScope *other) {
     self->ref_gc = other->ref_gc;
     self->varmap = PadObjDict_DeepCopy(other->varmap);
     if (!self->varmap) {
+        PadScope_Del(self);
+        return NULL;
+    }
+
+    self->global_names = PadCStrAry_DeepCopy(other->global_names);
+    if (!self->global_names) {
         PadScope_Del(self);
         return NULL;
     }
@@ -96,7 +104,7 @@ PadScope_DeepCopy(const PadScope *other) {
 
     PadScope *dst = self;
     for (PadScope *cur = other->prev; cur; cur = cur->prev) {
-        dst->prev = PadScope_DeepCopy_once(cur);
+        dst->prev = PadScope_DeepCopyOnce(cur);
         if (!dst->prev) {
             PadScope_Del(self);
             return NULL;
@@ -108,7 +116,7 @@ PadScope_DeepCopy(const PadScope *other) {
 
     dst = self;
     for (PadScope *cur = other->next; cur; cur = cur->next) {
-        dst->next = PadScope_DeepCopy_once(cur);
+        dst->next = PadScope_DeepCopyOnce(cur);
         if (!dst->next) {
             PadScope_Del(self);
             return NULL;
@@ -117,11 +125,17 @@ PadScope_DeepCopy(const PadScope *other) {
         dst = dst->next;
     }
 
+    self->global_names = PadCStrAry_DeepCopy(other->global_names);
+    if (!self->global_names) {
+        PadScope_Del(self);
+        return NULL;
+    }
+
     return self;
 }
 
 static PadScope *
-PadScope_ShallowCopy_once(const PadScope *other) {
+PadScope_ShallowCopyOnce(const PadScope *other) {
     if (!other) {
         return NULL;
     }
@@ -134,6 +148,12 @@ PadScope_ShallowCopy_once(const PadScope *other) {
     self->ref_gc = other->ref_gc;
     self->varmap = PadObjDict_ShallowCopy(other->varmap);
     if (!self->varmap) {
+        PadScope_Del(self);
+        return NULL;
+    }
+
+    self->global_names = PadCStrAry_ShallowCopy(other->global_names);
+    if (!self->global_names) {
         PadScope_Del(self);
         return NULL;
     }
@@ -161,7 +181,7 @@ PadScope_ShallowCopy(const PadScope *other) {
 
     PadScope *dst = self;
     for (PadScope *cur = other->prev; cur; cur = cur->prev) {
-        dst->prev = PadScope_ShallowCopy_once(cur);
+        dst->prev = PadScope_ShallowCopyOnce(cur);
         if (!dst->prev) {
             PadScope_Del(self);
             return NULL;            
@@ -172,13 +192,19 @@ PadScope_ShallowCopy(const PadScope *other) {
 
     dst = self;
     for (PadScope *cur = other->next; cur; cur = cur->next) {
-        dst->next = PadScope_ShallowCopy_once(cur);
+        dst->next = PadScope_ShallowCopyOnce(cur);
         if (!dst->next) {
             PadScope_Del(self);
             return NULL;            
         }
         dst->next->prev = dst;
         dst = dst->next;
+    }
+
+    self->global_names = PadCStrAry_ShallowCopy(other->global_names);
+    if (!self->global_names) {
+        PadScope_Del(self);
+        return NULL;
     }
 
     return self;
@@ -328,7 +354,7 @@ PadScope_FindVarRefAll(PadScope *self, const char *key) {
 }
 
 PadObj *
-PadScope_FindVarRefAtGlobal(PadScope *self, const char *key) {
+PadScope_FindVarRefAtHead(PadScope *self, const char *key) {
     if (!self) {
         return NULL;
     }

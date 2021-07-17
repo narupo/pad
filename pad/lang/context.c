@@ -70,12 +70,6 @@ PadCtx_New(PadGC *ref_gc, PadCtxType type) {
     
     self->is_use_buf = true;
 
-    self->global_names = PadCStrAry_New();
-    if (!self->global_names) {
-        PadCtx_Del(self);
-        return NULL;
-    }
-
     return self;
 }
 
@@ -149,7 +143,7 @@ PadCtx_GetcAliasInfo(const PadCtx *self) {
 }
 
 PadObjDict *
-PadCtx_GetVarmap(PadCtx *self) {
+PadCtx_GetVarmapAtCurScope(PadCtx *self) {
     PadScope *current_scope = PadScope_GetTail(self->scope);
     return PadScope_GetVarmap(current_scope);
 }
@@ -235,10 +229,19 @@ PadCtx_PopBackScope(PadCtx *self) {
     }
 }
 
+bool
+PadCtx_CurScopeHasGlobalName(PadCtx *self, const char *key) {
+    PadScope *curscope = PadCtx_GetCurScope(self);
+    return PadCStrAry_IsContain(curscope->global_names, key);
+}
+
 PadObj *
 PadCtx_FindVarRef(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
+    }
+    if (PadCtx_CurScopeHasGlobalName(self, key)) {
+        return PadCtx_FindVarRefAtGlobal(self, key);
     }
 
     return PadScope_FindVarRef(self->scope, key);
@@ -262,14 +265,14 @@ PadCtx_FindVarRefAtGlobal(PadCtx *self, const char *key) {
             break;
         case PAD_CTX_TYPE__MODULE:
             // stop at module
-            // don't refer out of module
+            // don't refer out side of module
             global_ctx = ctx;
             goto done;
         }
     }
 
 done:
-    return PadScope_FindVarRefAtGlobal(global_ctx->scope, key);
+    return PadScope_FindVarRefAtHead(global_ctx->scope, key);
 }
 
 PadObj *
@@ -279,10 +282,7 @@ PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
     }
 
     for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
-        bool has_global_name = PadCStrAry_IsContain(
-            ctx->global_names, key
-        );
-        if (has_global_name) {
+        if (PadCtx_CurScopeHasGlobalName(self, key)) {
             return PadCtx_FindVarRefAtGlobal(ctx, key);
         }
 
@@ -334,6 +334,11 @@ PadCtx_FindVarmapByIdent(PadCtx *self, const PadObj *idn) {
 PadGC *
 PadCtx_GetGC(PadCtx *self) {
     return self->ref_gc;
+}
+
+PadScope *
+PadCtx_GetCurScope(PadCtx *self) {
+    return PadScope_GetTail(self->scope);
 }
 
 void
@@ -472,7 +477,6 @@ PadCtx_DeepCopy(const PadCtx *other) {
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
     self->is_use_buf = other->is_use_buf;
-    self->global_names = PadCStrAry_DeepCopy(other->global_names);
 
     return self;
 }
@@ -495,7 +499,6 @@ PadCtx_ShallowCopy(const PadCtx *other) {
     self->do_continue = other->do_continue;
     self->do_return = other->do_return;
     self->is_use_buf = other->is_use_buf;
-    self->global_names = PadCStrAry_ShallowCopy(other->global_names);
 
     return self;
 }

@@ -404,7 +404,7 @@ extract_context(PadCtx *dst, PadCtx *src) {
         return false;
     }
 
-    return extract_varmap(PadCtx_GetVarmap(dst), PadCtx_GetVarmap(src));
+    return extract_varmap(PadCtx_GetVarmapAtCurScope(dst), PadCtx_GetVarmapAtCurScope(src));
 }
 
 static bool
@@ -629,7 +629,7 @@ builtin_dance(PadBltFuncArgs *fargs) {
     PadOpts *opts = PadOpts_New();
 
     if (codectx) {
-        PadObjDict *varmap = PadCtx_GetVarmap(ctx);
+        PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
         for (int32_t i = 0; i < PadObjDict_Len(codectx->objdict); ++i) {
             const PadObjDictItem *item = PadObjDict_GetcIndex(codectx->objdict, i);
             PadObjDict_Set(varmap, item->key, item->value);

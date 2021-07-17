@@ -1260,7 +1260,8 @@ trv_global_stmt(PadAST *ast, PadTrvArgs *targs) {
         }
 
         const char *idn = PadObj_GetcIdentName(idnobj);
-        PadCStrAry_PushBack(ast->ref_context->global_names, idn);
+        PadScope *curscope = PadCtx_GetCurScope(ast->ref_context);
+        PadCStrAry_PushBack(curscope->global_names, idn);
     }
 
     return_trav(NULL);
@@ -8310,17 +8311,28 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
     return_trav(NULL);
 }
 
+static PadObjDict *
+get_varmap_by_idn(PadCtx *ctx, const char *idn) {
+    PadScope *curscope = PadCtx_GetCurScope(ctx);
+
+    if (PadCStrAry_IsContain(curscope->global_names, idn)) {
+        return PadCtx_GetVarmapAtGlobal(ctx);
+    } else {
+        return PadCtx_GetVarmapAtCurScope(ctx);
+    }
+}
+
 static PadObj *
 trv_calc_asscalc_add_ass_identifier_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObj *intobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
+    PadObj *intobj = Pad_PullRefAll(ast, idnobj);
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadDepth depth = targs->depth;
 
     switch (rhs->type) {
@@ -8374,7 +8386,7 @@ trv_calc_asscalc_add_ass_identifier_float(PadAST *ast, PadTrvArgs *targs) {
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObj *floatobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
@@ -8429,7 +8441,7 @@ trv_calc_asscalc_add_ass_identifier_bool(PadAST *ast, PadTrvArgs *targs) {
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
     PadObj *boolobj = Pad_PullRefAll(ast, idnobj);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
@@ -8487,7 +8499,7 @@ trv_calc_asscalc_add_ass_identifier_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *unicodeobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     const char *idn = targs->identifier;
@@ -9216,13 +9228,13 @@ static PadObj *
 trv_calc_asscalc_sub_ass_idn_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
-    const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
-    PadObj *intobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
     assert(idnobj->type == PAD_OBJ_TYPE__IDENT);
 
+    const char *idnname = PadStr_Getc(idnobj->identifier.name);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
+    PadObj *intobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhsref = _Pad_ExtractRefOfObjAll(rhs);
     if (PadAST_HasErrs(ast)) {
         pushb_error("failed to extract reference");
@@ -9264,7 +9276,7 @@ trv_calc_asscalc_sub_ass_idn_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *floatobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9310,7 +9322,7 @@ trv_calc_asscalc_sub_ass_idn_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *boolobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9427,7 +9439,7 @@ trv_calc_asscalc_mul_ass_int(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *intobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9474,7 +9486,7 @@ trv_calc_asscalc_mul_ass_float(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *floatobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9520,7 +9532,7 @@ trv_calc_asscalc_mul_ass_bool(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *boolobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -9569,7 +9581,7 @@ trv_calc_asscalc_mul_ass_string(PadAST *ast, PadTrvArgs *targs) {
     tready();
     PadObj *idnobj = targs->lhs_obj;
     const char *idnname = PadStr_Getc(idnobj->identifier.name);
-    PadObjDict *varmap = PadCtx_GetVarmap(idnobj->identifier.ref_context);
+    PadObjDict *varmap = get_varmap_by_idn(idnobj->identifier.ref_context, idnname);
     PadObj *unicodeobj = Pad_PullRefAll(ast, idnobj);
     PadObj *rhs = targs->rhs_obj;
     assert(idnobj && rhs);
@@ -10324,7 +10336,7 @@ apply_doller(PadAST *ast, PadTrvArgs *targs, PadUni *dst, PadUni *doller) {
     }
 
     const char *idn = PadUni_GetcMB(doller);
-    const PadObjDict *d = PadCtx_GetVarmap(ast->ref_context);
+    const PadObjDict *d = PadCtx_GetVarmapAtCurScope(ast->ref_context);
     const PadObjDictItem *i = PadObjDict_Getc(d, idn);
     if (i == NULL) {
         PadUni_PushBack(dst, PAD_UNI__CH('$'));
@@ -11104,7 +11116,7 @@ _PadTrv_Trav(PadAST *ast, PadTrvArgs *targs) {
 
 PadAST *
 PadTrv_ImportBltMods(PadAST *ast) {
-    PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ast->ref_context);
     PadObj *mod = NULL;
 
     // builtin functions module (__builtin__)
@@ -11152,7 +11164,7 @@ PadTrv_ImportBltMods(PadAST *ast) {
 
 PadAST *
 trv_define_builtin_types(PadAST *ast) {
-    PadObjDict *varmap = PadCtx_GetVarmap(ast->ref_context);
+    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ast->ref_context);
     PadObj *obj = NULL;
 
     obj = PadObj_NewType(ast->ref_gc, PAD_OBJ_TYPE__ARRAY);
