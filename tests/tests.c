@@ -23985,8 +23985,8 @@ test_trv_struct_17_3(void) {
     "   struct Head:\n"
     "       eyes = Animal.two\n"  // <- この代入文が実行されない
     "   end\n"                    //    Animal.twoを即値2に変えると機能する
-    "   head = Head()\n"          //    TODO
-    "end\n"
+    "   head = Head()\n"          //    Head()が実行される段階でAnimalが
+    "end\n"                       //    定義されていないため？ TODO
     "animal = Animal()\n"
     "puts(animal.head.eyes)\n"
     "@}", "not found \"eyes\"");
@@ -24755,9 +24755,7 @@ static void
 test_trv_struct_50(void) {
     trv_ready;
 
-    return;  // ATODO
-
-    check_fail(
+    check_ok(
 "{@\n"
 "struct S:\n"
 "   a = 1\n"
@@ -24766,8 +24764,7 @@ test_trv_struct_50(void) {
 "   end\n"
 "end\n"
 "s = S()\n"
-"s.f1()\n"
-"@}", "\"a\" is not defined");
+"@}{: s.f1() :}", "1");
 
     trv_cleanup;
 }
@@ -25411,12 +25408,13 @@ test_trv_func_def_12(void) {
     trv_ready;
 
     // TODO: you need closure?
+    // need 'nonlocal' stmt
     check_fail("{@\n"
     "def func():\n"
     "   a = 1\n"
     "   def inner():\n"
-    "       a += 1\n"
-    "       puts(a)\n"
+    "       a += 1\n"  // <- "a" is not defined
+    "       puts(a)\n" // in Python same case
     "   end\n"
     "   inner()\n"
     "end\n"
@@ -27360,22 +27358,22 @@ test_trv_asscalc_5(void) {
     trv_ready;
 
     /* this specification is different many languages.
-       this language select equal to 4 on this expression */
+       Pad select equal to 4 on this expression */
 
     check_ok("{@\n"
     "   a = [1, 2]\n"
     "   a[0] += a[0] += 1\n"
-    "@}{: a[0] :}", "4");  // TODO: Ruby is eq 3, C/C++ is eq 4
+    "@}{: a[0] :}", "4");  // Ruby is eq 3, C/C++ is eq 4
 
     check_ok("{@\n"
     "   a = [\"a\", \"b\"]\n"
     "   a[0] += a[0] += \"c\"\n"
-    "@}{: a[0] :}", "acac");  // TODO: Ruby is eq 'aac'
+    "@}{: a[0] :}", "acac");  // Ruby is eq 'aac'
 
     check_ok("{@\n"
     "   a = [[1, 2], [3, 4]]\n"
     "   a[0] += a[0] += [3, 4]\n"
-    "@}{: a[0][0] :},{: a[0][1] :},{: a[0][2] :},{: a[0][3] :},{: a[0][4] :},{: a[0][5] :},{: a[0][6] :},{: a[0][7] :}", "1,2,3,4,1,2,3,4");  // TODO: Ruby is eq '1,2,1,2,3,4'
+    "@}{: a[0][0] :},{: a[0][1] :},{: a[0][2] :},{: a[0][3] :},{: a[0][4] :},{: a[0][5] :},{: a[0][6] :},{: a[0][7] :}", "1,2,3,4,1,2,3,4");  // Ruby is eq '1,2,1,2,3,4'
 
     trv_cleanup;
 }
@@ -30368,6 +30366,9 @@ static void
 test_trv_scope_4(void) {
     trv_ready;
 
+    // TODO: change fail to ok
+    // need 'nonlocal' stmt
+    // this error happen too in python
     check_fail("{@\n"
     "def f(a):\n"
     "   def inner():\n"
@@ -30376,7 +30377,7 @@ test_trv_scope_4(void) {
     "   return inner\n"
     "end\n"
     "c = f(1)\n"
-    "@}{: c() :}", "\"a\" is not defined");  // TODO: change fail to ok
+    "@}{: c() :}", "\"a\" is not defined");
 
     trv_cleanup;
 }
