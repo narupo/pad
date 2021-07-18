@@ -44,50 +44,56 @@ invoke_builtin_module_func(
 * functions *
 ************/
 
-PadCtx *
-Pad_GetCtxByOwns(const PadAST *ref_ast, PadObjAry *owns, PadCtx *def_ctx) {
-    if (!def_ctx) {
+static PadCtx *
+extract_context(const PadObj *obj, PadCtx *default_ctx) {
+    if (!obj) {
         return NULL;
-    }
-    if (!owns || !PadObjAry_Len(owns)) {
-        return def_ctx;
-    }
-
-    PadObj *own = PadObjAry_GetLast(owns);
-    if (!own) {
-        return def_ctx;
     }
 
 again:
-    switch (own->type) {
+    switch (obj->type) {
     default:
-        // the own has not the ast so return the default ast
-        return def_ctx;
+        // the obj has not the context so return the default context
+        return default_ctx;
         break;
     case PAD_OBJ_TYPE__MODULE:
-        return own->module.context;
+        return obj->module.context;
         break;
     case PAD_OBJ_TYPE__DEF_STRUCT:
-        return own->def_struct.context;
+        return obj->def_struct.context;
         break;
     case PAD_OBJ_TYPE__OBJECT:
-        return own->object.struct_context;
+        return obj->object.struct_context;
         break;
     case PAD_OBJ_TYPE__IDENT: {
-        own = Pad_PullRefAll(own);
-        if (!own) {
-            return def_ctx;
+        obj = Pad_PullRefAll(obj);
+        if (!obj) {
+            return default_ctx;
         }
         goto again;
     } break;
     }
+}
 
-    assert(0 && "impossible");
-    return NULL;
+PadCtx *
+Pad_GetCtxByOwns(PadObjAry *owns, PadCtx *default_ctx) {
+    if (!default_ctx) {
+        return NULL;
+    }
+    if (!owns || !PadObjAry_Len(owns)) {
+        return default_ctx;
+    }
+
+    PadObj *own = PadObjAry_GetLast(owns);
+    return extract_context(own, default_ctx);
 }
 
 /**
- * this function do not push error at ast's error stack
+ * pull reference from the identifier-object.
+ * if pulled refenrece was identifier-object then
+ * solve recursive and return reference
+ *
+ * if not found reference then return NULL
  */
 static PadObj *
 _Pad_PullRef(const PadObj *idn_obj, bool all) {
@@ -98,16 +104,17 @@ _Pad_PullRef(const PadObj *idn_obj, bool all) {
 
     const char *idn = PadObj_GetcIdentName(idn_obj);
     PadCtx *ref_ctx = PadObj_GetIdentRefCtx(idn_obj);
-    assert(idn && ref_ctx);
-
     PadObj *ref = NULL;
 
+    // PadCtx_FindVar* family functions solve global-stmt
     if (all) {
         ref = PadCtx_FindVarRefAll(ref_ctx, idn);
     } else {
         ref = PadCtx_FindVarRef(ref_ctx, idn);
     }
 
+    // this function solve identifier-object but
+    // not solved other objects
     if (!ref) {
         return NULL;
     } else if (ref->type == PAD_OBJ_TYPE__IDENT) {
@@ -173,7 +180,7 @@ Pad_MoveObjAtCurVarmap(
     assert(move_obj->type != PAD_OBJ_TYPE__IDENT);
     // allow owns is null
 
-    ctx = Pad_GetCtxByOwns(ref_ast, owns, ctx);
+    ctx = Pad_GetCtxByOwns(owns, ctx);
     if (!ctx) {
         push_err("can't move object");
         return false;
@@ -218,7 +225,7 @@ Pad_SetRefAtVarmap(
         return Pad_SetRef(varmap, ident, ref);
     }
 
-    ctx = Pad_GetCtxByOwns(ref_ast, owns, ctx);
+    ctx = Pad_GetCtxByOwns(owns, ctx);
     if (!ctx) {
         push_err("can't set reference");
         return false;
@@ -378,7 +385,7 @@ again2:
         break;
     case PAD_OBJ_TYPE__IDENT: {
         const char *idn = PadObj_GetcIdentName(rhs_obj);
-        PadCtx *ref_ctx = Pad_GetCtxByOwns(ref_ast, owns, ref_context);
+        PadCtx *ref_ctx = Pad_GetCtxByOwns(owns, ref_context);
         PadObj *ref = PadCtx_FindVarRef(ref_ctx, idn);
         if (!ref) {
             push_err("\"%s\" is not defined", idn);

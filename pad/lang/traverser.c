@@ -10604,9 +10604,7 @@ trv_identifier(PadAST *ast, PadTrvArgs *targs) {
     assert(identifier && node->type == PAD_NODE_TYPE__IDENTIFIER);
     PadObjAry *ref_owners = targs->ref_owners;
 
-    PadCtx *ref_context = Pad_GetCtxByOwns(
-        ast, ref_owners, ast->ref_context
-    );
+    PadCtx *ref_context = Pad_GetCtxByOwns(ref_owners, ast->ref_context);
     if (!ref_context) {
         pushb_error("failed to get context by owners");
         return_trav(NULL);
@@ -10744,7 +10742,7 @@ trv_func_def_args(PadAST *ast, PadTrvArgs *targs) {
     assert(func_def_args && node->type == PAD_NODE_TYPE__FUNC_DEF_ARGS);
     PadObjAry *ref_owners = targs->ref_owners;
 
-    PadCtx *ref_context = Pad_GetCtxByOwns(ast, ref_owners, ast->ref_context);
+    PadCtx *ref_context = Pad_GetCtxByOwns(ref_owners, ast->ref_context);
     if (!ref_context) {
         pushb_error("failed to get context by owners");
         return_trav(NULL);

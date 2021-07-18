@@ -53,7 +53,7 @@
 ************/
 
 PadCtx *
-Pad_GetCtxByOwns(const PadAST *ref_ast, PadObjAry *ref_owners, PadCtx *def_context);
+Pad_GetCtxByOwns(PadObjAry *ref_owners, PadCtx *def_context);
 
 /**
  * pull-in reference of object by identifier object from varmap of current scope of context
