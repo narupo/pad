@@ -105,7 +105,6 @@ Pad_MoveObjAtVarmap(
 bool
 Pad_SetRefAtVarmap(
     PadErrStack *err,
-    const PadAST *ref_ast,
     const PadNode *ref_node,
     PadCtx *ctx,
     PadObjAry *ref_owners,
@@ -124,20 +123,20 @@ Pad_SetRef(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
 PadObj *
 Pad_ExtractRefOfObj(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *obj
 );
 
 PadObj *
 Pad_ExtractRefOfObjAll(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *obj
 );
 
@@ -154,10 +153,10 @@ Pad_ExtractRefOfObjAll(
 PadObj *
 Pad_ExtractCopyOfObj(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *obj
 );
 
@@ -173,10 +172,10 @@ Pad_ExtractCopyOfObj(
 PadObj *
 Pad_ReferRingObjWithRef(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *ring_obj
 );
 
@@ -194,10 +193,10 @@ Pad_ReferRingObjWithRef(
 PadObj *
 Pad_ReferChainThreeObjs(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObjAry *owns,
     PadChainObj *co
 );
@@ -215,8 +214,8 @@ Pad_ReferChainThreeObjs(
 PadObj *
 Pad_ReferChainCall(
     PadErrStack *err,
-    PadAST *ref_ast,
     const PadNode *ref_node,
+    PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
     PadObjAry *owns,  // TODO: const
@@ -226,10 +225,10 @@ Pad_ReferChainCall(
 PadObj *
 Pad_ReferAndSetRef(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *chain_obj,
     PadObj *ref
 );
@@ -250,10 +249,10 @@ Pad_DumpAryObj(const PadObj *arrobj);
 bool
 Pad_ParseBool(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *obj
 );
 
@@ -265,10 +264,10 @@ Pad_ParseBool(
 PadIntObj
 Pad_ParseInt(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *obj
 );
 
@@ -280,10 +279,10 @@ Pad_ParseInt(
 PadFloatObj
 Pad_ParseFloat(
     PadErrStack *err,
+    const PadNode *ref_node,
     PadAST *ref_ast,
     PadGC *ref_gc,
     PadCtx *ref_context,
-    const PadNode *ref_node,
     PadObj *obj
 );
 
@@ -299,5 +298,5 @@ bool
 Pad_IsVarInCurScope(const PadObj *idnobj);
 
 PadObj *
-Pad_ExtractIdent(const PadAST *ref_ast, PadObj *obj);
+Pad_ExtractIdent(PadObj *obj);
 

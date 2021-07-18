@@ -170,7 +170,7 @@ builtin_dict_has(PadBltFuncArgs *fargs) {
 
 #define pull_ref(obj) \
     Pad_ExtractRefOfObjAll( \
-        err, ref_ast, ref_gc, ref_context, ref_node, obj \
+        err, ref_node, ref_ast, ref_gc, ref_context, obj \
     ) \
 
     PadObj *own = PadObjAry_GetLast2(ref_owners);

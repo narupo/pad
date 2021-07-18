@@ -60,27 +60,27 @@
 
 #undef _Pad_ExtractRefOfObjAll
 #define _Pad_ExtractRefOfObjAll(obj) \
-    Pad_ExtractRefOfObjAll(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+    Pad_ExtractRefOfObjAll(ast->error_stack, targs->ref_node, ast, ast->ref_gc, ast->ref_context, obj)
 
 #undef _Pad_ExtractRefOfObj
 #define _Pad_ExtractRefOfObj(obj) \
-    Pad_ExtractRefOfObj(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+    Pad_ExtractRefOfObj(ast->error_stack, targs->ref_node, ast, ast->ref_gc, ast->ref_context, obj)
 
 #undef _Pad_ReferRingObjWithRef
 #define _Pad_ReferRingObjWithRef(obj) \
-    Pad_ReferRingObjWithRef(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+    Pad_ReferRingObjWithRef(ast->error_stack, targs->ref_node, ast, ast->ref_gc, ast->ref_context, obj)
 
 #undef _Pad_ReferAndSetRef
 #define _Pad_ReferAndSetRef(chain_obj, ref) \
-    Pad_ReferAndSetRef(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, chain_obj, ref)
+    Pad_ReferAndSetRef(ast->error_stack, targs->ref_node, ast, ast->ref_gc, ast->ref_context, chain_obj, ref)
 
 #undef _Pad_ReferChainThreeObjs
 #define _Pad_ReferChainThreeObjs(owns, co) \
-    Pad_ReferChainThreeObjs(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, owns, co)
+    Pad_ReferChainThreeObjs(ast->error_stack, targs->ref_node, ast, ast->ref_gc, ast->ref_context, owns, co)
 
 #undef _Pad_ParseBool
 #define _Pad_ParseBool(obj) \
-    Pad_ParseBool(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, obj)
+    Pad_ParseBool(ast->error_stack, targs->ref_node, ast, ast->ref_gc, ast->ref_context, obj)
 
 /*************
 * prototypes *
@@ -1550,7 +1550,10 @@ assign_to_chain_call(
     PadChainObj *co,
     PadObj *rhs
 ) {
-    PadObj *obj = Pad_ReferChainCall(ast->error_stack, ast, targs->ref_node, ast->ref_gc, ast->ref_context, owners, co);
+    PadObj *obj = Pad_ReferChainCall(
+        ast->error_stack, targs->ref_node, ast,
+        ast->ref_gc, ast->ref_context, owners, co
+    );
     if (PadAST_HasErrs(ast)) {
         pushb_error("failed to refer chain call");
         return NULL;
@@ -7826,7 +7829,10 @@ trv_calc_term_div(PadAST *ast, PadTrvArgs *targs) {
         return_trav(obj);
     } break;
     case PAD_OBJ_TYPE__RING: {
-        PadObj *lval = Pad_ExtractCopyOfObj(ast->error_stack, ast, ast->ref_gc, ast->ref_context, targs->ref_node, lhs);
+        PadObj *lval = Pad_ExtractCopyOfObj(
+            ast->error_stack, targs->ref_node, ast,
+            ast->ref_gc, ast->ref_context, lhs
+        );
         if (PadAST_HasErrs(ast)) {
             pushb_error("can't division. index object value is null");
             return_trav(NULL);
@@ -8257,7 +8263,6 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
         check("set reference of (%d) at (%s) of varmap", rhs->type, idn);
         Pad_SetRefAtVarmap(
             ast->error_stack,
-            ast,
             targs->ref_node,
             ast->ref_context,
             ref_owners,
@@ -8272,7 +8277,6 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
         PadObj *val = _Pad_ExtractRefOfObjAll(rhs);
         Pad_SetRefAtVarmap(
             ast->error_stack,
-            ast,
             targs->ref_node,
             ast->ref_context,
             ref_owners,
@@ -8293,7 +8297,6 @@ trv_calc_assign_to_idn(PadAST *ast, PadTrvArgs *targs) {
 
         Pad_SetRefAtVarmap(
             ast->error_stack,
-            ast,
             targs->ref_node,
             ast->ref_context,
             ref_owners,

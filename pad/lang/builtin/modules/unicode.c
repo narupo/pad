@@ -2,6 +2,7 @@
 
 static PadObj *
 extract_unicode_object(PadAST *ref_ast, PadObjAry *ref_owners, const char *method_name) {
+    // ATODO ref_node
     if (!ref_ast || !ref_owners || !method_name) {
         return NULL;
     }
@@ -33,7 +34,10 @@ again:
         goto again;
     } break;
     case PAD_OBJ_TYPE__RING: {
-        owner = Pad_ReferRingObjWithRef(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, owner);
+        owner = Pad_ReferRingObjWithRef(
+            ref_ast->error_stack, NULL, ref_ast,
+            ref_ast->ref_gc, ref_ast->ref_context, owner
+        );
         if (!owner) {
             PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
             return NULL;
