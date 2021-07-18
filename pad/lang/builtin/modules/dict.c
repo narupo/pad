@@ -233,11 +233,48 @@ builtin_dict_has(PadBltFuncArgs *fargs) {
     }
 }
 
+static PadObj *
+builtin_dict_keys(PadBltFuncArgs *fargs) {
+    PadAST *ref_ast = fargs->ref_ast;
+    PadGC *ref_gc = ref_ast->ref_gc;
+    PadObj *actual_args = fargs->ref_args;
+    assert(actual_args);
+    assert(actual_args->type == PAD_OBJ_TYPE__ARRAY);
+    PadObjAry *ref_owners = fargs->ref_owners;
+    PadObjAry *ary = PadObjAry_New();
+
+    PadObj *dictobj = pull_last_dict(ref_ast, ref_owners);
+    if (!dictobj) {
+        push_err("invalid owner");
+        goto error;
+    }
+    PadObjDict *dict = PadObj_GetDict(dictobj);
+
+    int32_t len = PadObjDict_Len(dict);
+    for (int32_t i = 0; i < len; i += 1) {
+        const PadObjDictItem *item = PadObjDict_GetcIndex(dict, i);
+        PadUni *uni = PadUni_New();
+        if (!PadUni_SetMB(uni, item->key)) {
+            push_err("failed to convert strings");
+            goto error;
+        }
+
+        PadObj *elem = PadObj_NewUnicode(ref_gc, PadMem_Move(uni));
+        PadObjAry_MoveBack(ary, PadMem_Move(elem));
+    }
+
+    return PadObj_NewAry(ref_gc, PadMem_Move(ary));
+error:
+    PadObjAry_Del(ary);
+    return NULL;
+}
+
 static PadBltFuncInfo
 builtin_func_infos[] = {
     {"get", builtin_dict_get},
     {"pop", builtin_dict_pop},
     {"has", builtin_dict_has},
+    {"keys", builtin_dict_keys},
     {0},
 };
 
