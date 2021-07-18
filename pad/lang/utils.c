@@ -155,6 +155,7 @@ again:
             push_err("\"%s\" is not defined in object-to-string", PadObj_GetcIdentName(obj));
             return NULL;
         }
+        obj = var;
         goto again;
     } break;
     }
