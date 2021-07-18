@@ -2,7 +2,19 @@
     from "lib/ini.pad" import INI
 
     ini = INI.new()
+
+    // load from file
     ini.load("tests/lib/ini/settings.ini")
+
+    // check parameters
     puts(ini.get("s1", "n1"))
     puts(ini.get("s1", "n2"))
+
+    // update settings
+    ini.set("s2", "n3", "v3")
+    ini.set("s2", "n4", "v4")
+    ini.set("s3", "n5", "v5")
+
+    // save file
+    ini.save("/tmp/out.ini")
 @}
