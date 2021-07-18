@@ -95,7 +95,6 @@ Pad_ObjToString(
 bool
 Pad_MoveObjAtCurVarmap(
     PadErrStack *err,
-    const PadAST *ref_ast,
     const PadNode *ref_node,
     PadCtx *ctx,
     PadObjAry *ref_owners,

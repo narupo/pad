@@ -167,7 +167,6 @@ again:
 bool
 Pad_MoveObjAtCurVarmap(
     PadErrStack *err,  // required
-    const PadAST *ref_ast,  // required
     const PadNode *ref_node,  // required
     PadCtx *ctx,  // required
     PadObjAry *owns,  // optional
