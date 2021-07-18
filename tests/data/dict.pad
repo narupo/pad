@@ -88,6 +88,22 @@ def case5():
 	d[s.value][dd.key] = 3
 end
 
+def case6():
+	puts("Test data/dict case6")
+
+	d = { a: 1, b: 2 }
+
+	assert(d.has("a") == true)
+	assert(d.has("b") == true)
+	assert(d.has("c") == false)
+
+	assert(d.has(["a"]) == true)
+	assert(d.has(["a", "b"]) == true)
+	assert(d.has(["c", "b"]) == true)
+	assert(d.has(["a", "c"]) == true)
+	assert(d.has(["c", "c"]) == false)
+end
+
 def allTest():
 	puts("Test data/dict all")
 	case1()
@@ -95,6 +111,7 @@ def allTest():
 	case3()
 	case4()
 	case5()
+	case6()
 end
 
 def main(name):
@@ -112,6 +129,8 @@ def main(name):
 		case4()
 	elif name == "case5":
 		case5()
+	elif name == "case6":
+		case6()
 	end
 
 	puts("Done data/dict")

@@ -156,10 +156,88 @@ builtin_dict_pop(PadBltFuncArgs *fargs) {
     return popped;
 }
 
+static PadObj *
+builtin_dict_has(PadBltFuncArgs *fargs) {
+    PadAST *ref_ast = fargs->ref_ast;
+    PadErrStack *err = ref_ast->error_stack;
+    PadCtx *ref_context = ref_ast->ref_context;
+    PadGC *ref_gc = ref_ast->ref_gc;
+    PadObj *actual_args = fargs->ref_args;
+    const PadNode *ref_node = fargs->ref_node;
+    assert(actual_args);
+    assert(actual_args->type == PAD_OBJ_TYPE__ARRAY);
+    PadObjAry *ref_owners = fargs->ref_owners;
+
+#define pull_ref(obj) \
+    Pad_ExtractRefOfObjAll( \
+        err, ref_ast, ref_gc, ref_context, ref_node, obj \
+    ) \
+
+    PadObj *own = PadObjAry_GetLast2(ref_owners);
+    if (!own) {
+        push_err("owner is null");
+        return NULL;
+    }
+
+    own = pull_ref(own);
+    if (own->type != PAD_OBJ_TYPE__DICT) {
+        PadObj_Dump(own, stderr);
+        push_err("invalid owner");
+        return NULL;
+    }
+    const PadObjDict *dict = PadObj_GetcDict(own);
+
+    PadObjAry *args = actual_args->objarr;
+    if (PadObjAry_Len(args) != 1) {
+        push_err("can't invoke Dict.has(). need one argument");
+        return NULL;
+    }
+
+    PadObj *keywords = PadObjAry_Get(args, 0);
+    if (keywords->type == PAD_OBJ_TYPE__IDENT) {
+        const char *idn = PadObj_GetcIdentName(keywords);
+        keywords = Pad_PullRefAll(keywords);
+        if (!keywords) {
+            push_err("not found \"%s\"", idn);
+        }
+    }
+
+    if (keywords->type == PAD_OBJ_TYPE__UNICODE) {
+        PadUni *uni = PadObj_GetUnicode(keywords);
+        const char *key = PadUni_GetcMB(uni);
+        const PadObjDictItem *item = PadObjDict_Getc(dict, key);
+        return PadObj_NewBool(ref_gc, !!item);
+
+    } else if (keywords->type == PAD_OBJ_TYPE__ARRAY) {
+        const PadObjAry *ary = PadObj_GetAry(keywords);
+        
+        for (int32_t i = 0; i < PadObjAry_Len(ary); i += 1) {
+            PadObj *obj = PadObjAry_Get(ary, i);
+            PadObj *ref = pull_ref(obj);
+            if (ref->type != PAD_OBJ_TYPE__UNICODE) {
+                push_err("invalid string in array");
+                return NULL;
+            }
+            PadUni *uni = PadObj_GetUnicode(ref);
+            const char *key = PadUni_GetcMB(uni);
+            const PadObjDictItem *item = PadObjDict_Getc(dict, key);
+            if (item) {
+                return PadObj_NewBool(ref_gc, !!item);
+            }
+        }
+
+        return PadObj_NewBool(ref_gc, false);
+    } else {
+        push_err("invalid keywords");
+        return NULL;        
+    }
+}
+
 static PadBltFuncInfo
 builtin_func_infos[] = {
     {"get", builtin_dict_get},
     {"pop", builtin_dict_pop},
+    {"has", builtin_dict_has},
     {0},
 };
 
