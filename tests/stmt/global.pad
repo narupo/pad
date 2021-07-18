@@ -166,8 +166,8 @@ struct S:
     luck = "good"
 end
 
-d1 = { smell: "good" }
-d2 = { legs: 4 }
+dict1 = { smell: "good" }
+dict2 = { legs: 4 }
 a1 = [1, 2, 3]
 s = S()
 
@@ -175,12 +175,12 @@ def case7():
     puts("Test stmt/global case7")
 
     def f1():
-        assert(d1.smell == "good")
-        assert(d2.legs == 4)
+        assert(dict1.smell == "good")
+        assert(dict2.legs == 4)
         assert(a1[0] == 1)
         assert(s.luck == "good")
-        d1 = { smell: "bad" }
-        d2.legs = 2
+        dict1 = { smell: "bad" }
+        dict2.legs = 2
         a1[0] = 10
         s.luck = "bad"
     end
@@ -188,20 +188,20 @@ def case7():
     f1()
 
     def f2():
-        assert(d1.smell == "good")
-        assert(d2.legs == 2)
+        assert(dict1.smell == "good")
+        assert(dict2.legs == 2)
         assert(a1[0] == 10)
         assert(s.luck == "bad")
 
-        d1["smell"] = "ok"
-        d2["legs"] = 3
+        dict1["smell"] = "ok"
+        dict2["legs"] = 3
     end
 
     f2()
 
     def f3():
-        assert(d1.smell == "ok")
-        assert(d2.legs == 3)
+        assert(dict1.smell == "ok")
+        assert(dict2.legs == 3)
     end
 
     f3()
