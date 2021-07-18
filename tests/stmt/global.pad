@@ -159,6 +159,63 @@ def case6():
     assert(a == 2)
 end
 
+/* In the case7. How to using of dict and object
+   in scope chain solution. */
+
+struct S:
+    luck = "good"
+end
+
+d1 = { smell: "good" }
+d2 = { legs: 4 }
+a1 = [1, 2, 3]
+s = S()
+
+def case7():
+    puts("Test stmt/global case7")
+
+    def f1():
+        assert(d1.smell == "good")
+        assert(d2.legs == 4)
+        assert(a1[0] == 1)
+        assert(s.luck == "good")
+        d1 = { smell: "bad" }
+        d2.legs = 2
+        a1[0] = 10
+        s.luck = "bad"
+    end
+
+    f1()
+
+    def f2():
+        assert(d1.smell == "good")
+        assert(d2.legs == 2)
+        assert(a1[0] == 10)
+        assert(s.luck == "bad")
+
+        d1["smell"] = "ok"
+        d2["legs"] = 3
+    end
+
+    f2()
+
+    def f3():
+        assert(d1.smell == "ok")
+        assert(d2.legs == 3)
+    end
+
+    f3()
+
+    def f4():
+        a1 = [-1, -2]
+        assert(a1[0] == -1 and a1[1] == -2)
+        global a1
+        assert(a1[0] == 10)
+    end
+
+    f4()
+end
+
 def all():
     puts("all")
     case1()
@@ -168,6 +225,7 @@ def all():
     case4()
     case5()
     case6()
+    case7()
 end
 
 def main(case):
@@ -187,6 +245,8 @@ def main(case):
         case5()
     elif case == "case6":
         case6()
+    elif case == "case7":
+        case7()
     end
 end
 
