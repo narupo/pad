@@ -34,7 +34,7 @@ struct INI:
 
     met dataToText(self):
         text = ""
-        keys = self.data.keys()  // TODO: need implement
+        keys = self.data.keys()
 
         for i = 0; i < len(keys); i += 1:
             section = keys[i]
