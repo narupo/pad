@@ -211,9 +211,16 @@ def case7():
         assert(a1[0] == -1 and a1[1] == -2)
         global a1
         assert(a1[0] == 10)
+        a1[0] *= 10
     end
 
     f4()
+
+    def f5():
+        assert(a1[0] == 100)
+    end
+
+    f5()
 end
 
 def all():
