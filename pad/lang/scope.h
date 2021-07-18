@@ -14,6 +14,7 @@ struct PadScope {
     PadScope *prev;
     PadScope *next;
     PadCStrAry *global_names;
+    PadCStrAry *nonlocal_names;
 };
 
 void
@@ -63,13 +64,16 @@ PadScope_Clear(PadScope *self);
  * return to reference of object in varmap
  */
 PadObj *
-PadScope_FindVarRef(PadScope *self, const char *key);
+PadScope_FindVarRefAtTail(PadScope *self, const char *key);
 
 PadObj *
 PadScope_FindVarRefAll(PadScope *self, const char *key);
 
 PadObj *
 PadScope_FindVarRefAtHead(PadScope *self, const char *key);
+
+PadObj *
+PadScope_FindVarRefAtPrev(PadScope *self, const char *key);
 
 /**
  * find reference of object from scope chain.

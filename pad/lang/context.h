@@ -303,6 +303,9 @@ PadCtx_FindVarRef(PadCtx *self, const char *key);
 PadObj *
 PadCtx_FindVarRefAtGlobal(PadCtx *self, const char *key);
 
+PadObj *
+PadCtx_FindVarRefAtNonlocal(PadCtx *self, const char *key);
+
 /**
  * find variable from varmap of scope at tail to head in scope chain
  * traverse previous context on find

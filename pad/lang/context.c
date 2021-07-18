@@ -164,7 +164,7 @@ PadCtx_GetVarmapAtGlobal(PadCtx *self) {
             break;
         case PAD_CTX_TYPE__MODULE:
             // stop at module
-            // don't refer out side of module
+            // don't refer out of module
             return PadScope_GetVarmap(ctx->scope);
             break;
         }
@@ -235,6 +235,12 @@ PadCtx_CurScopeHasGlobalName(PadCtx *self, const char *key) {
     return PadCStrAry_IsContain(curscope->global_names, key);
 }
 
+bool
+PadCtx_CurScopeHasNonlocalName(PadCtx *self, const char *key) {
+    PadScope *curscope = PadCtx_GetCurScope(self);
+    return PadCStrAry_IsContain(curscope->nonlocal_names, key);
+}
+
 PadObj *
 PadCtx_FindVarRef(PadCtx *self, const char *key) {
     if (!self || !key) {
@@ -243,8 +249,34 @@ PadCtx_FindVarRef(PadCtx *self, const char *key) {
     if (PadCtx_CurScopeHasGlobalName(self, key)) {
         return PadCtx_FindVarRefAtGlobal(self, key);
     }
+    if (PadCtx_CurScopeHasNonlocalName(self, key)) {
+        return PadCtx_FindVarRefAtNonlocal(self, key);
+    }
 
-    return PadScope_FindVarRef(self->scope, key);
+    return PadScope_FindVarRefAtTail(self->scope, key);
+}
+
+PadObj *
+PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+
+    for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
+        if (PadCtx_CurScopeHasGlobalName(self, key)) {
+            return PadCtx_FindVarRefAtGlobal(ctx, key);
+        }
+        if (PadCtx_CurScopeHasNonlocalName(self, key)) {
+            return PadCtx_FindVarRefAtNonlocal(self, key);
+        }
+
+        PadObj *ref = PadScope_FindVarRefAll(ctx->scope, key);
+        if (ref) {
+            return ref;
+        }
+    }
+
+    return NULL;
 }
 
 PadObj *
@@ -265,7 +297,7 @@ PadCtx_FindVarRefAtGlobal(PadCtx *self, const char *key) {
             break;
         case PAD_CTX_TYPE__MODULE:
             // stop at module
-            // don't refer out side of module
+            // don't refer out of module
             global_ctx = ctx;
             goto done;
         }
@@ -276,23 +308,22 @@ done:
 }
 
 PadObj *
-PadCtx_FindVarRefAll(PadCtx *self, const char *key) {
+PadCtx_FindVarRefAtNonlocal(PadCtx *self, const char *key) {
     if (!self || !key) {
         return NULL;
     }
 
-    for (PadCtx *ctx = self; ctx; ctx = ctx->ref_prev) {
-        if (PadCtx_CurScopeHasGlobalName(self, key)) {
-            return PadCtx_FindVarRefAtGlobal(ctx, key);
-        }
-
-        PadObj *ref = PadScope_FindVarRefAll(ctx->scope, key);
-        if (ref) {
-            return ref;
-        }
+    PadObj *ref = PadScope_FindVarRefAtPrev(self->scope, key);
+    if (ref) {
+        return ref;
     }
 
-    return NULL;
+    if (!self->ref_prev) {
+        return NULL;
+    }
+
+    PadCtx *target_ctx = self->ref_prev;
+    return PadScope_FindVarRefAtTail(target_ctx->scope, key);
 }
 
 PadObj *

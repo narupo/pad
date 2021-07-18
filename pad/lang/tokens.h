@@ -70,6 +70,7 @@ typedef enum {
     PAD_TOK_TYPE__STMT_BLOCK,  // 'block'
     PAD_TOK_TYPE__STMT_INJECT,  // 'inject'
     PAD_TOK_TYPE__STMT_GLOBAL,  // 'global'
+    PAD_TOK_TYPE__STMT_NONLOCAL,  // 'nonlocal'
 
     PAD_TOK_TYPE__STRUCT,  // 'struct'
 

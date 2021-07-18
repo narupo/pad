@@ -22,7 +22,8 @@ BNF of Pad's template language
                     return_stmt |
                     block_stmt |
                     inject_stmt |
-                    global_stmt
+                    global_stmt |
+                    nonlocal_stmt
 
        import_stmt: import_as_stmt | from_import_stmt
     import_as_stmt: 'import' string 'as' identifier
@@ -46,6 +47,7 @@ BNF of Pad's template language
         block_stmt: 'block' identifier ':' [ content ]* 'end'
        inject_stmt: 'inject' identifier ':' [ content ]* 'end'
        global_stmt: 'global' [ identifier , ]*
+     nonlocal_stmt: 'nonlocal' [ identifier , ]*
 
             struct: 'struct' identifier ':' elems 'end'
 

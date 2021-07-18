@@ -2,6 +2,7 @@
 from "tests/stmt/for-stmt.pad" import main as forStmtMain
 from "tests/stmt/if-stmt.pad" import main as ifStmtMain
 from "tests/stmt/global.pad" import main as globalStmtMain
+from "tests/stmt/nonlocal.pad" import main as nonlocalStmtMain
 from "tests/def/func.pad" import main as funcMain
 from "tests/type/types.pad" import main as typesMain
 from "tests/struct/struct.pad" import main as structMain
@@ -18,6 +19,7 @@ def allTest():
     forStmtMain(case)
     ifStmtMain(case)
     globalStmtMain(case)
+    nonlocalStmtMain(case)
     funcMain(case)
     structMain(case)
     typesMain(case)
@@ -39,6 +41,8 @@ def main():
         ifStmtMain(case) 
     elif name == "stmt/global":
         globalStmtMain(case) 
+    elif name == "stmt/nonlocal":
+        nonlocalStmtMain(case) 
     elif name == "def/func":
         funcMain(case)
     elif name == "struct/struct":

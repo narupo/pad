@@ -11,6 +11,7 @@ PadScope_Del(PadScope *self) {
         cur = cur->next;
         PadObjDict_Del(del->varmap);
         PadCStrAry_Del(del->global_names);
+        PadCStrAry_Del(del->nonlocal_names);
         free(del);
     }
 
@@ -38,23 +39,29 @@ PadScope_New(PadGC *ref_gc) {
 
     PadScope *self = PadMem_Calloc(1, sizeof(*self));
     if (!self) {
-        return NULL;
+        goto error;
     }
 
     self->ref_gc = ref_gc;
     self->varmap = PadObjDict_New(ref_gc);
     if (!self->varmap) {
-        PadScope_Del(self);
-        return NULL;
+        goto error;
     }
 
     self->global_names = PadCStrAry_New();
     if (!self->global_names) {
-        PadScope_Del(self);
-        return NULL;
+        goto error;
+    }
+
+    self->nonlocal_names = PadCStrAry_New();
+    if (!self->nonlocal_names) {
+        goto error;
     }
 
     return self;
+error:
+    PadScope_Del(self);
+    return NULL;
 }
 
 static PadScope *
@@ -322,7 +329,7 @@ find_tail(PadScope *self) {
 }
 
 PadObj *
-PadScope_FindVarRef(PadScope *self, const char *key) {
+PadScope_FindVarRefAtTail(PadScope *self, const char *key) {
     if (!self) {
         return NULL;
     }
@@ -356,7 +363,7 @@ PadScope_FindVarRefAll(PadScope *self, const char *key) {
 
 PadObj *
 PadScope_FindVarRefAtHead(PadScope *self, const char *key) {
-    if (!self) {
+    if (!self || !key) {
         return NULL;
     }
 
@@ -369,8 +376,28 @@ PadScope_FindVarRefAtHead(PadScope *self, const char *key) {
 }
 
 PadObj *
+PadScope_FindVarRefAtPrev(PadScope *self, const char *key) {
+    if (!self || !key) {
+        return NULL;
+    }
+
+    PadScope *cur_scope = find_tail(self);
+    if (!cur_scope || !cur_scope->prev) {
+        return NULL;
+    }
+
+    PadScope *prev = cur_scope->prev;
+    PadObjDictItem *item = PadObjDict_Get(prev->varmap, key);
+    if (item) {
+        return item->value;
+    }
+
+    return NULL;
+}
+
+PadObj *
 PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key) {
-    if (!self) {
+    if (!self || !key) {
         return NULL;
     }
 
@@ -399,9 +426,13 @@ PadScope_Dump(const PadScope *self, FILE *fout) {
     int32_t dep = 0;
     for (const PadScope *cur = self; cur; cur = cur->next) {
         fprintf(fout, "---- scope[%p] dep[%d]\n", cur, dep++);
+        fprintf(fout, "prev[%p] next[%p]\n", cur->prev, cur->next);
+        fprintf(fout, "varmap[%p]\n", cur->varmap);
         PadObjDict_Dump(cur->varmap, fout);
         fprintf(fout, "global_names[%p]\n", cur->global_names);
         PadCStrAry_Dump(cur->global_names, fout);
+        fprintf(fout, "nonlocal[%p]\n", cur->nonlocal_names);
+        PadCStrAry_Dump(cur->nonlocal_names, fout);
     }
 }
 

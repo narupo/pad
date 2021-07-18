@@ -565,6 +565,15 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
             return_trav(NULL);
         }
         return_trav(result);
+    } else if (stmt->nonlocal_stmt) {
+        check("call _PadTrv_Trav with nonlocal stmt");
+        targs->ref_node = stmt->nonlocal_stmt;
+        targs->depth = depth + 1;
+        result = _PadTrv_Trav(ast, targs);
+        if (PadAST_HasErrs(ast)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
     } else {
         return_trav(NULL);
     }
@@ -1262,6 +1271,37 @@ trv_global_stmt(PadAST *ast, PadTrvArgs *targs) {
         const char *idn = PadObj_GetcIdentName(idnobj);
         PadScope *curscope = PadCtx_GetCurScope(ast->ref_context);
         PadCStrAry_PushBack(curscope->global_names, idn);
+    }
+
+    return_trav(NULL);
+}
+
+static PadObj *
+trv_nonlocal_stmt(PadAST *ast, PadTrvArgs *targs) {
+    tready();
+    PadNode *node = targs->ref_node;
+    assert(node);
+    assert(node->type == PAD_NODE_TYPE__NONLOCAL_STMT);
+    PadNonlocalStmtNode *nonlocal_stmt = node->real;
+    assert(nonlocal_stmt);
+    PadDepth depth = targs->depth;
+    PadNodeAry *idents = nonlocal_stmt->identifiers;
+
+    for (int32_t i = 0; i < PadNodeAry_Len(idents); i +=1 ) {
+        PadNode *ident = PadNodeAry_Get(idents, i);
+        assert(ident);
+
+        targs->ref_node = ident;
+        targs->depth = depth + 1;
+        PadObj *idnobj = _PadTrv_Trav(ast, targs);
+        if (!idnobj || PadAST_HasErrs(ast)) {
+            pushb_error("failed to traverse identifier");
+            return_trav(NULL);
+        }
+
+        const char *idn = PadObj_GetcIdentName(idnobj);
+        PadScope *curscope = PadCtx_GetCurScope(ast->ref_context);
+        PadCStrAry_PushBack(curscope->nonlocal_names, idn);
     }
 
     return_trav(NULL);
@@ -10967,6 +11007,11 @@ _PadTrv_Trav(PadAST *ast, PadTrvArgs *targs) {
     case PAD_NODE_TYPE__GLOBAL_STMT: {
         check("call trv_global_stmt");
         PadObj *obj = trv_global_stmt(ast, targs);
+        return_trav(obj);
+    } break;
+    case PAD_NODE_TYPE__NONLOCAL_STMT: {
+        check("call trv_nonlocal_stmt");
+        PadObj *obj = trv_nonlocal_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__STRUCT: {

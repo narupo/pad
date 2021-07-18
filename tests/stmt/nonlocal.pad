@@ -1,0 +1,53 @@
+{@
+
+def case1():
+    puts("Test stmt/nonlocal case1")
+
+    a = 1
+
+    def f1():
+        a = 2
+        nonlocal a
+        assert(a == 1)
+    end
+
+    f1()
+end
+
+def case2():
+    puts("Test stmt/nonlocal case2")
+
+    a = 1
+
+    struct S:
+        a = 2
+        def f1():
+            a = 3
+            nonlocal a
+            assert(a == 2)
+        end
+    end
+
+    S.f1()
+
+    s = S()
+    s.f1()
+end
+
+def all():
+    puts("all")
+    case1()
+    case2()
+end
+
+def main(case):
+    if case == "all":
+        all()
+    elif case == "case1":
+        case1()
+    elif case == "case2":
+        case2()
+    end
+end
+
+@}
