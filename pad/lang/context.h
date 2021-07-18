@@ -320,12 +320,6 @@ PadObj *
 PadCtx_FindVarRefAllIgnoreStructHead(PadCtx *self, const char *key);
 
 /**
- * TODO: test
- */
-PadObjDict *
-PadCtx_FindVarmapByIdent(PadCtx *self, const PadObj *idn);
-
-/**
  * get reference of PadGC in context
  *
  * @param[in] *self pointer to PadCtx

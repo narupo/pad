@@ -319,18 +319,6 @@ PadCtx_FindVarRefAllIgnoreStructHead(PadCtx *self, const char *key) {
     return NULL;
 }
 
-PadObjDict *
-PadCtx_FindVarmapByIdent(PadCtx *self, const PadObj *idn) {
-    if (!self || !idn) {
-        return NULL;
-    }
-    if (self != idn->identifier.ref_context) {
-        return NULL;
-    }
-
-    return PadScope_FindVarmapByIdent(self->scope, idn);
-}
-
 PadGC *
 PadCtx_GetGC(PadCtx *self) {
     return self->ref_gc;

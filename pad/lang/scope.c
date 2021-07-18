@@ -390,27 +390,6 @@ PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key) {
     return NULL;
 }
 
-PadObjDict *
-PadScope_FindVarmapByIdent(PadScope *self, const PadObj *idn) {
-    if (!self || !idn) {
-        return NULL;
-    }
-
-    const char *key = PadObj_GetcIdentName(idn);
-
-    for (const PadScope *cur = self; cur; cur = cur->next) {
-        PadObjDictItem *item = PadObjDict_Get(cur->varmap, key);
-        if (!item) {
-            continue;
-        }
-        if (item->value == idn) {
-            return cur->varmap;
-        }
-    }
-
-    return NULL;
-}
-
 void
 PadScope_Dump(const PadScope *self, FILE *fout) {
     if (!self || !fout) {

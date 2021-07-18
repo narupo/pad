@@ -79,15 +79,6 @@ PadObj *
 PadScope_FindVarRefAllIgnoreHead(PadScope *self, const char *key);
 
 /**
- * find varmap from scope chain by the identifier object.
- * if varmap has the identifier object (compare to pointer address)
- * then this function return that varmap.
- * if not found then return NULL.
- */
-PadObjDict *
-PadScope_FindVarmapByIdent(PadScope *self, const PadObj *idn);
-
-/**
  * dump PadScope at stream
  *
  * @param[in] *self
