@@ -65,8 +65,13 @@ again:
         return def_ctx;
         break;
     case PAD_OBJ_TYPE__MODULE:
-        // the module object has the ast
         return own->module.context;
+        break;
+    case PAD_OBJ_TYPE__DEF_STRUCT:
+        return own->def_struct.context;
+        break;
+    case PAD_OBJ_TYPE__OBJECT:
+        return own->object.struct_context;
         break;
     case PAD_OBJ_TYPE__IDENT: {
         own = Pad_PullRefAll(own);
