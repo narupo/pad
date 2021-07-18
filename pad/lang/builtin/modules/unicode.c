@@ -1,7 +1,16 @@
 #include <pad/lang/builtin/modules/unicode.h>
 
+#define push_err(fmt, ...) \
+    Pad_PushBackErrNode(err, ref_node, fmt, ##__VA_ARGS__)
+
 static PadObj *
-extract_unicode_object(PadAST *ref_ast, PadObjAry *ref_owners, const char *method_name) {
+extract_unicode_object(
+    PadErrStack *err,
+    const PadNode *ref_node,
+    PadAST *ref_ast,
+    PadObjAry *ref_owners,
+    const char *method_name
+) {
     // ATODO ref_node
     if (!ref_ast || !ref_owners || !method_name) {
         return NULL;
@@ -15,7 +24,7 @@ extract_unicode_object(PadAST *ref_ast, PadObjAry *ref_owners, const char *metho
 again:
     switch (owner->type) {
     default:
-        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "can't call %s method", method_name);
+        push_err("can't call %s method", method_name);
         return NULL;
         break;
     case PAD_OBJ_TYPE__UNICODE: {
@@ -28,7 +37,7 @@ again:
     case PAD_OBJ_TYPE__IDENT: {
         owner = PadCtx_FindVarRef(ref_ast->ref_context, PadObj_GetcIdentName(owner));
         if (!owner) {
-            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "not found \"%s\" in %s method", owner->identifier, method_name);
+            push_err("not found \"%s\" in %s method", owner->identifier, method_name);
             return NULL;
         }
         goto again;
@@ -39,7 +48,7 @@ again:
             ref_ast->ref_gc, ref_ast->ref_context, owner
         );
         if (!owner) {
-            PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to refer index");
+            push_err("failed to refer index");
             return NULL;
         }
         goto again;
@@ -56,13 +65,17 @@ call_basic_unicode_func(const char *method_name, PadBltFuncArgs *fargs) {
         return NULL;
     }
 
+    PadErrStack *err = fargs->ref_ast->error_stack;
+    const PadNode *ref_node = fargs->ref_node;
     PadObj *owner = extract_unicode_object(
+        err,
+        ref_node,
         fargs->ref_ast,
         fargs->ref_owners,
         method_name
     );
     if (!owner) {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        push_err("failed to extract unicode object");
         return NULL;
     }
 
@@ -80,7 +93,7 @@ call_basic_unicode_func(const char *method_name, PadBltFuncArgs *fargs) {
     } else if (PadCStr_Eq(method_name, "hacker")) {
         result = PadUni_Hacker(owner->unicode);
     } else {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\" for call basic unicode method", method_name);
+        push_err("invalid method name \"%s\" for call basic unicode method", method_name);
         return NULL;
     }
 
@@ -123,28 +136,32 @@ builtin_unicode_split(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
+    PadErrStack *err = fargs->ref_ast->error_stack;
+    const PadNode *ref_node = fargs->ref_node;
     PadObjAry *args = fargs->ref_args->objarr;
     assert(args);
     const PadObj *sep = PadObjAry_Getc(args, 0);
     if (sep->type != PAD_OBJ_TYPE__UNICODE) {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
+        push_err("invalid argument");
         return NULL;
     }
     const PadUniType *unisep = PadUni_Getc(sep->unicode);
 
     PadObj *owner = extract_unicode_object(
+        err,
+        ref_node,
         fargs->ref_ast,
         fargs->ref_owners,
         "split"
     );
     if (!owner) {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        push_err("failed to extract unicode object");
         return NULL;
     }
 
     PadUni ** arr = PadUni_Split(owner->unicode, unisep);
     if (!arr) {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to split");
+        push_err("failed to split");
         return NULL;
     }
 
@@ -165,6 +182,8 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
         return NULL;
     }
 
+    PadErrStack *err = fargs->ref_ast->error_stack;
+    const PadNode *ref_node = fargs->ref_node;
     PadObjAry *args = fargs->ref_args->objarr;
     assert(args);
 
@@ -172,7 +191,7 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
     if (PadObjAry_Len(args)) {
         const PadObj *rems = PadObjAry_Getc(args, 0);
         if (rems->type != PAD_OBJ_TYPE__UNICODE) {
-            PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid argument");
+            push_err("invalid argument");
             return NULL;
         }
         unirems = PadUni_Getc(rems->unicode);
@@ -181,12 +200,11 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
     }
 
     PadObj *owner = extract_unicode_object(
-        fargs->ref_ast,
-        fargs->ref_owners,
-        method_name
+        err, ref_node, fargs->ref_ast,
+        fargs->ref_owners, method_name
     );
     if (!owner) {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        push_err("failed to extract unicode object");
         return NULL;
     }
 
@@ -198,12 +216,12 @@ strip_work(const char *method_name, PadBltFuncArgs *fargs) {
     } else if (PadCStr_Eq(method_name, "strip")) {
         result = PadUni_Strip(owner->unicode, unirems);
     } else {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "invalid method name \"%s\"", method_name);
+        push_err("invalid method name \"%s\"", method_name);
         return NULL;
     }
 
     if (!result) {
-        PadAST_PushBackErr(fargs->ref_ast, NULL, 0, NULL, 0, "failed to rstrip");
+        push_err("failed to rstrip");
         return NULL;
     }
 
@@ -232,14 +250,15 @@ builtin_unicode_is(const char *method_name, PadBltFuncArgs *fargs) {
         return NULL;
     }
     PadAST *ref_ast = fargs->ref_ast;
+    PadErrStack *err = fargs->ref_ast->error_stack;
+    const PadNode *ref_node = fargs->ref_node;
 
     PadObj *owner = extract_unicode_object(
-        fargs->ref_ast,
-        fargs->ref_owners,
-        method_name
+        err, ref_node,
+        fargs->ref_ast, fargs->ref_owners, method_name
     );
     if (!owner) {
-        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "failed to extract unicode object");
+        push_err("failed to extract unicode object");
         return NULL;
     }
 
@@ -251,7 +270,7 @@ builtin_unicode_is(const char *method_name, PadBltFuncArgs *fargs) {
     } else if (PadCStr_Eq(method_name, "isspace")) {
         boolean = PadUni_IsSpace(owner->unicode);
     } else {
-        PadAST_PushBackErr(ref_ast, NULL, 0, NULL, 0, "unsupported method \"%s\"", method_name);
+        push_err("unsupported method \"%s\"", method_name);
     }
 
     return PadObj_NewBool(ref_ast->ref_gc, boolean);
