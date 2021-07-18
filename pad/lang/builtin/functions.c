@@ -519,7 +519,9 @@ builtin_setattr(PadBltFuncArgs *fargs) {
         return NULL;
     }
 
-    Pad_SetRefAtCurVarmap(errstack, ref_ast, fargs->ref_node, ref_context, NULL, key, obj);
+    Pad_SetRefAtVarmap(
+        errstack, ref_ast, fargs->ref_node, ref_context, NULL, key, obj
+    );
     if (PadErrStack_Len(errstack)) {
         push_err("failed to set reference at varmap");
         return NULL;

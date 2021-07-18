@@ -61,11 +61,11 @@ Pad_GetCtxByOwns(const PadAST *ref_ast, PadObjAry *owns, PadCtx *def_ctx) {
 again:
     switch (own->type) {
     default:
-        // the own has not ast so return default ast
+        // the own has not the ast so return the default ast
         return def_ctx;
         break;
     case PAD_OBJ_TYPE__MODULE:
-        // the module object has ast
+        // the module object has the ast
         return own->module.context;
         break;
     case PAD_OBJ_TYPE__IDENT: {
@@ -221,32 +221,6 @@ Pad_SetRefAtVarmap(
 
     PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
     return Pad_SetRef(varmap, ident, ref);
-}
-
-bool
-Pad_SetRefAtCurVarmap(
-    PadErrStack *err,
-    const PadAST *ref_ast,
-    const PadNode *ref_node,
-    PadCtx *ctx,
-    PadObjAry *owns,
-    const char *ident,
-    PadObj *ref_obj
-) {
-    if (!err || !ref_ast || !ref_node || !ctx || !ident || !ref_obj) {
-        return false;
-    }
-    assert(ref_obj->type != PAD_OBJ_TYPE__IDENT);
-    // allow owns is null
-
-    ctx = Pad_GetCtxByOwns(ref_ast, owns, ctx);
-    if (!ctx) {
-        push_err("can't set reference");
-        return false;
-    }
-
-    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
-    return Pad_SetRef(varmap, ident, ref_obj);
 }
 
 bool
@@ -806,7 +780,7 @@ extract_func_args(
             return;
         }
 
-        Pad_SetRefAtCurVarmap(
+        Pad_SetRefAtVarmap(
             err,
             ref_ast,
             ref_node,
@@ -883,7 +857,7 @@ invoke_func_obj(
 
     // this function has extends-function ? does set super ?
     if (func->extends_func) {
-        Pad_SetRefAtCurVarmap(
+        Pad_SetRefAtVarmap(
             err,
             ref_ast,
             ref_node,

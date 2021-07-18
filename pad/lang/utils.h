@@ -115,21 +115,6 @@ Pad_SetRefAtVarmap(
     PadObj *ref
 );
 
-/**
- * set reference of object at varmap of current scope by key
- * this function auto increment reference count of object (ref)
- */
-bool
-Pad_SetRefAtCurVarmap(
-    PadErrStack *err,
-    const PadAST *ref_ast,
-    const PadNode *ref_node,
-    PadCtx *ctx,
-    PadObjAry *ref_owners,
-    const char *identifier,
-    PadObj *ref
-);
-
 bool
 Pad_SetRef(PadObjDict *varmap, const char *identifier, PadObj *ref_obj);
 
