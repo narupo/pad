@@ -3,6 +3,6 @@
 
     ini = INI.new()
     ini.load("tests/lib/ini/settings.ini")
-    // puts(ini.get("s1", "n1"))  // TODO: fix me!
+    puts(ini.get("s1", "n1"))
     puts(ini.get("s1", "n2"))
 @}

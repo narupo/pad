@@ -82,12 +82,9 @@
                         value += c
                     else:
                         self.mode = "read name"
-                        self.data[self.cur_section] = {}
-                        /*  TODO:
-                            if s not in self.data.keys():
-                                self.data[s] = {}
-                            end
-                        */
+                        if not self.data.has(self.cur_section):
+                            self.data[self.cur_section] = {}
+                        end
                         self.data[self.cur_section][name] = value
                     end
                 end
