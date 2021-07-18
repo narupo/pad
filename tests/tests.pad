@@ -1,4 +1,5 @@
 {@
+from "tests/expr/expr.pad" import main as exprMain
 from "tests/stmt/for-stmt.pad" import main as forStmtMain
 from "tests/stmt/if-stmt.pad" import main as ifStmtMain
 from "tests/stmt/global.pad" import main as globalStmtMain
@@ -16,6 +17,7 @@ from "tests/data/dict.pad" import main as dictMain
 
 def allTest():
     case = "all"
+    exprMain(case)
     forStmtMain(case)
     ifStmtMain(case)
     globalStmtMain(case)
@@ -35,7 +37,9 @@ def main():
     name = opts.args(1)
     case = opts.args(2)
 
-    if name == "stmt/for-stmt":
+    if name == "expr/expr":
+        exprMain(case) 
+    elif name == "stmt/for-stmt":
         forStmtMain(case) 
     elif name == "stmt/if-stmt":
         ifStmtMain(case) 
