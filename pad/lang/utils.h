@@ -93,7 +93,7 @@ Pad_ObjToString(
  * this function do not increment reference count of object
  */
 bool
-Pad_MoveObjAtCurVarmap(
+Pad_MoveObjAtVarmap(
     PadErrStack *err,
     const PadNode *ref_node,
     PadCtx *ctx,

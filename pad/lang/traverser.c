@@ -1315,7 +1315,7 @@ trv_def_struct(PadAST *ast, PadTrvArgs *targs) {
         return_trav(NULL);
     }
 
-    Pad_MoveObjAtCurVarmap(
+    Pad_MoveObjAtVarmap(
         ast->error_stack,
         targs->ref_node,
         ast->ref_context,
@@ -10705,7 +10705,7 @@ trv_func_def(PadAST *ast, PadTrvArgs *targs) {
     );
     assert(func_obj);
     check("set func at varmap");
-    Pad_MoveObjAtCurVarmap(
+    Pad_MoveObjAtVarmap(
         ast->error_stack,
         targs->ref_node,
         ast->ref_context,

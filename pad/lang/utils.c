@@ -165,7 +165,7 @@ again:
 }
 
 bool
-Pad_MoveObjAtCurVarmap(
+Pad_MoveObjAtVarmap(
     PadErrStack *err,  // required
     const PadNode *ref_node,  // required
     PadCtx *ctx,  // required
@@ -185,7 +185,13 @@ Pad_MoveObjAtCurVarmap(
         return false;
     }
 
-    PadObjDict *varmap = PadCtx_GetVarmapAtCurScope(ctx);
+    PadObjDict *varmap;
+    if (PadCtx_CurScopeHasGlobalName(ctx, ident)) {
+        varmap = PadCtx_GetVarmapAtGlobal(ctx);
+    } else {
+        varmap = PadCtx_GetVarmapAtCurScope(ctx);
+    }
+
     PadObj *popped = PadObjDict_Pop(varmap, ident);
     if (popped == move_obj) {
         PadObjDict_Move(varmap, ident, PadMem_Move(move_obj));        
