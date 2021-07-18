@@ -1,98 +1,139 @@
 {@
-    from "lib/stream.pad" import Stream
-    from "lib/text-file.pad" import TextFile
+from "lib/stream.pad" import Stream
+from "lib/text-file.pad" import TextFile
 
-    struct INI:
-        data = {}
-        cur_section = nil
-        mode = nil
+struct INI:
+    data = {}
+    cur_section = nil
+    mode = nil
 
-        def new():
-            return INI()
+    def new():
+        return INI()
+    end
+
+    met load(self, fname):
+        fin = TextFile()
+        fin.open(fname, "r")
+        lines = fin.readLines()
+        fin.close()
+
+        self.mode = "first"
+
+        for i = 0; i < len(lines); i += 1:
+            line = lines[i]
+            self.parseLine(line)
         end
+    end
 
-        met load(self, fname):
-            fin = TextFile()
-            fin.open(fname, "r")
-            lines = fin.readLines()
-            fin.close()
+    met save(self, fname):
+        text = self.dataToText()
+        fout = open(fname, "w")
+        fout.write(text)
+        fout.close()
+    end
 
-            self.mode = "first"
+    met dataToText(self):
+        text = ""
+        keys = self.data.keys()  // TODO: need implement
 
-            for i = 0; i < len(lines); i += 1:
-                line = lines[i]
-                self.parseLine(line)
+        for i = 0; i < len(keys); i += 1:
+            section = keys[i]
+            text += "[$section]\n"
+            section = self.data[section]
+            skeys = section.keys()
+            for j = 0; j < len(skeys); j += 1:
+                name = skeys[j]
+                value = section[name]
+                text += "$name = $value\n"
             end
+            text += "\n"
         end
 
-        met isNameChar(self, c):
-            return c.isalpha() or c.isdigit() or c == "_" or c == "-"
-        end
+        return text
+    end
 
-        met isValueChar(self, c):
-            return not c.isspace()
-        end
+    met isNameChar(self, c):
+        return c.isalpha() or c.isdigit() or c == "_" or c == "-"
+    end
 
-        met parseLine(self, line):
-            section = ""
-            name = ""
-            value = ""
+    met isValueChar(self, c):
+        return not c.isspace()
+    end
 
-            for i = 0; i < len(line); i += 1:
-                c = line[i]
-                // puts("[" + self.mode + "]", c)
-                if self.mode == "first":
-                    if c == "[":
-                        self.mode = "read section"
-                        section = ""
+    met parseLine(self, line):
+        section = ""
+        name = ""
+        value = ""
+
+        for i = 0; i < len(line); i += 1:
+            c = line[i]
+            // puts("[" + self.mode + "]", c)
+            if self.mode == "first":
+                if c == "[":
+                    self.mode = "read section"
+                    section = ""
+                end
+            elif self.mode == "read section":
+                if c == "]":
+                    self.mode = "read name"
+                    self.cur_section = section
+                else:
+                    section += c
+                end
+            elif self.mode == "read name":
+                if self.isNameChar(c):
+                    self.mode = "read name 2"
+                    name = c 
+                elif c == "[":
+                    self.mode = "read section"
+                end
+            elif self.mode == "read name 2":
+                if self.isNameChar(c):
+                    name += c
+                elif c.isspace():
+                    self.mode = "read name 3"
+                elif c == "=":
+                    self.mode = "read value"
+                end
+            elif self.mode == "read name 3":
+                if c == "=":
+                    self.mode = "read value"
+                end
+            elif self.mode == "read value":
+                if self.isValueChar(c):
+                    self.mode = "read value 2"
+                    value += c
+                end
+            elif self.mode == "read value 2":
+                if self.isValueChar(c):
+                    value += c
+                else:
+                    self.mode = "read name"
+                    if not self.data.has(self.cur_section):
+                        self.data[self.cur_section] = {}
                     end
-                elif self.mode == "read section":
-                    if c == "]":
-                        self.mode = "read name"
-                        self.cur_section = section
-                    else:
-                        section += c
-                    end
-                elif self.mode == "read name":
-                    if self.isNameChar(c):
-                        self.mode = "read name 2"
-                        name = c 
-                    elif c == "[":
-                        self.mode = "read section"
-                    end
-                elif self.mode == "read name 2":
-                    if self.isNameChar(c):
-                        name += c
-                    elif c.isspace():
-                        self.mode = "read name 3"
-                    elif c == "=":
-                        self.mode = "read value"
-                    end
-                elif self.mode == "read name 3":
-                    if c == "=":
-                        self.mode = "read value"
-                    end
-                elif self.mode == "read value":
-                    if self.isValueChar(c):
-                        self.mode = "read value 2"
-                        value += c
-                    end
-                elif self.mode == "read value 2":
-                    if self.isValueChar(c):
-                        value += c
-                    else:
-                        self.mode = "read name"
-                        if not self.data.has(self.cur_section):
-                            self.data[self.cur_section] = {}
-                        end
-                        self.data[self.cur_section][name] = value
-                    end
+                    self.data[self.cur_section][name] = value
                 end
             end
         end
-
-        met get(self, section, name):
-            return self.data[section][name]
-        end
     end
+
+    met get(self, section, name):
+        if not self.data.has(section):
+            return nil
+        end
+        if not self.data[section].has(name):
+            return nil
+        end
+        return self.data[section][name]
+    end
+
+    met set(self, section, name, value):
+        if not self.data.has(section):
+            self.data[section] = {}
+        end
+
+        self.data[section][name] = value
+    end
+end
 @}
