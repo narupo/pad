@@ -84,7 +84,6 @@ Pad_PullRefAll(const PadObj *idn_obj);
 PadStr *
 Pad_ObjToString(
     PadErrStack *err,
-    const PadAST *ref_ast,
     const PadNode *ref_node,
     const PadObj *obj
 );

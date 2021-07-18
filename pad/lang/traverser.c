@@ -10342,7 +10342,7 @@ apply_doller(PadAST *ast, PadTrvArgs *targs, PadUni *dst, PadUni *doller) {
     }
 
     PadObj *obj = i->value;
-    PadStr *s = Pad_ObjToString(ast->error_stack, ast, targs->ref_node, obj);
+    PadStr *s = Pad_ObjToString(ast->error_stack, targs->ref_node, obj);
     PadUni *u = PadUni_New();
     PadUni_SetMB(u, PadStr_Getc(s));
 

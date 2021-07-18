@@ -139,7 +139,7 @@ builtin_eputs(PadBltFuncArgs *fargs) {
         PadObj *obj = PadObjAry_Get(args, i);
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -151,7 +151,7 @@ builtin_eputs(PadBltFuncArgs *fargs) {
         PadObj *obj = PadObjAry_Get(args, arrlen-1);
         assert(obj);
         PadObj *ref = Pad_ExtractRefOfObj(ref_ast->error_stack, ref_ast, ref_ast->ref_gc, ref_ast->ref_context, NULL, obj);
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
@@ -192,7 +192,7 @@ builtin_puts(PadBltFuncArgs *fargs) {
             push_err("failed to get argument");
             return NULL;
         }
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             continue;
         }
@@ -208,7 +208,7 @@ builtin_puts(PadBltFuncArgs *fargs) {
             push_err("failed to get argument");
             return NULL;
         }
-        PadStr *s = Pad_ObjToString(ref_ast->error_stack, ref_ast, fargs->ref_node, ref);
+        PadStr *s = Pad_ObjToString(ref_ast->error_stack, fargs->ref_node, ref);
         if (!s) {
             goto done;
         }
