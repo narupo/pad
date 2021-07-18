@@ -21,19 +21,19 @@
 
             for i = 0; i < len(lines); i += 1:
                 line = lines[i]
-                self.parse_line(line)
+                self.parseLine(line)
             end
         end
 
-        met is_name_char(self, c):
+        met isNameChar(self, c):
             return c.isalpha() or c.isdigit() or c == "_" or c == "-"
         end
 
-        met is_value_char(self, c):
+        met isValueChar(self, c):
             return not c.isspace()
         end
 
-        met parse_line(self, line):
+        met parseLine(self, line):
             section = ""
             name = ""
             value = ""
@@ -54,14 +54,14 @@
                         section += c
                     end
                 elif self.mode == "read name":
-                    if self.is_name_char(c):
+                    if self.isNameChar(c):
                         self.mode = "read name 2"
                         name = c 
                     elif c == "[":
                         self.mode = "read section"
                     end
                 elif self.mode == "read name 2":
-                    if self.is_name_char(c):
+                    if self.isNameChar(c):
                         name += c
                     elif c.isspace():
                         self.mode = "read name 3"
@@ -73,12 +73,12 @@
                         self.mode = "read value"
                     end
                 elif self.mode == "read value":
-                    if self.is_value_char(c):
+                    if self.isValueChar(c):
                         self.mode = "read value 2"
                         value += c
                     end
                 elif self.mode == "read value 2":
-                    if self.is_value_char(c):
+                    if self.isValueChar(c):
                         value += c
                     else:
                         self.mode = "read name"
