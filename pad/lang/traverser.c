@@ -574,6 +574,15 @@ trv_stmt(PadAST *ast, PadTrvArgs *targs) {
             return_trav(NULL);
         }
         return_trav(result);
+    } else if (stmt->throw_stmt) {
+        check("call _PadTrv_Trav with throw stmt");
+        targs->ref_node = stmt->throw_stmt;
+        targs->depth = depth + 1;
+        result = _PadTrv_Trav(ast, targs);
+        if (PadAST_HasErrs(ast)) {
+            return_trav(NULL);
+        }
+        return_trav(result);
     } else {
         return_trav(NULL);
     }
@@ -1303,6 +1312,31 @@ trv_nonlocal_stmt(PadAST *ast, PadTrvArgs *targs) {
         PadScope *curscope = PadCtx_GetCurScope(ast->ref_context);
         PadCStrAry_PushBack(curscope->nonlocal_names, idn);
     }
+
+    return_trav(NULL);
+}
+
+static PadObj *
+trv_throw_stmt(PadAST *ast, PadTrvArgs *targs) {
+    tready();
+    PadNode *node = targs->ref_node;
+    assert(node);
+    assert(node->type == PAD_NODE_TYPE__THROW_STMT);
+    PadThrowStmtNode *throw_stmt = node->real;
+    assert(throw_stmt);
+    PadDepth depth = targs->depth;
+    PadNode *ident = throw_stmt->identifier;
+
+    targs->ref_node = ident;
+    targs->depth = depth + 1;
+    PadObj *idn = _PadTrv_Trav(ast, targs);
+    if (!idn || PadAST_HasErrs(ast)) {
+        pushb_error("failed to traverse identifier");
+        return_trav(NULL);
+    }
+
+    // ATODO
+    printf("throw [%s]!\n", PadObj_GetcIdentName(idn));
 
     return_trav(NULL);
 }
@@ -11012,6 +11046,11 @@ _PadTrv_Trav(PadAST *ast, PadTrvArgs *targs) {
     case PAD_NODE_TYPE__NONLOCAL_STMT: {
         check("call trv_nonlocal_stmt");
         PadObj *obj = trv_nonlocal_stmt(ast, targs);
+        return_trav(obj);
+    } break;
+    case PAD_NODE_TYPE__THROW_STMT: {
+        check("call trv_throw_stmt");
+        PadObj *obj = trv_throw_stmt(ast, targs);
         return_trav(obj);
     } break;
     case PAD_NODE_TYPE__STRUCT: {

@@ -1,0 +1,22 @@
+{@
+
+def case1():
+    puts("Test stmt/nonlocal case1")
+
+    throw a
+end
+
+def all():
+    puts("all")
+    case1()
+end
+
+def main(case):
+    if case == "all":
+        all()
+    elif case == "case1":
+        case1()
+    end
+end
+
+@}

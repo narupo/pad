@@ -46,6 +46,7 @@ typedef enum {
     PAD_NODE_TYPE__INJECT_STMT,
     PAD_NODE_TYPE__GLOBAL_STMT,
     PAD_NODE_TYPE__NONLOCAL_STMT,
+    PAD_NODE_TYPE__THROW_STMT,
 
     PAD_NODE_TYPE__STRUCT,
 
@@ -182,6 +183,7 @@ typedef struct {
     PadNode *inject_stmt;
     PadNode *global_stmt;
     PadNode *nonlocal_stmt;
+    PadNode *throw_stmt;
 } PadStmtNode;
 
 typedef struct {
@@ -251,15 +253,20 @@ typedef struct {
     PadNodeAry *contents;
 } PadInjectStmtNode;
 
-// global_stmt ::= global [ identifiers , ]*
+// global_stmt ::= 'global' [ identifiers , ]*
 typedef struct {
     PadNodeAry *identifiers;
 } PadGlobalStmtNode;
 
-// nonlocal_stmt ::= nonlocal [ identifiers , ]*
+// nonlocal_stmt ::= 'nonlocal' [ identifiers , ]*
 typedef struct {
     PadNodeAry *identifiers;
 } PadNonlocalStmtNode;
+
+// throw_stmt ::= 'throw' identifier
+typedef struct {
+    PadNode *identifier;
+} PadThrowStmtNode;
 
 /*********
 * struct *

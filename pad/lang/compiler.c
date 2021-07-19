@@ -153,6 +153,9 @@ static PadNode *
 cc_nonlocal_stmt(PadAST *ast, PadCCArgs *cargs);
 
 static PadNode *
+cc_throw_stmt(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
 cc_block_stmt(PadAST *ast, PadCCArgs *cargs);
 
 static PadNode *
@@ -3269,6 +3272,7 @@ cc_stmt(PadAST *ast, PadCCArgs *cargs) {
         PadAST_DelNodes(ast, cur->inject_stmt); \
         PadAST_DelNodes(ast, cur->global_stmt); \
         PadAST_DelNodes(ast, cur->nonlocal_stmt); \
+        PadAST_DelNodes(ast, cur->throw_stmt); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3377,6 +3381,16 @@ cc_stmt(PadAST *ast, PadCCArgs *cargs) {
     if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->nonlocal_stmt) {
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
+    }
+
+    check("call cc_throw_stmt");
+    t = cur_tok(ast);
+    cargs->depth = depth + 1;
+    cur->throw_stmt = cc_throw_stmt(ast, cargs);
+    if (PadAST_HasErrs(ast)) {
+        return_cleanup("");
+    } else if (cur->throw_stmt) {
         return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
     }
 
@@ -3658,6 +3672,45 @@ cc_nonlocal_stmt(PadAST *ast, PadCCArgs *cargs) {
 
     // done
     PadNode *node = PadNode_New(PAD_NODE_TYPE__NONLOCAL_STMT, cur, savetok);
+    return_parse(node);
+}
+
+static PadNode *
+cc_throw_stmt(PadAST *ast, PadCCArgs *cargs) {
+    ready();
+    declare(PadThrowStmtNode, cur);
+    PadTok **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        PadTok *curtok = cur_tok(ast); \
+        ast->ref_ptr = save_ptr; \
+        PadNode_Del(cur->identifier); \
+        free(cur); \
+        if (strlen(msg)) { \
+            pushb_error(ast, curtok, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    PadDepth depth = cargs->depth;
+    PadTok *t = next_tok(ast);
+    if (!t || t->type != PAD_TOK_TYPE__STMT_THROW) {
+        return_cleanup("");  // not error
+    }
+
+    const PadTok *savetok = cur_tok(ast);
+
+    cargs->depth = depth + 1;
+    cur->identifier = cc_identifier(ast, cargs);
+    if (!cur->identifier) {
+        return_cleanup("not found identifier");
+    } else if (PadAST_HasErrs(ast)) {
+        return_cleanup("failed to parse identifier");
+    }
+
+    // done
+    PadNode *node = PadNode_New(PAD_NODE_TYPE__THROW_STMT, cur, savetok);
     return_parse(node);
 }
 

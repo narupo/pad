@@ -135,6 +135,26 @@ PadAST_DelNodes(const PadAST *self, PadNode *node) {
         }
         PadNodeAry_DelWithoutNodes(inject_stmt->contents);
     } break;
+    case PAD_NODE_TYPE__GLOBAL_STMT: {
+        PadGlobalStmtNode *global_stmt = node->real;
+        for (int32_t i = 0; i < PadNodeAry_Len(global_stmt->identifiers); ++i) {
+            PadNode *node = PadNodeAry_Get(global_stmt->identifiers, i);
+            PadAST_DelNodes(self, node);
+        }
+        PadNodeAry_DelWithoutNodes(global_stmt->identifiers);
+    } break;
+    case PAD_NODE_TYPE__NONLOCAL_STMT: {
+        PadNonlocalStmtNode *nonlocal_stmt = node->real;
+        for (int32_t i = 0; i < PadNodeAry_Len(nonlocal_stmt->identifiers); ++i) {
+            PadNode *node = PadNodeAry_Get(nonlocal_stmt->identifiers, i);
+            PadAST_DelNodes(self, node);
+        }
+        PadNodeAry_DelWithoutNodes(nonlocal_stmt->identifiers);
+    } break;
+    case PAD_NODE_TYPE__THROW_STMT: {
+        PadThrowStmtNode *throw_stmt = node->real;
+        PadAST_DelNodes(self, throw_stmt->identifier);
+    } break;
     case PAD_NODE_TYPE__FUNC_EXTENDS: {
         PadFuncExtendsNode *func_extends = node->real;
         PadAST_DelNodes(self, func_extends->identifier);

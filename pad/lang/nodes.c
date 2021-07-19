@@ -148,6 +148,7 @@ PadNode_DeepCopy(const PadNode *other) {
         dst->inject_stmt = PadNode_DeepCopy(src->inject_stmt);
         dst->global_stmt = PadNode_DeepCopy(src->global_stmt);
         dst->nonlocal_stmt = PadNode_DeepCopy(src->nonlocal_stmt);
+        dst->throw_stmt = PadNode_DeepCopy(src->throw_stmt);
         self->real = dst;
     } break;
     case PAD_NODE_TYPE__IMPORT_STMT: {
@@ -259,6 +260,12 @@ PadNode_DeepCopy(const PadNode *other) {
         declare(PadGlobalStmtNode, dst);
         PadGlobalStmtNode *src = other->real;
         copy_node_array(dst, src, identifiers);
+        self->real = dst;
+    } break;
+    case PAD_NODE_TYPE__THROW_STMT: {
+        declare(PadThrowStmtNode, dst);
+        PadThrowStmtNode *src = other->real;
+        dst->identifier = PadNode_DeepCopy(src->identifier);
         self->real = dst;
     } break;
     case PAD_NODE_TYPE__STRUCT: {
@@ -617,6 +624,7 @@ PadNode_ToStr(const PadNode *self) {
     case PAD_NODE_TYPE__INJECT_STMT: PadStr_Set(s, "inject"); break;
     case PAD_NODE_TYPE__GLOBAL_STMT: PadStr_Set(s, "global"); break;
     case PAD_NODE_TYPE__NONLOCAL_STMT: PadStr_Set(s, "nonlocal"); break;
+    case PAD_NODE_TYPE__THROW_STMT: PadStr_Set(s, "throw"); break;
     case PAD_NODE_TYPE__STRUCT: PadStr_Set(s, "struct"); break;
     case PAD_NODE_TYPE__CONTENT: PadStr_Set(s, "content"); break;
     case PAD_NODE_TYPE__FORMULA: PadStr_Set(s, "formula"); break;
