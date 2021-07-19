@@ -12,8 +12,7 @@ struct INI:
     end
 
     met load(self, fname):
-        fin = TextFile()
-        fin.open(fname, "r")
+        fin = TextFile.open(fname, "r")
         lines = fin.readLines()
         fin.close()
 

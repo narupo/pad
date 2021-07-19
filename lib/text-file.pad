@@ -2,8 +2,10 @@
     struct TextFile:
         fp = nil
 
-        met open(self, fname, mode):
+        def open(fname, mode):
+            self = TextFile()
             self.fp = open(fname, mode)
+            return self
         end
 
         met close(self):
