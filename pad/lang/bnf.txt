@@ -23,7 +23,8 @@ BNF of Pad's template language
                     block_stmt |
                     inject_stmt |
                     global_stmt |
-                    nonlocal_stmt
+                    nonlocal_stmt |
+                    try_catch_stmt
 
        import_stmt: import_as_stmt | from_import_stmt
     import_as_stmt: 'import' string 'as' identifier
@@ -48,6 +49,14 @@ BNF of Pad's template language
        inject_stmt: 'inject' identifier ':' [ content ]* 'end'
        global_stmt: 'global' [ identifier , ]*
      nonlocal_stmt: 'nonlocal' [ identifier , ]*
+
+    try_catch_stmt: 'try' ':' [ content ]* catch_list 'end'
+        catch_list: [ catch ':' [ content ]* ]+
+             catch: catch_none | catch_single | catch_multi
+        catch_none: 'catch'
+      catch_single: 'catch' identifier as_identifier?
+       catch_multi: 'catch' '(' [ identifier]* ')' as_identifier?
+     as_identifier: 'as' identifier
 
             struct: 'struct' identifier ':' elems 'end'
 
