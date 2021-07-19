@@ -4164,7 +4164,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
@@ -4267,7 +4267,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__OP_ADD);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4278,7 +4278,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4289,7 +4289,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL);
+        assert(token->type == PAD_TOK_TYPE__OP_MUL);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4300,7 +4300,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV);
+        assert(token->type == PAD_TOK_TYPE__OP_DIV);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4311,7 +4311,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MOD);
+        assert(token->type == PAD_TOK_TYPE__OP_MOD);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4322,7 +4322,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4333,7 +4333,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_ADD_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4344,7 +4344,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4355,7 +4355,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_MUL_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4366,7 +4366,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_DIV_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4377,7 +4377,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MOD_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_MOD_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4392,7 +4392,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__EQ);
+        assert(token->type == PAD_TOK_TYPE__OP_EQ);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4403,7 +4403,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__NOT_EQ);
+        assert(token->type == PAD_TOK_TYPE__OP_NOT_EQ);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4414,7 +4414,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__LTE);
+        assert(token->type == PAD_TOK_TYPE__OP_LTE);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4425,7 +4425,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__GTE);
+        assert(token->type == PAD_TOK_TYPE__OP_GTE);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4436,7 +4436,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__LT);
+        assert(token->type == PAD_TOK_TYPE__OP_LT);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4447,7 +4447,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__GT);
+        assert(token->type == PAD_TOK_TYPE__OP_GT);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4458,7 +4458,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__OR);
+        assert(token->type == PAD_TOK_TYPE__OP_OR);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4469,7 +4469,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__AND);
+        assert(token->type == PAD_TOK_TYPE__OP_AND);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4480,7 +4480,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__NOT);
+        assert(token->type == PAD_TOK_TYPE__OP_NOT);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RBRACEAT);
     }
@@ -4497,7 +4497,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 1);
         assert(token->type == PAD_TOK_TYPE__INTEGER);
         token = PadTkr_ToksGetc(tkr, 2);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL);
+        assert(token->type == PAD_TOK_TYPE__OP_MUL);
         token = PadTkr_ToksGetc(tkr, 3);
         assert(token->type == PAD_TOK_TYPE__INTEGER);
         token = PadTkr_ToksGetc(tkr, 4);
@@ -4695,7 +4695,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__OP_ADD);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4706,7 +4706,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4717,7 +4717,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL);
+        assert(token->type == PAD_TOK_TYPE__OP_MUL);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4728,7 +4728,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV);
+        assert(token->type == PAD_TOK_TYPE__OP_DIV);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4739,7 +4739,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4750,7 +4750,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_ADD_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4761,7 +4761,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4772,7 +4772,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__MUL_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_MUL_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4783,7 +4783,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__DIV_ASS);
+        assert(token->type == PAD_TOK_TYPE__OP_DIV_ASS);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4798,7 +4798,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__EQ);
+        assert(token->type == PAD_TOK_TYPE__OP_EQ);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -4809,7 +4809,7 @@ test_PadTkr_Parse(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LDOUBLE_BRACE);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__NOT_EQ);
+        assert(token->type == PAD_TOK_TYPE__OP_NOT_EQ);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__RDOUBLE_BRACE);
     }
@@ -5073,7 +5073,7 @@ test_PadTkr_Parse_int_plus(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__OP_ADD);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
@@ -5097,7 +5097,7 @@ test_PadTkr_Parse_int_minus(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__INTEGER);
         assert(token->lvalue == 123);
@@ -5143,7 +5143,7 @@ test_PadTkr_Parse_float_plus(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__ADD);
+        assert(token->type == PAD_TOK_TYPE__OP_ADD);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__FLOAT);
         assert(token->float_value == 123.456);
@@ -5167,7 +5167,7 @@ test_PadTkr_Parse_float_minus(void) {
         token = PadTkr_ToksGetc(tkr, 0);
         assert(token->type == PAD_TOK_TYPE__LBRACEAT);
         token = PadTkr_ToksGetc(tkr, 1);
-        assert(token->type == PAD_TOK_TYPE__PAD_OP__SUB);
+        assert(token->type == PAD_TOK_TYPE__OP_SUB);
         token = PadTkr_ToksGetc(tkr, 2);
         assert(token->type == PAD_TOK_TYPE__FLOAT);
         assert(token->float_value == 123.456);

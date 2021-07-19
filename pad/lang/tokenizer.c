@@ -491,11 +491,11 @@ PadTkr_Parse_identifier(PadTkr *self) {
     } else if (PadCStr_Eq(token->text, "for")) {
         token->type = PAD_TOK_TYPE__STMT_FOR;
     } else if (PadCStr_Eq(token->text, "or")) {
-        token->type = PAD_TOK_TYPE__PAD_OP__OR;
+        token->type = PAD_TOK_TYPE__OP_OR;
     } else if (PadCStr_Eq(token->text, "and")) {
-        token->type = PAD_TOK_TYPE__PAD_OP__AND;
+        token->type = PAD_TOK_TYPE__OP_AND;
     } else if (PadCStr_Eq(token->text, "not")) {
-        token->type = PAD_TOK_TYPE__PAD_OP__NOT;
+        token->type = PAD_TOK_TYPE__OP_NOT;
     } else if (PadCStr_Eq(token->text, "nil")) {
         token->type = PAD_TOK_TYPE__NIL;
     } else if (PadCStr_Eq(token->text, "break")) {
@@ -520,6 +520,12 @@ PadTkr_Parse_identifier(PadTkr *self) {
         token->type = PAD_TOK_TYPE__STMT_GLOBAL;
     } else if (PadCStr_Eq(token->text, "nonlocal")) {
         token->type = PAD_TOK_TYPE__STMT_NONLOCAL;
+    } else if (PadCStr_Eq(token->text, "try")) {
+        token->type = PAD_TOK_TYPE__STMT_TRY;
+    } else if (PadCStr_Eq(token->text, "catch")) {
+        token->type = PAD_TOK_TYPE__STMT_CATCH;
+    } else if (PadCStr_Eq(token->text, "throw")) {
+        token->type = PAD_TOK_TYPE__STMT_THROW;
     } else if (PadCStr_Eq(token->text, "extends")) {
         token->type = PAD_TOK_TYPE__EXTENDS;
     } else if (PadCStr_Eq(token->text, "struct")) {
@@ -745,48 +751,48 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
                 }
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ASS, PAD_TOK_TYPE__PAD_OP__EQ)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_ASS, PAD_TOK_TYPE__OP_EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
                 tkr_next(self);
-                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__NOT_EQ);
+                PadTok *token = tok_new(PAD_TOK_TYPE__OP_NOT_EQ);
                 tkr_move_token(self, PadMem_Move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 tkr_next(self);
-                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__LTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__OP_LTE);
                 tkr_move_token(self, PadMem_Move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 tkr_next(self);
-                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__GTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__OP_GTE);
                 tkr_move_token(self, PadMem_Move(token));
             } else if (c == '<') {
-                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__PAD_OP__LT)));
+                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__OP_LT)));
             } else if (c == '>') {
-                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__PAD_OP__GT)));
+                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__OP_GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ADD, PAD_TOK_TYPE__PAD_OP__ADD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_ADD, PAD_TOK_TYPE__OP_ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__SUB, PAD_TOK_TYPE__PAD_OP__SUB_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_SUB, PAD_TOK_TYPE__OP_SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MUL, PAD_TOK_TYPE__PAD_OP__MUL_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_MUL, PAD_TOK_TYPE__OP_MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__DIV, PAD_TOK_TYPE__PAD_OP__DIV_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_DIV, PAD_TOK_TYPE__OP_DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MOD, PAD_TOK_TYPE__PAD_OP__MOD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_MOD, PAD_TOK_TYPE__OP_MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {
@@ -843,48 +849,48 @@ PadTkr_Parse(PadTkr *self, const char *program_source) {
                m = 0;
             } else if (c == '=') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ASS, PAD_TOK_TYPE__PAD_OP__EQ)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_ASS, PAD_TOK_TYPE__OP_EQ)) {
                     goto fail;
                 }
             } else if (c == '!' && *self->ptr == '=') {
                 tkr_next(self);
-                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__NOT_EQ);
+                PadTok *token = tok_new(PAD_TOK_TYPE__OP_NOT_EQ);
                 tkr_move_token(self, PadMem_Move(token));
             } else if (c == '<' && *self->ptr == '=') {
                 tkr_next(self);
-                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__LTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__OP_LTE);
                 tkr_move_token(self, PadMem_Move(token));
             } else if (c == '>' && *self->ptr == '=') {
                 tkr_next(self);
-                PadTok *token = tok_new(PAD_TOK_TYPE__PAD_OP__GTE);
+                PadTok *token = tok_new(PAD_TOK_TYPE__OP_GTE);
                 tkr_move_token(self, PadMem_Move(token));
             } else if (c == '<') {
-                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__PAD_OP__LT)));
+                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__OP_LT)));
             } else if (c == '>') {
-                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__PAD_OP__GT)));
+                tkr_move_token(self, PadMem_Move(tok_new(PAD_TOK_TYPE__OP_GT)));
             } else if (c == '+') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__ADD, PAD_TOK_TYPE__PAD_OP__ADD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_ADD, PAD_TOK_TYPE__OP_ADD_ASS)) {
                     goto fail;
                 }
             } else if (c == '-') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__SUB, PAD_TOK_TYPE__PAD_OP__SUB_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_SUB, PAD_TOK_TYPE__OP_SUB_ASS)) {
                     goto fail;
                 }
             } else if (c == '*') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MUL, PAD_TOK_TYPE__PAD_OP__MUL_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_MUL, PAD_TOK_TYPE__OP_MUL_ASS)) {
                     goto fail;
                 }
             } else if (c == '/') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__DIV, PAD_TOK_TYPE__PAD_OP__DIV_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_DIV, PAD_TOK_TYPE__OP_DIV_ASS)) {
                     goto fail;
                 }
             } else if (c == '%') {
                 tkr_prev(self);
-                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__PAD_OP__MOD, PAD_TOK_TYPE__PAD_OP__MOD_ASS)) {
+                if (!PadTkr_Parse_op(self, c, PAD_TOK_TYPE__OP_MOD, PAD_TOK_TYPE__OP_MOD_ASS)) {
                     goto fail;
                 }
             } else if (c == '.') {

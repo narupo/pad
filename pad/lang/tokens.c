@@ -127,30 +127,30 @@ PadTok_TypeToStr(const PadTok *self) {
     case PAD_TOK_TYPE__TRUE: return "true"; break;
 
     // operators
-    case PAD_TOK_TYPE__PAD_OP__ADD: return "+"; break;
-    case PAD_TOK_TYPE__PAD_OP__SUB: return "-"; break;
-    case PAD_TOK_TYPE__PAD_OP__MUL: return "*"; break;
-    case PAD_TOK_TYPE__PAD_OP__DIV: return "/"; break;
-    case PAD_TOK_TYPE__PAD_OP__MOD: return "%"; break;
-    case PAD_TOK_TYPE__PAD_OP__OR: return "or"; break;
-    case PAD_TOK_TYPE__PAD_OP__AND: return "and"; break;
-    case PAD_TOK_TYPE__PAD_OP__NOT: return "not"; break;
+    case PAD_TOK_TYPE__OP_ADD: return "+"; break;
+    case PAD_TOK_TYPE__OP_SUB: return "-"; break;
+    case PAD_TOK_TYPE__OP_MUL: return "*"; break;
+    case PAD_TOK_TYPE__OP_DIV: return "/"; break;
+    case PAD_TOK_TYPE__OP_MOD: return "%"; break;
+    case PAD_TOK_TYPE__OP_OR: return "or"; break;
+    case PAD_TOK_TYPE__OP_AND: return "and"; break;
+    case PAD_TOK_TYPE__OP_NOT: return "not"; break;
 
     // assign operators
-    case PAD_TOK_TYPE__PAD_OP__ASS: return "="; break;
-    case PAD_TOK_TYPE__PAD_OP__ADD_ASS: return "+="; break;
-    case PAD_TOK_TYPE__PAD_OP__SUB_ASS: return "-="; break;
-    case PAD_TOK_TYPE__PAD_OP__MUL_ASS: return "*="; break;
-    case PAD_TOK_TYPE__PAD_OP__DIV_ASS: return "/="; break;
-    case PAD_TOK_TYPE__PAD_OP__MOD_ASS: return "%="; break;
+    case PAD_TOK_TYPE__OP_ASS: return "="; break;
+    case PAD_TOK_TYPE__OP_ADD_ASS: return "+="; break;
+    case PAD_TOK_TYPE__OP_SUB_ASS: return "-="; break;
+    case PAD_TOK_TYPE__OP_MUL_ASS: return "*="; break;
+    case PAD_TOK_TYPE__OP_DIV_ASS: return "/="; break;
+    case PAD_TOK_TYPE__OP_MOD_ASS: return "%="; break;
 
     // comparison operators
-    case PAD_TOK_TYPE__PAD_OP__EQ: return "=="; break;
-    case PAD_TOK_TYPE__PAD_OP__NOT_EQ: return "!="; break;
-    case PAD_TOK_TYPE__PAD_OP__LTE: return "<="; break;
-    case PAD_TOK_TYPE__PAD_OP__GTE: return ">="; break;
-    case PAD_TOK_TYPE__PAD_OP__LT: return "<"; break;
-    case PAD_TOK_TYPE__PAD_OP__GT: return ">"; break;
+    case PAD_TOK_TYPE__OP_EQ: return "=="; break;
+    case PAD_TOK_TYPE__OP_NOT_EQ: return "!="; break;
+    case PAD_TOK_TYPE__OP_LTE: return "<="; break;
+    case PAD_TOK_TYPE__OP_GTE: return ">="; break;
+    case PAD_TOK_TYPE__OP_LT: return "<"; break;
+    case PAD_TOK_TYPE__OP_GT: return ">"; break;
 
     // statements
     case PAD_TOK_TYPE__STMT_END: return "end"; break;
@@ -171,6 +171,9 @@ PadTok_TypeToStr(const PadTok *self) {
     case PAD_TOK_TYPE__STMT_INJECT: return "inject"; break;
     case PAD_TOK_TYPE__STMT_GLOBAL: return "global"; break;
     case PAD_TOK_TYPE__STMT_NONLOCAL: return "nonlocal"; break;
+    case PAD_TOK_TYPE__STMT_TRY: return "try"; break;
+    case PAD_TOK_TYPE__STMT_CATCH: return "catch"; break;
+    case PAD_TOK_TYPE__STMT_THROW: return "throw"; break;
 
     // struct
     case PAD_TOK_TYPE__STRUCT: return "struct"; break;

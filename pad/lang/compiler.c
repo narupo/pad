@@ -259,7 +259,7 @@ cc_assign(PadAST *ast, PadCCArgs *cargs) {
     }
 
     PadTok *t = next_tok(ast);
-    if (t->type != PAD_TOK_TYPE__PAD_OP__ASS) {
+    if (t->type != PAD_TOK_TYPE__OP_ASS) {
         return_cleanup("");
     }
     check("read =");
@@ -283,7 +283,7 @@ cc_assign(PadAST *ast, PadCCArgs *cargs) {
         }
 
         t = next_tok(ast);
-        if (t->type != PAD_TOK_TYPE__PAD_OP__ASS) {
+        if (t->type != PAD_TOK_TYPE__OP_ASS) {
             prev_tok(ast);
             PadNode *node = PadNode_New(PAD_NODE_TYPE__ASSIGN, cur, *ast->ref_ptr);
             return_parse(node);
@@ -461,7 +461,7 @@ cc_multi_assign(PadAST *ast, PadCCArgs *cargs) {
         }
 
         t = next_tok(ast);
-        if (t->type != PAD_TOK_TYPE__PAD_OP__ASS) {
+        if (t->type != PAD_TOK_TYPE__OP_ASS) {
             prev_tok(ast);
             return_parse(PadNode_New(PAD_NODE_TYPE__MULTI_ASSIGN, cur, *ast->ref_ptr));
         }
@@ -1016,11 +1016,11 @@ cc_augassign(PadAST *ast, PadCCArgs *cargs) {
     default:
         return_cleanup("");
         break;
-    case PAD_TOK_TYPE__PAD_OP__ADD_ASS: cur->op = PAD_OP__ADD_ASS; break;
-    case PAD_TOK_TYPE__PAD_OP__SUB_ASS: cur->op = PAD_OP__SUB_ASS; break;
-    case PAD_TOK_TYPE__PAD_OP__MUL_ASS: cur->op = PAD_OP__MUL_ASS; break;
-    case PAD_TOK_TYPE__PAD_OP__DIV_ASS: cur->op = PAD_OP__DIV_ASS; break;
-    case PAD_TOK_TYPE__PAD_OP__MOD_ASS: cur->op = PAD_OP__MOD_ASS; break;
+    case PAD_TOK_TYPE__OP_ADD_ASS: cur->op = PAD_OP__ADD_ASS; break;
+    case PAD_TOK_TYPE__OP_SUB_ASS: cur->op = PAD_OP__SUB_ASS; break;
+    case PAD_TOK_TYPE__OP_MUL_ASS: cur->op = PAD_OP__MUL_ASS; break;
+    case PAD_TOK_TYPE__OP_DIV_ASS: cur->op = PAD_OP__DIV_ASS; break;
+    case PAD_TOK_TYPE__OP_MOD_ASS: cur->op = PAD_OP__MOD_ASS; break;
     }
     check("read op");
 
@@ -1134,7 +1134,7 @@ cc_simple_assign(PadAST *ast, PadCCArgs *cargs) {
         }
 
         PadTok *t = next_tok(ast);
-        if (t->type != PAD_TOK_TYPE__PAD_OP__ASS) {
+        if (t->type != PAD_TOK_TYPE__OP_ASS) {
             prev_tok(ast);
             return_parse(PadNode_New(PAD_NODE_TYPE__SIMPLE_ASSIGN, cur, cur_tok(ast)));
         }
@@ -1987,7 +1987,7 @@ cc_negative(PadAST *ast, PadCCArgs *cargs) {
     PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
-    if (t->type != PAD_TOK_TYPE__PAD_OP__SUB) {
+    if (t->type != PAD_TOK_TYPE__OP_SUB) {
         prev_tok(ast);
     } else {
         check("read op sub in negative");
@@ -2176,9 +2176,9 @@ cc_mul_div_op(PadAST *ast, PadCCArgs *cargs) {
     default:
         return_cleanup(""); // not error
         break;
-    case PAD_TOK_TYPE__PAD_OP__MUL: cur->op = PAD_OP__MUL; break;
-    case PAD_TOK_TYPE__PAD_OP__DIV: cur->op = PAD_OP__DIV; break;
-    case PAD_TOK_TYPE__PAD_OP__MOD: cur->op = PAD_OP__MOD; break;
+    case PAD_TOK_TYPE__OP_MUL: cur->op = PAD_OP__MUL; break;
+    case PAD_TOK_TYPE__OP_DIV: cur->op = PAD_OP__DIV; break;
+    case PAD_TOK_TYPE__OP_MOD: cur->op = PAD_OP__MOD; break;
     }
     check("read op");
 
@@ -2211,8 +2211,8 @@ cc_add_sub_op(PadAST *ast, PadCCArgs *cargs) {
     default:
         return_cleanup(""); // not error
         break;
-    case PAD_TOK_TYPE__PAD_OP__ADD: cur->op = PAD_OP__ADD; break;
-    case PAD_TOK_TYPE__PAD_OP__SUB: cur->op = PAD_OP__SUB; break;
+    case PAD_TOK_TYPE__OP_ADD: cur->op = PAD_OP__ADD; break;
+    case PAD_TOK_TYPE__OP_SUB: cur->op = PAD_OP__SUB; break;
     }
     check("read op");
 
@@ -2316,27 +2316,27 @@ cc_comp_op(PadAST *ast, PadCCArgs *cargs) {
         prev_tok(ast);
         return_cleanup(""); // not error
         break;
-    case PAD_TOK_TYPE__PAD_OP__EQ:
+    case PAD_TOK_TYPE__OP_EQ:
         cur->op = PAD_OP__EQ;
         check("read ==");
         break;
-    case PAD_TOK_TYPE__PAD_OP__NOT_EQ:
+    case PAD_TOK_TYPE__OP_NOT_EQ:
         cur->op = PAD_OP__NOT_EQ;
         check("read !=");
         break;
-    case PAD_TOK_TYPE__PAD_OP__LTE:
+    case PAD_TOK_TYPE__OP_LTE:
         cur->op = PAD_OP__LTE;
         check("read <=");
         break;
-    case PAD_TOK_TYPE__PAD_OP__GTE:
+    case PAD_TOK_TYPE__OP_GTE:
         cur->op = PAD_OP__GTE;
         check("read >=");
         break;
-    case PAD_TOK_TYPE__PAD_OP__LT:
+    case PAD_TOK_TYPE__OP_LT:
         cur->op = PAD_OP__LT;
         check("read <");
         break;
-    case PAD_TOK_TYPE__PAD_OP__GT:
+    case PAD_TOK_TYPE__OP_GT:
         cur->op = PAD_OP__GT;
         check("read >");
         break;
@@ -2439,7 +2439,7 @@ cc_not_test(PadAST *ast, PadCCArgs *cargs) {
     PadDepth depth = cargs->depth;
 
     PadTok *t = next_tok(ast);
-    if (t->type == PAD_TOK_TYPE__PAD_OP__NOT) {
+    if (t->type == PAD_TOK_TYPE__OP_NOT) {
         check("call cc_not_test");
         cc_skip_newlines(ast);
 
@@ -2509,7 +2509,7 @@ cc_and_test(PadAST *ast, PadCCArgs *cargs) {
         }
 
         PadTok *t = next_tok(ast);
-        if (t->type != PAD_TOK_TYPE__PAD_OP__AND) {
+        if (t->type != PAD_TOK_TYPE__OP_AND) {
             prev_tok(ast);
             return_parse(PadNode_New(PAD_NODE_TYPE__AND_TEST, cur, cur_tok(ast)));
         }
@@ -2575,7 +2575,7 @@ cc_or_test(PadAST *ast, PadCCArgs *cargs) {
         }
 
         PadTok *t = next_tok(ast);
-        if (t->type != PAD_TOK_TYPE__PAD_OP__OR) {
+        if (t->type != PAD_TOK_TYPE__OP_OR) {
             prev_tok(ast);
             return_parse(PadNode_New(PAD_NODE_TYPE__OR_TEST, cur, cur_tok(ast)));
         }
