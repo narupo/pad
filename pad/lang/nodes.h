@@ -46,7 +46,15 @@ typedef enum {
     PAD_NODE_TYPE__INJECT_STMT,
     PAD_NODE_TYPE__GLOBAL_STMT,
     PAD_NODE_TYPE__NONLOCAL_STMT,
+
     PAD_NODE_TYPE__THROW_STMT,
+    PAD_NODE_TYPE__TRY_CATCH_STMT,
+    PAD_NODE_TYPE__CATCH_LIST,
+    PAD_NODE_TYPE__CATCH,
+    PAD_NODE_TYPE__CATCH_NONE,
+    PAD_NODE_TYPE__CATCH_SINGLE,
+    PAD_NODE_TYPE__CATCH_MULTI,
+    PAD_NODE_TYPE__AS_IDENTIFIER,
 
     PAD_NODE_TYPE__STRUCT,
 
@@ -253,20 +261,57 @@ typedef struct {
     PadNodeAry *contents;
 } PadInjectStmtNode;
 
-// global_stmt ::= 'global' [ identifiers , ]*
+// global_stmt: 'global' [ identifiers , ]*
 typedef struct {
     PadNodeAry *identifiers;
 } PadGlobalStmtNode;
 
-// nonlocal_stmt ::= 'nonlocal' [ identifiers , ]*
+// nonlocal_stmt: 'nonlocal' [ identifiers , ]*
 typedef struct {
     PadNodeAry *identifiers;
 } PadNonlocalStmtNode;
 
-// throw_stmt ::= 'throw' identifier
+// throw_stmt: 'throw' identifier
 typedef struct {
     PadNode *identifier;
 } PadThrowStmtNode;
+
+// try_catch_stmt: 'try' ':' [ content ]* catch 'end'
+typedef struct {
+    PadNodeAry *contents;
+    PadNode *catch;
+} PadTryCatchStmtNode;
+
+// catch: catch_none | catch_single | catch_multi
+typedef struct {
+    PadNode *catch_none;
+    PadNode *catch_single;
+    PadNode *catch_multi;
+} PadCatchNode;
+
+// catch_none: 'catch' ':' [ content ]*
+typedef struct {
+    PadNodeAry *contents;
+} PadCatchNoneNode;
+
+// catch_single: 'catch' identifier as_identifier? ':' [ content]*
+typedef struct {
+    PadNode *identifier;
+    PadNode *as_identifier;
+    PadNodeAry *contents;
+} PadCatchSingleNode;
+
+// catch_multi: 'catch' '(' [ identifier]* ')' as_identifier? ':' [ content ] *
+typedef struct {
+    PadNodeAry *identifiers;
+    PadNode *as_identifier;
+    PadNodeAry *contents;
+} PadCatchMultiNode;
+
+// as_identifier: 'as' identifier
+typedef struct {
+    PadNode *identifier;
+} PadAsIdentifierNode;
 
 /*********
 * struct *

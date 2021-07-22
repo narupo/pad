@@ -156,6 +156,24 @@ static PadNode *
 cc_throw_stmt(PadAST *ast, PadCCArgs *cargs);
 
 static PadNode *
+cc_try_catch_stmt(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
+cc_catch(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
+cc_catch_none(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
+cc_catch_single(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
+cc_catch_multi(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
+cc_as_identifier(PadAST *ast, PadCCArgs *cargs);
+
+static PadNode *
 cc_block_stmt(PadAST *ast, PadCCArgs *cargs);
 
 static PadNode *
@@ -3273,6 +3291,7 @@ cc_stmt(PadAST *ast, PadCCArgs *cargs) {
         PadAST_DelNodes(ast, cur->global_stmt); \
         PadAST_DelNodes(ast, cur->nonlocal_stmt); \
         PadAST_DelNodes(ast, cur->throw_stmt); \
+        PadAST_DelNodes(ast, cur->try_catch_stmt); \
         free(cur); \
         if (strlen(msg)) { \
             pushb_error(ast, curtok, msg); \
@@ -3388,6 +3407,16 @@ cc_stmt(PadAST *ast, PadCCArgs *cargs) {
     t = cur_tok(ast);
     cargs->depth = depth + 1;
     cur->throw_stmt = cc_throw_stmt(ast, cargs);
+    if (PadAST_HasErrs(ast)) {
+        return_cleanup("");
+    } else if (cur->throw_stmt) {
+        return_parse(PadNode_New(PAD_NODE_TYPE__STMT, cur, t));
+    }
+
+    check("call cc_try_catch_stmt");
+    t = cur_tok(ast);
+    cargs->depth = depth + 1;
+    cur->try_catch_stmt = cc_try_catch_stmt(ast, cargs);
     if (PadAST_HasErrs(ast)) {
         return_cleanup("");
     } else if (cur->throw_stmt) {
@@ -3712,6 +3741,145 @@ cc_throw_stmt(PadAST *ast, PadCCArgs *cargs) {
     // done
     PadNode *node = PadNode_New(PAD_NODE_TYPE__THROW_STMT, cur, savetok);
     return_parse(node);
+}
+
+static PadNode *
+cc_try_catch_stmt(PadAST *ast, PadCCArgs *cargs) {
+    ready();
+    declare(PadTryCatchStmtNode, cur);
+    cur->contents = PadNodeAry_New();
+    PadTok **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        PadTok *curtok = cur_tok(ast); \
+        ast->ref_ptr = save_ptr; \
+        for (int32_t i = 0; i < PadNodeAry_Len(cur->contents); i += 1) { \
+            PadNode *n = PadNodeAry_Get(cur->contents, i); \
+            PadAST_DelNodes(ast, n); \
+        } \
+        PadNode_Del(cur->catch); \
+        free(cur); \
+        if (strlen(msg)) { \
+            pushb_error(ast, curtok, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    PadDepth depth = cargs->depth;
+    const PadTok *savetok = cur_tok(ast);
+    PadTok *t;
+
+    t = next_tok(ast);
+    if (!t || t->type != PAD_TOK_TYPE__STMT_TRY) {
+        return_cleanup("");  // not error
+    }
+
+    t = next_tok(ast);
+    if (!t || t->type != PAD_TOK_TYPE__COLON) {
+        return_cleanup("not found colon in try-catch statement");
+    }
+
+    for (;;) {
+        cargs->depth = depth + 1;
+        PadNode *content = cc_content(ast, cargs);
+        if (!content) {
+            break;  // not error
+        } else if (PadAST_HasErrs(ast)) {
+            return_cleanup("failed to parse content");
+        }
+        PadNodeAry_MoveBack(cur->contents, content);
+    }
+
+    cargs->depth = depth + 1;
+    cur->catch = cc_catch(ast, cargs);
+    if (!cur->catch) {
+        return_cleanup("failed to parse 'catch'");
+    }
+
+    // done
+    PadNode *node = PadNode_New(
+        PAD_NODE_TYPE__TRY_CATCH_STMT, cur, savetok
+    );
+    return_parse(node);
+}
+
+static PadNode *
+cc_catch(PadAST *ast, PadCCArgs *cargs) {
+    ready();
+    declare(PadTryCatchNode, cur);
+    PadTok **save_ptr = ast->ref_ptr;
+
+#undef return_cleanup
+#define return_cleanup(msg) { \
+        PadTok *curtok = cur_tok(ast); \
+        ast->ref_ptr = save_ptr; \
+        PadAST_DelNodes(cur->catch_none); \
+        PadAST_DelNodes(cur->catch_single); \
+        PadAST_DelNodes(cur->catch_multi); \
+        free(cur); \
+        if (strlen(msg)) { \
+            pushb_error(ast, curtok, msg); \
+        } \
+        return_parse(NULL); \
+    } \
+
+    PadDepth depth = cargs->depth;
+    const PadTok *savetok = cur_tok(ast);
+    PadTok *t;
+
+    t = *ast->ref_ptr;
+    if (!t || t->type != PAD_TOK_TYPE__STMT_CATCH) {
+        return_cleanup("");  // not error
+    }
+
+    t = *(ast->ref_ptr + 1);
+    if (!t) {
+        return_cleanup("reached EOF");
+    } else if (t->type == PAD_TOK_TYPE__COLON) {
+        cargs->depth = depth + 1;
+        cur->catch_none = cc_catch_none(ast, cargs);
+        if (!cur->catch_none) {
+            return_cleanup("failed to parse cache-none");
+        }
+    } else if (t->type == PAD_TOK_TYPE__LPAREN) {
+        cargs->depth = depth + 1;
+        cur->catch_multi = cc_catch_multi(ast, cargs);
+        if (!cur->catch_multi) {
+            return_cleanup("failed to parse catch-multi");
+        }        
+    } else {
+        cargs->depth = depth + 1;
+        cur->catch_single = cc_catch_single(ast, cargs);
+        if (!cur->catch_single) {
+            return_cleanup("failed to parse catch single");
+        }
+    }
+
+    PadNode *node = PadNode_New(
+        PAD_NODE_TYPE__CATCH, cur, savetok
+    );
+    return_parse(node);
+}
+
+static PadNode *
+cc_catch_none(PadAST *ast, PadCCArgs *cargs) {
+
+}
+
+static PadNode *
+cc_catch_single(PadAST *ast, PadCCArgs *cargs) {
+
+}
+
+static PadNode *
+cc_catch_multi(PadAST *ast, PadCCArgs *cargs) {
+
+}
+
+static PadNode *
+cc_as_identifier(PadAST *ast, PadCCArgs *cargs) {
+
 }
 
 static PadNode *

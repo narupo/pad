@@ -53,12 +53,11 @@ BNF of Pad's template language
 
         throw_stmt: 'throw' identifier
 
-    try_catch_stmt: 'try' ':' [ content ]* catch_list 'end'
-        catch_list: [ catch ':' [ content ]* ]+
+    try_catch_stmt: 'try' ':' [ content ]* catch 'end'
              catch: catch_none | catch_single | catch_multi
-        catch_none: 'catch'
-      catch_single: 'catch' identifier as_identifier?
-       catch_multi: 'catch' '(' [ identifier]* ')' as_identifier?
+        catch_none: 'catch' ':' [ content ]*
+      catch_single: 'catch' identifier as_identifier? ':' [ content]*
+       catch_multi: 'catch' '(' [ identifier]* ')' as_identifier? ':' [ content ] *
      as_identifier: 'as' identifier
 
             struct: 'struct' identifier ':' elems 'end'
